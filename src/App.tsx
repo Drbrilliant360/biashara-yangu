@@ -14,6 +14,9 @@ import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import ShopsPage from "@/pages/shops/ShopsPage";
 import AddShopPage from "@/pages/shops/AddShopPage";
+import ProductsPage from "@/pages/products/ProductsPage";
+import AddProductPage from "@/pages/products/AddProductPage";
+import ReportsPage from "@/pages/reports/ReportsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,13 +39,13 @@ const App = () => (
                 <Route index element={<DashboardPage />} />
                 <Route path="shops" element={<ShopsPage />} />
                 <Route path="shops/add" element={<AddShopPage />} />
+                <Route path="products" element={<ProductsPage />} />
+                <Route path="products/add" element={<AddProductPage />} />
+                <Route path="reports" element={<ReportsPage />} />
                 
                 {/* These routes will be implemented later */}
                 <Route path="pos" element={<DashboardPage />} />
-                <Route path="products" element={<DashboardPage />} />
-                <Route path="products/add" element={<DashboardPage />} />
                 <Route path="sales" element={<DashboardPage />} />
-                <Route path="reports" element={<DashboardPage />} />
                 <Route path="customers" element={<DashboardPage />} />
                 <Route path="settings" element={<DashboardPage />} />
               </Route>
