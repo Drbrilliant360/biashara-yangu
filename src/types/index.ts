@@ -7,6 +7,7 @@ export interface User {
   pin: string;
   role: "owner" | "manager" | "cashier";
   shops: string[]; // shop IDs the user has access to
+  phone?: string; // Added this property
 }
 
 // Shop Types
@@ -18,6 +19,9 @@ export interface Shop {
   currency: string;
   ownerId: string;
   createdAt: string;
+  taxId?: string; // Added this property
+  address?: string; // Added this property
+  receiptMessage?: string; // Added this property
 }
 
 // Product Types
@@ -82,6 +86,39 @@ export interface Expense {
   addedBy: string;
 }
 
+// Purchase Types
+export interface Purchase {
+  id: string;
+  shopId: string;
+  supplierId?: string;
+  items: PurchaseItem[];
+  total: number;
+  paymentStatus: "paid" | "partial" | "unpaid";
+  paymentMethod?: "cash" | "mpesa" | "bank" | "credit";
+  amountPaid: number;
+  balance: number;
+  reference?: string;
+  timestamp: string;
+  addedBy: string;
+}
+
+export interface PurchaseItem {
+  productId: string;
+  name: string;
+  quantity: number;
+  unitCost: number;
+  subtotal: number;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  shopId: string;
+}
+
 // For Analytics and Reports
 export interface DailySales {
   date: string;
@@ -91,3 +128,4 @@ export interface DailySales {
 }
 
 export type TimeRange = "today" | "yesterday" | "week" | "month" | "custom";
+

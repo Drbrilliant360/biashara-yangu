@@ -10,7 +10,7 @@ interface CheckoutDialogProps {
   setIsOpen: (isOpen: boolean) => void;
   cartItems: CartItem[];
   cartTotal: number;
-  handleCheckout: (paymentMethod: 'cash' | 'mpesa' | 'card' | 'credit') => void;
+  handleCheckout: (paymentMethod: 'cash' | 'mpesa' | 'card' | 'credit', amountPaid?: number) => void;
   currencyCode: string;
 }
 
@@ -86,7 +86,7 @@ export const CheckoutDialog: React.FC<CheckoutDialogProps> = ({
             Cancel
           </Button>
           <Button 
-            onClick={() => handleCheckout(selectedPaymentMethod)}
+            onClick={() => handleCheckout(selectedPaymentMethod, cartTotal)}
             className="bg-biashara-primary hover:bg-biashara-primary/90"
           >
             Complete Sale

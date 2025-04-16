@@ -12,7 +12,9 @@ export const STORAGE_KEYS = {
   PRODUCTS: 'biashara_products',
   SALES: 'biashara_sales',
   EXPENSES: 'biashara_expenses',
-  CUSTOMERS: 'biashara_customers'
+  CUSTOMERS: 'biashara_customers',
+  PURCHASES: 'biashara_purchases',
+  SUPPLIERS: 'biashara_suppliers'
 };
 
 // Generic storage functions

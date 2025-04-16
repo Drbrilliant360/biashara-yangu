@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Package, ShoppingCart, BarChart2, CreditCard, Settings, Users, X, Store } from 'lucide-react';
+import { Home, Package, ShoppingCart, BarChart2, CreditCard, Settings, Users, X, Store, FileMinus, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -20,6 +20,8 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) =
     { name: "POS", path: "/pos", icon: <ShoppingCart size={20} /> },
     { name: "Products", path: "/products", icon: <Package size={20} /> },
     { name: "Sales", path: "/sales", icon: <CreditCard size={20} /> },
+    { name: "Purchases", path: "/purchases", icon: <FileText size={20} /> },
+    { name: "Expenses", path: "/expenses", icon: <FileMinus size={20} /> },
     { name: "Reports", path: "/reports", icon: <BarChart2 size={20} /> },
     { name: "Customers", path: "/customers", icon: <Users size={20} /> },
     { name: "Shops", path: "/shops", icon: <Store size={20} /> },
