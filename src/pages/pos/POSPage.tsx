@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useShop } from '@/context/ShopContext';
 import { Button } from '@/components/ui/button';
@@ -14,16 +13,16 @@ import { CheckoutDialog } from './components/CheckoutDialog';
 
 // Mock products data - in a real app, this would come from context/API
 const mockProducts: Product[] = [
-  { id: '1', name: 'T-Shirt', price: 1500, stockQuantity: 25, barcode: '123456', category: 'Clothing', shopId: '1' },
-  { id: '2', name: 'Jeans', price: 3500, stockQuantity: 15, barcode: '234567', category: 'Clothing', shopId: '1' },
-  { id: '3', name: 'Coffee Mug', price: 800, stockQuantity: 30, barcode: '345678', category: 'Household', shopId: '1' },
-  { id: '4', name: 'Notebook', price: 250, stockQuantity: 50, barcode: '456789', category: 'Stationery', shopId: '1' },
-  { id: '5', name: 'Water Bottle', price: 600, stockQuantity: 40, barcode: '567890', category: 'Household', shopId: '1' },
-  { id: '6', name: 'Headphones', price: 4500, stockQuantity: 10, barcode: '678901', category: 'Electronics', shopId: '1' },
-  { id: '7', name: 'Backpack', price: 3200, stockQuantity: 12, barcode: '789012', category: 'Accessories', shopId: '1' },
-  { id: '8', name: 'Phone Charger', price: 1200, stockQuantity: 18, barcode: '890123', category: 'Electronics', shopId: '1' },
-  { id: '9', name: 'Hand Sanitizer', price: 350, stockQuantity: 60, barcode: '901234', category: 'Health', shopId: '1' },
-  { id: '10', name: 'Face Mask Pack', price: 450, stockQuantity: 75, barcode: '012345', category: 'Health', shopId: '1' }
+  { id: '1', name: 'T-Shirt', price: 1500, stockQuantity: 25, barcode: '123456', category: 'Clothing', shopId: '1', isActive: true },
+  { id: '2', name: 'Jeans', price: 3500, stockQuantity: 15, barcode: '234567', category: 'Clothing', shopId: '1', isActive: true },
+  { id: '3', name: 'Coffee Mug', price: 800, stockQuantity: 30, barcode: '345678', category: 'Household', shopId: '1', isActive: true },
+  { id: '4', name: 'Notebook', price: 250, stockQuantity: 50, barcode: '456789', category: 'Stationery', shopId: '1', isActive: true },
+  { id: '5', name: 'Water Bottle', price: 600, stockQuantity: 40, barcode: '567890', category: 'Household', shopId: '1', isActive: true },
+  { id: '6', name: 'Headphones', price: 4500, stockQuantity: 10, barcode: '678901', category: 'Electronics', shopId: '1', isActive: true },
+  { id: '7', name: 'Backpack', price: 3200, stockQuantity: 12, barcode: '789012', category: 'Accessories', shopId: '1', isActive: true },
+  { id: '8', name: 'Phone Charger', price: 1200, stockQuantity: 18, barcode: '890123', category: 'Electronics', shopId: '1', isActive: true },
+  { id: '9', name: 'Hand Sanitizer', price: 350, stockQuantity: 60, barcode: '901234', category: 'Health', shopId: '1', isActive: true },
+  { id: '10', name: 'Face Mask Pack', price: 450, stockQuantity: 75, barcode: '012345', category: 'Health', shopId: '1', isActive: true }
 ];
 
 const POSPage: React.FC = () => {
@@ -350,12 +349,12 @@ const POSPage: React.FC = () => {
       
       {/* Checkout Dialog */}
       <CheckoutDialog 
-        open={isCheckoutDialogOpen}
-        onOpenChange={setIsCheckoutDialogOpen}
+        isOpen={isCheckoutDialogOpen}
+        setIsOpen={setIsCheckoutDialogOpen}
         cartItems={cartItems}
         cartTotal={cartTotal}
         currencyCode={currencyCode}
-        onCheckout={processPayment}
+        handleCheckout={processPayment}
       />
     </div>
   );

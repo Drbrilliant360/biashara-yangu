@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +10,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/context/AuthContext';
 import { useShop } from '@/context/ShopContext';
 import { Settings, Moon, Sun, Globe, UserCircle, Wallet } from 'lucide-react';
+
+interface UIUser {
+  phone?: string;
+}
+
+interface UIShop {
+  taxId?: string;
+  address?: string;
+  receiptMessage?: string;
+}
 
 const SettingsPage: React.FC = () => {
   const { toast } = useToast();
@@ -62,7 +71,6 @@ const SettingsPage: React.FC = () => {
           <TabsTrigger value="business">Business</TabsTrigger>
         </TabsList>
 
-        {/* General Settings */}
         <TabsContent value="general" className="space-y-4">
           <Card>
             <CardHeader>
@@ -105,7 +113,6 @@ const SettingsPage: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Appearance Settings */}
         <TabsContent value="appearance" className="space-y-4">
           <Card>
             <CardHeader>
@@ -134,7 +141,6 @@ const SettingsPage: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Notification Settings */}
         <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
@@ -171,7 +177,6 @@ const SettingsPage: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Profile Settings */}
         <TabsContent value="profile" className="space-y-4">
           <Card>
             <CardHeader>
@@ -203,7 +208,7 @@ const SettingsPage: React.FC = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" defaultValue={user?.phone || ""} />
+                <Input id="phone" defaultValue="" placeholder="Add phone number" />
               </div>
               
               <Button>Update Profile</Button>
@@ -211,7 +216,6 @@ const SettingsPage: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* Business Settings */}
         <TabsContent value="business" className="space-y-4">
           <Card>
             <CardHeader>
@@ -230,17 +234,17 @@ const SettingsPage: React.FC = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="tax-id">Tax ID/Registration Number</Label>
-                    <Input id="tax-id" defaultValue={currentShop.taxId || ""} />
+                    <Input id="tax-id" placeholder="Add tax ID/registration number" />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="business-address">Address</Label>
-                    <Input id="business-address" defaultValue={currentShop.address || ""} />
+                    <Input id="business-address" placeholder="Add business address" />
                   </div>
                   
                   <div className="space-y-2">
                     <Label htmlFor="receipt-message">Receipt Footer Message</Label>
-                    <Input id="receipt-message" defaultValue={currentShop.receiptMessage || "Thank you for your business!"} />
+                    <Input id="receipt-message" defaultValue="Thank you for your business!" />
                   </div>
                   
                   <Button>Save Business Info</Button>
