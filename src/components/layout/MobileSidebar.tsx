@@ -23,7 +23,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) =
     { name: "Purchases", path: "/purchases", icon: <FileText size={20} /> },
     { name: "Expenses", path: "/expenses", icon: <FileMinus size={20} /> },
     { name: "Reports", path: "/reports", icon: <BarChart2 size={20} /> },
-    { name: "Customers", path: "/customers", icon: <Users size={20} /> },
+    { name: "Users", path: "/customers", icon: <Users size={20} /> },
     { name: "Shops", path: "/shops", icon: <Store size={20} /> },
     { name: "Settings", path: "/settings", icon: <Settings size={20} /> },
   ];

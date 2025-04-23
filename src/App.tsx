@@ -24,6 +24,7 @@ import NotFound from "@/pages/NotFound";
 import ExpensesPage from "@/pages/expenses/ExpensesPage";
 import PurchasesPage from "@/pages/purchases/PurchasesPage";
 import SalesPage from "@/pages/sales/SalesPage";
+import UsersPage from "@/pages/users/UsersPage";
 
 const queryClient = new QueryClient();
 
@@ -54,9 +55,9 @@ const App = () => (
                   <Route path="expenses" element={<ExpensesPage />} />
                   <Route path="purchases" element={<PurchasesPage />} />
                   
-                  {/* Sales and customers now active */}
+                  {/* Sales and users now active */}
                   <Route path="sales" element={<SalesPage />} />
-                  <Route path="customers" element={<DashboardPage />} />
+                  <Route path="customers" element={<UsersPage />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />

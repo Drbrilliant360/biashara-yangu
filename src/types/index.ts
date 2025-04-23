@@ -3,11 +3,19 @@
 export interface User {
   id: string;
   name: string;
-  email?: string;
+  email: string;
   pin: string;
   role: "owner" | "manager" | "cashier";
   shops: string[]; // shop IDs the user has access to
-  phone?: string; // Added this property
+  phone?: string;
+  password?: string; // Added for email/password login
+  permissions?: {
+    viewSales: boolean;
+    viewProducts: boolean;
+    viewReports: boolean;
+    managePurchases: boolean;
+    manageExpenses: boolean;
+  };
 }
 
 // Shop Types

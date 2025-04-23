@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, Package, ShoppingCart, BarChart2, CreditCard, Settings, Users, LogOut, Store, FileMinus, FileText } from 'lucide-react';
@@ -20,7 +21,7 @@ export const Sidebar: React.FC = () => {
     { name: t("purchases"), path: "/purchases", icon: <FileText size={20} /> },
     { name: t("expenses"), path: "/expenses", icon: <FileMinus size={20} /> },
     { name: t("reports"), path: "/reports", icon: <BarChart2 size={20} /> },
-    { name: t("customers"), path: "/customers", icon: <Users size={20} /> },
+    { name: t("users"), path: "/customers", icon: <Users size={20} /> },
     { name: t("shops"), path: "/shops", icon: <Store size={20} /> },
     { name: t("settings"), path: "/settings", icon: <Settings size={20} /> },
   ];
