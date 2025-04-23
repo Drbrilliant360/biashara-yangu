@@ -52,8 +52,8 @@ const App = () => (
                   <Route path="expenses" element={<ExpensesPage />} />
                   <Route path="purchases" element={<PurchasesPage />} />
                   
-                  {/* These routes will be implemented later */}
-                  <Route path="sales" element={<DashboardPage />} />
+                  {/* Sales and customers now active */}
+                  <Route path="sales" element={<import('@/pages/sales/SalesPage').then(mod => mod.default)} />
                   <Route path="customers" element={<DashboardPage />} />
                 </Route>
                 
