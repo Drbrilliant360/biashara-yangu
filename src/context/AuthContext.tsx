@@ -99,6 +99,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
       
+      // Check if email is already in use
+      if (users.some(u => u.email === newUser.email)) {
+        toast({
+          title: "Registration Failed",
+          description: "Email is already in use. Please choose another.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return false;
+      }
+      
       // Create new user with ID
       const user: User = {
         ...newUser,

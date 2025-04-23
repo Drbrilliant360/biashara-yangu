@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 const RegisterPage: React.FC = () => {
   const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>(''); // Added email state
   const [pin, setPin] = useState<string>('');
   const [confirmPin, setConfirmPin] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -31,6 +32,11 @@ const RegisterPage: React.FC = () => {
       return;
     }
     
+    if (!email.trim()) { // Added email validation
+      setError('Please enter your email');
+      return;
+    }
+    
     if (pin.length < 4) {
       setError('PIN must be at least 4 digits');
       return;
@@ -45,6 +51,7 @@ const RegisterPage: React.FC = () => {
     
     const success = await register({
       name,
+      email, // Added email to the register call
       pin,
       role: 'owner', // Default role for new registration
       shops: [], // New user has no shops yet
@@ -85,6 +92,19 @@ const RegisterPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your name"
+                  required
+                />
+              </div>
+              
+              {/* Added email field */}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
                   required
                 />
               </div>

@@ -20,7 +20,7 @@ import {
   Plus, 
   UserPlus, 
   Mail, 
-  User, 
+  UserIcon, 
   Lock, 
   Shield,
   X,
