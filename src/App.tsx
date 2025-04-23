@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ShopProvider } from "@/context/ShopContext";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 // Pages
 import DashboardPage from "@/pages/dashboard/DashboardPage";
@@ -28,39 +28,41 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <ShopProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              {/* Auth Routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              
-              {/* Protected Routes */}
-              <Route path="/" element={<MainLayout />}>
-                <Route index element={<DashboardPage />} />
-                <Route path="shops" element={<ShopsPage />} />
-                <Route path="shops/add" element={<AddShopPage />} />
-                <Route path="products" element={<ProductsPage />} />
-                <Route path="products/add" element={<AddProductPage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="pos" element={<POSPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="expenses" element={<ExpensesPage />} />
-                <Route path="purchases" element={<PurchasesPage />} />
+      <LanguageProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <ShopProvider>
+              <Toaster />
+              <Sonner />
+              <Routes>
+                {/* Auth Routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
                 
-                {/* These routes will be implemented later */}
-                <Route path="sales" element={<DashboardPage />} />
-                <Route path="customers" element={<DashboardPage />} />
-              </Route>
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ShopProvider>
-        </AuthProvider>
-      </BrowserRouter>
+                {/* Protected Routes */}
+                <Route path="/" element={<MainLayout />}>
+                  <Route index element={<DashboardPage />} />
+                  <Route path="shops" element={<ShopsPage />} />
+                  <Route path="shops/add" element={<AddShopPage />} />
+                  <Route path="products" element={<ProductsPage />} />
+                  <Route path="products/add" element={<AddProductPage />} />
+                  <Route path="reports" element={<ReportsPage />} />
+                  <Route path="pos" element={<POSPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="expenses" element={<ExpensesPage />} />
+                  <Route path="purchases" element={<PurchasesPage />} />
+                  
+                  {/* These routes will be implemented later */}
+                  <Route path="sales" element={<DashboardPage />} />
+                  <Route path="customers" element={<DashboardPage />} />
+                </Route>
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ShopProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

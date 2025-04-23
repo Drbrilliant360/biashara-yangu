@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/context/AuthContext';
 import { useShop } from '@/context/ShopContext';
 import { Settings, Moon, Sun, Globe, UserCircle, Wallet } from 'lucide-react';
+import { useLanguage } from "@/context/LanguageContext";
 
 interface UIUser {
   phone?: string;
@@ -26,9 +27,10 @@ const SettingsPage: React.FC = () => {
   const { user } = useAuth();
   const { currentShop } = useShop();
 
+  const { language, setLanguage, t } = useLanguage();
+
   const [activeTab, setActiveTab] = useState("general");
   const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState("english");
   const [currency, setCurrency] = useState(currentShop?.currency || "USD");
   const [notifications, setNotifications] = useState(true);
   const [lowStockAlert, setLowStockAlert] = useState(true);
@@ -36,15 +38,15 @@ const SettingsPage: React.FC = () => {
 
   const handleSaveGeneral = () => {
     toast({
-      title: "Settings saved",
-      description: "Your general settings have been updated successfully.",
+      title: t("Settings saved"),
+      description: t("Your general settings have been updated successfully."),
     });
   };
 
   const handleSaveAppearance = () => {
     toast({
       title: "Appearance updated",
-      description: `Theme changed to ${darkMode ? 'dark' : 'light'} mode.`,
+      description: `Theme changed to ${darkMode ? 'dark' : 'light'}.`,
     });
   };
 
@@ -59,32 +61,32 @@ const SettingsPage: React.FC = () => {
     <div className="container max-w-5xl px-4 py-6">
       <div className="mb-8 flex items-center">
         <Settings className="h-6 w-6 mr-2" />
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("Settings")}</h1>
       </div>
 
       <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid grid-cols-3 md:grid-cols-5">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="appearance">Appearance</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="business">Business</TabsTrigger>
+          <TabsTrigger value="general">{t("General")}</TabsTrigger>
+          <TabsTrigger value="appearance">{t("Appearance")}</TabsTrigger>
+          <TabsTrigger value="notifications">{t("Notifications")}</TabsTrigger>
+          <TabsTrigger value="profile">{t("Profile")}</TabsTrigger>
+          <TabsTrigger value="business">{t("Business")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>General Settings</CardTitle>
+              <CardTitle>{t("General Settings")}</CardTitle>
               <CardDescription>
-                Configure basic settings for your application.
+                {t("Configure basic settings for your application.")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
+                <Label htmlFor="language">{t("Language")}</Label>
+                <Select value={language} onValueChange={val => setLanguage(val as "english" | "swahili")}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a language" />
+                    <SelectValue placeholder={t("Select a language")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="english">English</SelectItem>
@@ -94,10 +96,10 @@ const SettingsPage: React.FC = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
+                <Label htmlFor="currency">{t("Currency")}</Label>
                 <Select value={currency} onValueChange={setCurrency}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a currency" />
+                    <SelectValue placeholder={t("Select a currency")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="KES">KES (Kenyan Shilling)</SelectItem>
@@ -108,7 +110,7 @@ const SettingsPage: React.FC = () => {
                 </Select>
               </div>
 
-              <Button onClick={handleSaveGeneral}>Save Changes</Button>
+              <Button onClick={handleSaveGeneral}>{t("Save Changes")}</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -136,7 +138,7 @@ const SettingsPage: React.FC = () => {
                 </div>
               </div>
 
-              <Button onClick={handleSaveAppearance}>Save Changes</Button>
+              <Button onClick={handleSaveAppearance}>{t("Save Changes")}</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -172,7 +174,7 @@ const SettingsPage: React.FC = () => {
                 </div>
               )}
 
-              <Button onClick={handleSaveNotifications}>Save Changes</Button>
+              <Button onClick={handleSaveNotifications}>{t("Save Changes")}</Button>
             </CardContent>
           </Card>
         </TabsContent>

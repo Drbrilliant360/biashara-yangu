@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, Package, ShoppingCart, BarChart2, CreditCard, Settings, Users, LogOut, Store, FileMinus, FileText } from 'lucide-react';
@@ -6,38 +5,35 @@ import { useAuth } from '@/context/AuthContext';
 import { useShop } from '@/context/ShopContext';
 import { cn } from '@/lib/utils';
 import { ShopSwitcher } from '@/components/shop/ShopSwitcher';
+import { useLanguage } from '@/context/LanguageContext';
 
 export const Sidebar: React.FC = () => {
   const { logout } = useAuth();
   const { currentShop } = useShop();
+  const { t } = useLanguage();
   
   const navItems = [
-    { name: "Dashboard", path: "/", icon: <Home size={20} /> },
-    { name: "POS", path: "/pos", icon: <ShoppingCart size={20} /> },
-    { name: "Products", path: "/products", icon: <Package size={20} /> },
-    { name: "Sales", path: "/sales", icon: <CreditCard size={20} /> },
-    { name: "Purchases", path: "/purchases", icon: <FileText size={20} /> },
-    { name: "Expenses", path: "/expenses", icon: <FileMinus size={20} /> },
-    { name: "Reports", path: "/reports", icon: <BarChart2 size={20} /> },
-    { name: "Customers", path: "/customers", icon: <Users size={20} /> },
-    { name: "Shops", path: "/shops", icon: <Store size={20} /> },
-    { name: "Settings", path: "/settings", icon: <Settings size={20} /> },
+    { name: t("dashboard"), path: "/", icon: <Home size={20} /> },
+    { name: t("pos"), path: "/pos", icon: <ShoppingCart size={20} /> },
+    { name: t("products"), path: "/products", icon: <Package size={20} /> },
+    { name: t("sales"), path: "/sales", icon: <CreditCard size={20} /> },
+    { name: t("purchases"), path: "/purchases", icon: <FileText size={20} /> },
+    { name: t("expenses"), path: "/expenses", icon: <FileMinus size={20} /> },
+    { name: t("reports"), path: "/reports", icon: <BarChart2 size={20} /> },
+    { name: t("customers"), path: "/customers", icon: <Users size={20} /> },
+    { name: t("shops"), path: "/shops", icon: <Store size={20} /> },
+    { name: t("settings"), path: "/settings", icon: <Settings size={20} /> },
   ];
 
   return (
     <aside className="h-full bg-biashara-dark text-white flex flex-col">
-      {/* Logo and app name */}
       <div className="p-4">
         <h1 className="text-xl font-bold text-white">Biashara Yangu</h1>
-        <div className="text-xs text-gray-400 mt-1">Business Management System</div>
+        <div className="text-xs text-gray-400 mt-1">{t("business management system")}</div>
       </div>
-
-      {/* Shop switcher */}
       <div className="px-4 mb-6">
         <ShopSwitcher />
       </div>
-
-      {/* Navigation */}
       <nav className="flex-1">
         <ul className="space-y-1 px-2">
           {navItems.map((item) => (
@@ -56,15 +52,13 @@ export const Sidebar: React.FC = () => {
           ))}
         </ul>
       </nav>
-
-      {/* Bottom logout button */}
       <div className="p-4 border-t border-gray-800">
         <button 
           onClick={logout}
           className="flex items-center gap-3 w-full px-3 py-2 text-gray-300 rounded-md hover:bg-red-500/10 hover:text-red-300 transition-colors"
         >
           <LogOut size={20} />
-          <span>Logout</span>
+          <span>{t("logout")}</span>
         </button>
       </div>
     </aside>
