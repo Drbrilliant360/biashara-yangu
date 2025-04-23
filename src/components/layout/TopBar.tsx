@@ -21,7 +21,7 @@ export const TopBar: React.FC = () => {
   const { currentShop } = useShop();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
 
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm py-2 px-4">
@@ -42,7 +42,7 @@ export const TopBar: React.FC = () => {
           ) : (
             <div className="flex items-center">
               <span className="font-medium text-biashara-dark">
-                {currentShop?.name || "No Shop Selected"}
+                {currentShop?.name || t("no shop selected")}
               </span>
             </div>
           )}
@@ -53,12 +53,12 @@ export const TopBar: React.FC = () => {
           {/* Language Switcher Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Change Language" className="rounded-full">
+              <Button variant="ghost" size="icon" aria-label={t("change language")} className="rounded-full">
                 <Globe size={20} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Change Language</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("change language")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onSelect={() => setLanguage('english')}
@@ -70,7 +70,7 @@ export const TopBar: React.FC = () => {
                 onSelect={() => setLanguage('swahili')}
                 className={language === 'swahili' ? 'font-semibold bg-accent/10' : ''}
               >
-                Swahili
+                Kiswahili
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -87,21 +87,21 @@ export const TopBar: React.FC = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>
-                {user?.name || "User"}
+                {user?.name || t("user")}
                 <p className="text-xs text-muted-foreground font-normal mt-1">
-                  {user?.role || "Role"}
+                  {user?.role || t("role")}
                 </p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => window.location.href = '/profile'}>
-                Profile
+                {t("profile")}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => window.location.href = '/settings'}>
-                Settings
+                {t("settings")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={logout} className="text-red-500">
-                Logout
+                {t("logout")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

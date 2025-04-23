@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { ShopSwitcher } from '@/components/shop/ShopSwitcher';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface MobileSidebarProps {
   open: boolean;
@@ -14,18 +15,19 @@ interface MobileSidebarProps {
 
 export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) => {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   
   const navItems = [
-    { name: "Dashboard", path: "/", icon: <Home size={20} /> },
-    { name: "POS", path: "/pos", icon: <ShoppingCart size={20} /> },
-    { name: "Products", path: "/products", icon: <Package size={20} /> },
-    { name: "Sales", path: "/sales", icon: <CreditCard size={20} /> },
-    { name: "Purchases", path: "/purchases", icon: <FileText size={20} /> },
-    { name: "Expenses", path: "/expenses", icon: <FileMinus size={20} /> },
-    { name: "Reports", path: "/reports", icon: <BarChart2 size={20} /> },
-    { name: "Users", path: "/customers", icon: <Users size={20} /> },
-    { name: "Shops", path: "/shops", icon: <Store size={20} /> },
-    { name: "Settings", path: "/settings", icon: <Settings size={20} /> },
+    { name: t("dashboard"), path: "/", icon: <Home size={20} /> },
+    { name: t("pos"), path: "/pos", icon: <ShoppingCart size={20} /> },
+    { name: t("products"), path: "/products", icon: <Package size={20} /> },
+    { name: t("sales"), path: "/sales", icon: <CreditCard size={20} /> },
+    { name: t("purchases"), path: "/purchases", icon: <FileText size={20} /> },
+    { name: t("expenses"), path: "/expenses", icon: <FileMinus size={20} /> },
+    { name: t("reports"), path: "/reports", icon: <BarChart2 size={20} /> },
+    { name: t("customers"), path: "/customers", icon: <Users size={20} /> },
+    { name: t("shops"), path: "/shops", icon: <Store size={20} /> },
+    { name: t("settings"), path: "/settings", icon: <Settings size={20} /> },
   ];
 
   if (!open) {
@@ -93,7 +95,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) =
               onClose();
             }}
           >
-            Logout
+            {t("logout")}
           </Button>
         </div>
       </aside>

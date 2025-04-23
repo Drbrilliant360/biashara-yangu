@@ -15,10 +15,12 @@ import {
 import { useShop } from '@/context/ShopContext';
 import { getItem, STORAGE_KEYS } from '@/lib/storage';
 import { Product } from '@/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 const ProductsPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentShop } = useShop();
+  const { t } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<keyof Product>('name');
@@ -87,12 +89,12 @@ const ProductsPage: React.FC = () => {
   if (!currentShop) {
     return (
       <div className="flex flex-col items-center justify-center p-8 h-[80vh]">
-        <h2 className="text-2xl font-bold mb-4">No Shop Selected</h2>
+        <h2 className="text-2xl font-bold mb-4">{t("no shop selected")}</h2>
         <p className="text-muted-foreground mb-6 text-center">
-          You need to add a shop before you can manage products.
+          {t("you need to add a shop before you can manage products")}
         </p>
         <Button onClick={() => navigate('/shops/add')}>
-          Add Your First Shop
+          {t("add your first shop")}
         </Button>
       </div>
     );
@@ -101,9 +103,9 @@ const ProductsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <h1 className="text-2xl font-bold">{t("products")}</h1>
         <Button onClick={() => navigate('/products/add')}>
-          <Plus className="mr-2 h-4 w-4" /> Add Product
+          <Plus className="mr-2 h-4 w-4" /> {t("add product")}
         </Button>
       </div>
       
@@ -112,14 +114,14 @@ const ProductsPage: React.FC = () => {
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search products..." 
+            placeholder={t("search products")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
           />
         </div>
         <Button variant="outline" className="flex gap-2">
-          <Filter className="h-4 w-4" /> Filter
+          <Filter className="h-4 w-4" /> {t("filter")}
         </Button>
       </div>
       
@@ -130,7 +132,7 @@ const ProductsPage: React.FC = () => {
             <TableRow>
               <TableHead onClick={() => handleSort('name')} className="cursor-pointer">
                 <div className="flex items-center gap-1">
-                  Product Name
+                  {t("product name")}
                   {sortColumn === 'name' && (
                     <ArrowUpDown className="h-3 w-3" />
                   )}
@@ -138,7 +140,7 @@ const ProductsPage: React.FC = () => {
               </TableHead>
               <TableHead onClick={() => handleSort('category')} className="cursor-pointer">
                 <div className="flex items-center gap-1">
-                  Category
+                  {t("category")}
                   {sortColumn === 'category' && (
                     <ArrowUpDown className="h-3 w-3" />
                   )}
@@ -146,7 +148,7 @@ const ProductsPage: React.FC = () => {
               </TableHead>
               <TableHead onClick={() => handleSort('price')} className="cursor-pointer text-right">
                 <div className="flex items-center justify-end gap-1">
-                  Price
+                  {t("price")}
                   {sortColumn === 'price' && (
                     <ArrowUpDown className="h-3 w-3" />
                   )}
@@ -154,7 +156,7 @@ const ProductsPage: React.FC = () => {
               </TableHead>
               <TableHead onClick={() => handleSort('stockQuantity')} className="cursor-pointer text-right">
                 <div className="flex items-center justify-end gap-1">
-                  Stock
+                  {t("stock")}
                   {sortColumn === 'stockQuantity' && (
                     <ArrowUpDown className="h-3 w-3" />
                   )}
@@ -171,7 +173,7 @@ const ProductsPage: React.FC = () => {
                   onClick={() => navigate(`/products/${product.id}`)}
                 >
                   <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>{product.category || 'Uncategorized'}</TableCell>
+                  <TableCell>{product.category || t('uncategorized')}</TableCell>
                   <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
                   <TableCell className="text-right">{product.stockQuantity}</TableCell>
                 </TableRow>
@@ -179,13 +181,13 @@ const ProductsPage: React.FC = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-8">
-                  <p className="text-muted-foreground">No products found</p>
+                  <p className="text-muted-foreground">{t("no products found")}</p>
                   <Button 
                     variant="link" 
                     className="mt-2"
                     onClick={() => navigate('/products/add')}
                   >
-                    Add your first product
+                    {t("add your first product")}
                   </Button>
                 </TableCell>
               </TableRow>

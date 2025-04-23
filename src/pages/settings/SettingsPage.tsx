@@ -38,22 +38,22 @@ const SettingsPage: React.FC = () => {
 
   const handleSaveGeneral = () => {
     toast({
-      title: t("Settings saved"),
-      description: t("Your general settings have been updated successfully."),
+      title: t("settings saved"),
+      description: t("your general settings have been updated successfully"),
     });
   };
 
   const handleSaveAppearance = () => {
     toast({
-      title: "Appearance updated",
-      description: `Theme changed to ${darkMode ? 'dark' : 'light'}.`,
+      title: t("appearance updated"),
+      description: `${t("theme changed to")} ${darkMode ? t('dark') : t('light')}.`,
     });
   };
 
   const handleSaveNotifications = () => {
     toast({
-      title: "Notification settings saved",
-      description: "Your notification preferences have been updated.",
+      title: t("notification settings saved"),
+      description: t("your notification preferences have been updated"),
     });
   };
 
@@ -61,45 +61,45 @@ const SettingsPage: React.FC = () => {
     <div className="container max-w-5xl px-4 py-6">
       <div className="mb-8 flex items-center">
         <Settings className="h-6 w-6 mr-2" />
-        <h1 className="text-3xl font-bold tracking-tight">{t("Settings")}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("settings")}</h1>
       </div>
 
       <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid grid-cols-3 md:grid-cols-5">
-          <TabsTrigger value="general">{t("General")}</TabsTrigger>
-          <TabsTrigger value="appearance">{t("Appearance")}</TabsTrigger>
-          <TabsTrigger value="notifications">{t("Notifications")}</TabsTrigger>
-          <TabsTrigger value="profile">{t("Profile")}</TabsTrigger>
-          <TabsTrigger value="business">{t("Business")}</TabsTrigger>
+          <TabsTrigger value="general">{t("general")}</TabsTrigger>
+          <TabsTrigger value="appearance">{t("appearance")}</TabsTrigger>
+          <TabsTrigger value="notifications">{t("notifications")}</TabsTrigger>
+          <TabsTrigger value="profile">{t("profile")}</TabsTrigger>
+          <TabsTrigger value="business">{t("business")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t("General Settings")}</CardTitle>
+              <CardTitle>{t("general settings")}</CardTitle>
               <CardDescription>
-                {t("Configure basic settings for your application.")}
+                {t("configure basic settings")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="language">{t("Language")}</Label>
+                <Label htmlFor="language">{t("language")}</Label>
                 <Select value={language} onValueChange={val => setLanguage(val as "english" | "swahili")}>
                   <SelectTrigger>
-                    <SelectValue placeholder={t("Select a language")} />
+                    <SelectValue placeholder={t("select a language")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="english">English</SelectItem>
-                    <SelectItem value="swahili">Swahili</SelectItem>
+                    <SelectItem value="swahili">Kiswahili</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="currency">{t("Currency")}</Label>
+                <Label htmlFor="currency">{t("currency")}</Label>
                 <Select value={currency} onValueChange={setCurrency}>
                   <SelectTrigger>
-                    <SelectValue placeholder={t("Select a currency")} />
+                    <SelectValue placeholder={t("select a currency")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="KES">KES (Kenyan Shilling)</SelectItem>
@@ -110,7 +110,7 @@ const SettingsPage: React.FC = () => {
                 </Select>
               </div>
 
-              <Button onClick={handleSaveGeneral}>{t("Save Changes")}</Button>
+              <Button onClick={handleSaveGeneral}>{t("save changes")}</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -138,7 +138,7 @@ const SettingsPage: React.FC = () => {
                 </div>
               </div>
 
-              <Button onClick={handleSaveAppearance}>{t("Save Changes")}</Button>
+              <Button onClick={handleSaveAppearance}>{t("save changes")}</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -174,7 +174,7 @@ const SettingsPage: React.FC = () => {
                 </div>
               )}
 
-              <Button onClick={handleSaveNotifications}>{t("Save Changes")}</Button>
+              <Button onClick={handleSaveNotifications}>{t("save changes")}</Button>
             </CardContent>
           </Card>
         </TabsContent>
