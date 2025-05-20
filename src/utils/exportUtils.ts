@@ -1,5 +1,6 @@
 
 import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';

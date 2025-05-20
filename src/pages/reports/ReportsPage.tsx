@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -19,9 +18,9 @@ import {
   TrendingUp,
   PieChart,
   Package,
-  FilePdf,
-  FileExcel,
-  FileWord,
+  FileText, // Changed from FilePdf
+  FileSpreadsheet, // Changed from FileExcel
+  File, // Changed from FileWord
   Clock,
   Printer
 } from 'lucide-react';
@@ -273,13 +272,13 @@ const ReportsPage: React.FC = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Export Options</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => handleExport('excel')} className="cursor-pointer flex items-center gap-2">
-                <FileExcel className="h-4 w-4" /> Excel
+                <FileSpreadsheet className="h-4 w-4" /> Excel
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport('pdf')} className="cursor-pointer flex items-center gap-2">
-                <FilePdf className="h-4 w-4" /> PDF
+                <FileText className="h-4 w-4" /> PDF
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport('word')} className="cursor-pointer flex items-center gap-2">
-                <FileWord className="h-4 w-4" /> Word
+                <File className="h-4 w-4" /> Word
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -377,15 +376,15 @@ const ReportsPage: React.FC = () => {
               
               <div className="flex gap-2 ml-4">
                 <Button onClick={() => handleExport('excel')} variant="outline" size="sm" className="flex gap-1">
-                  <FileExcel className="h-4 w-4" />
+                  <FileSpreadsheet className="h-4 w-4" />
                   Excel
                 </Button>
                 <Button onClick={() => handleExport('pdf')} variant="outline" size="sm" className="flex gap-1">
-                  <FilePdf className="h-4 w-4" />
+                  <FileText className="h-4 w-4" />
                   PDF
                 </Button>
                 <Button onClick={() => handleExport('word')} variant="outline" size="sm" className="flex gap-1">
-                  <FileWord className="h-4 w-4" />
+                  <File className="h-4 w-4" />
                   Word
                 </Button>
               </div>
@@ -440,15 +439,15 @@ const ReportsPage: React.FC = () => {
             <h2 className="text-xl font-semibold">Top Selling Products</h2>
             <div className="flex gap-2">
               <Button onClick={() => handleExport('excel')} variant="outline" size="sm" className="flex gap-1">
-                <FileExcel className="h-4 w-4" />
+                <FileSpreadsheet className="h-4 w-4" />
                 Excel
               </Button>
               <Button onClick={() => handleExport('pdf')} variant="outline" size="sm" className="flex gap-1">
-                <FilePdf className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
                 PDF
               </Button>
               <Button onClick={() => handleExport('word')} variant="outline" size="sm" className="flex gap-1">
-                <FileWord className="h-4 w-4" />
+                <File className="h-4 w-4" />
                 Word
               </Button>
             </div>
@@ -487,15 +486,15 @@ const ReportsPage: React.FC = () => {
             <h2 className="text-xl font-semibold">Inventory Status</h2>
             <div className="flex gap-2">
               <Button onClick={() => handleExport('excel')} variant="outline" size="sm" className="flex gap-1">
-                <FileExcel className="h-4 w-4" />
+                <FileSpreadsheet className="h-4 w-4" />
                 Excel
               </Button>
               <Button onClick={() => handleExport('pdf')} variant="outline" size="sm" className="flex gap-1">
-                <FilePdf className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
                 PDF
               </Button>
               <Button onClick={() => handleExport('word')} variant="outline" size="sm" className="flex gap-1">
-                <FileWord className="h-4 w-4" />
+                <File className="h-4 w-4" />
                 Word
               </Button>
             </div>
