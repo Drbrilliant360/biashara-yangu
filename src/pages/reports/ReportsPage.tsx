@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -392,6 +391,7 @@ const ReportsPage: React.FC = () => {
             </div>
           </div>
           
+          {/* Sales chart */}
           <Card>
             <CardContent className="pt-6 pb-2">
               <div className="h-[300px]">
@@ -454,6 +454,7 @@ const ReportsPage: React.FC = () => {
             </div>
           </div>
           
+          {/* Products chart */}
           <Card>
             <CardContent className="pt-6 pb-2">
               <div className="h-[300px]">
@@ -501,6 +502,7 @@ const ReportsPage: React.FC = () => {
             </div>
           </div>
           
+          {/* Inventory chart */}
           <Card>
             <CardContent className="pt-6 pb-2">
               <div className="h-[300px]">
