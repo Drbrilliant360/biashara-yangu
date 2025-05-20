@@ -7,9 +7,11 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface AuthContextType {
   user: User | null;
-  login: (pin: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  register: (user: Omit<User, 'id'>) => Promise<boolean>;
+  register: (userData: Omit<User, 'id'>) => Promise<boolean>;
+  resetPassword: (email: string, securityAnswer: string, newPassword: string) => Promise<boolean>;
+  verifySecurityQuestion: (email: string) => Promise<{ success: boolean; question?: string }>;
   isAuthenticated: boolean;
   loading: boolean;
 }
@@ -19,6 +21,8 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => false,
   logout: () => {},
   register: async () => false,
+  resetPassword: async () => false,
+  verifySecurityQuestion: async () => ({ success: false }),
   isAuthenticated: false,
   loading: true,
 });
@@ -42,15 +46,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
-  const login = async (pin: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
     
     try {
       // Get all users from storage
       const users = getItem<User[]>(STORAGE_KEYS.USERS, []);
       
-      // Find user with matching PIN
-      const foundUser = users.find(u => u.pin === pin);
+      // Find user with matching email and password
+      const foundUser = users.find(u => u.email === email && u.password === password);
       
       if (foundUser) {
         setUser(foundUser);
@@ -64,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         toast({
           title: "Login Failed",
-          description: "Incorrect PIN. Please try again.",
+          description: "Incorrect email or password. Please try again.",
           variant: "destructive",
         });
         setLoading(false);
@@ -87,17 +91,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     try {
       const users = getItem<User[]>(STORAGE_KEYS.USERS, []);
-      
-      // Check if PIN is already in use
-      if (users.some(u => u.pin === newUser.pin)) {
-        toast({
-          title: "Registration Failed",
-          description: "PIN is already in use. Please choose another.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return false;
-      }
       
       // Check if email is already in use
       if (users.some(u => u.email === newUser.email)) {
@@ -141,6 +134,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   
+  const verifySecurityQuestion = async (email: string): Promise<{ success: boolean; question?: string }> => {
+    try {
+      const users = getItem<User[]>(STORAGE_KEYS.USERS, []);
+      const user = users.find(u => u.email === email);
+      
+      if (user && user.securityQuestion) {
+        return { success: true, question: user.securityQuestion };
+      } else {
+        toast({
+          title: "Account Not Found",
+          description: "We couldn't find an account with that email.",
+          variant: "destructive",
+        });
+        return { success: false };
+      }
+    } catch (error) {
+      console.error('Security question verification error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      return { success: false };
+    }
+  };
+  
+  const resetPassword = async (email: string, securityAnswer: string, newPassword: string): Promise<boolean> => {
+    try {
+      const users = getItem<User[]>(STORAGE_KEYS.USERS, []);
+      const userIndex = users.findIndex(u => u.email === email);
+      
+      if (userIndex === -1) {
+        toast({
+          title: "Account Not Found",
+          description: "We couldn't find an account with that email.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (users[userIndex].securityAnswer !== securityAnswer) {
+        toast({
+          title: "Incorrect Answer",
+          description: "The security answer provided is incorrect.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Update the user's password
+      users[userIndex].password = newPassword;
+      setItem(STORAGE_KEYS.USERS, users);
+      
+      toast({
+        title: "Password Reset Successful",
+        description: "Your password has been updated. You can now log in with your new password.",
+      });
+      return true;
+    } catch (error) {
+      console.error('Password reset error:', error);
+      toast({
+        title: "Reset Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+  
   const logout = () => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
@@ -157,6 +219,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login, 
       logout,
       register,
+      resetPassword,
+      verifySecurityQuestion,
       isAuthenticated: !!user,
       loading 
     }}>

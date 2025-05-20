@@ -4,11 +4,14 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  pin: string;
+  password: string;  // Required for email/password login
+  pin?: string;      // Made optional as we're moving to password
   role: "owner" | "manager" | "cashier";
   shops: string[]; // shop IDs the user has access to
   phone?: string;
-  password?: string; // Added for email/password login
+  profilePicture?: string; // URL to profile image
+  securityQuestion?: string; // Security question text
+  securityAnswer?: string; // Answer to security question
   permissions?: {
     viewSales: boolean;
     viewProducts: boolean;
