@@ -15,18 +15,31 @@ import {
 } from 'recharts';
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
 import { 
-  Download, 
   Calendar,
   TrendingUp,
   PieChart,
-  Package
+  Package,
+  FilePdf,
+  FileExcel,
+  FileWord,
+  Clock,
+  Printer
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from '@/components/ui/use-toast';
 import { useShop } from '@/context/ShopContext';
 import { getItem, STORAGE_KEYS } from '@/lib/storage';
 import { Sale, Product } from '@/types';
+import { exportToExcel, exportToPDF, exportToWord, formatDataForExport } from '@/utils/exportUtils';
 
 const ReportsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,6 +48,7 @@ const ReportsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
   const [activeTab, setActiveTab] = useState('sales');
+  const { toast } = useToast();
   
   useEffect(() => {
     if (currentShop) {
@@ -152,9 +166,71 @@ const ReportsPage: React.FC = () => {
     };
   };
   
-  const stats = calculateStats();
+  // Handle exports
+  const handleExport = (format: 'excel' | 'pdf' | 'word') => {
+    if (!currentShop) {
+      toast({
+        title: "Export Failed",
+        description: "No shop selected.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      let exportData: any[] = [];
+      let fileName = '';
+      let reportTitle = '';
+      
+      // Prepare data based on active tab
+      switch (activeTab) {
+        case 'sales':
+          exportData = formatDataForExport(getDailyRevenueData(), 'sales', formatCurrency);
+          fileName = `sales_report_${format(new Date(), 'yyyy-MM-dd')}`;
+          reportTitle = 'Sales Report';
+          break;
+        case 'products':
+          exportData = formatDataForExport(getTopSellingProducts(), 'products', formatCurrency);
+          fileName = `top_products_report_${format(new Date(), 'yyyy-MM-dd')}`;
+          reportTitle = 'Top Products Report';
+          break;
+        case 'inventory':
+          exportData = formatDataForExport(products, 'inventory', formatCurrency);
+          fileName = `inventory_report_${format(new Date(), 'yyyy-MM-dd')}`;
+          reportTitle = 'Inventory Report';
+          break;
+      }
+      
+      // Export based on selected format
+      switch (format) {
+        case 'excel':
+          exportToExcel(exportData, fileName, currentShop.name);
+          break;
+        case 'pdf':
+          exportToPDF(exportData, fileName, currentShop.name, reportTitle);
+          break;
+        case 'word':
+          exportToWord(exportData, fileName, currentShop.name, reportTitle);
+          break;
+      }
+      
+      toast({
+        title: "Export Successful",
+        description: `Report exported as ${format.toUpperCase()}`,
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Export Failed",
+        description: "There was a problem exporting your report.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   const revenueData = getDailyRevenueData();
   const topProducts = getTopSellingProducts();
+  const stats = calculateStats();
   
   // If no shop is selected, show a message
   if (!currentShop) {
@@ -181,15 +257,32 @@ const ReportsPage: React.FC = () => {
           </p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Button variant="outline" className="flex gap-2">
             <Calendar className="h-4 w-4" />
             Date Range
           </Button>
-          <Button variant="outline" className="flex gap-2">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex gap-2">
+                <Printer className="h-4 w-4" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleExport('excel')} className="cursor-pointer flex items-center gap-2">
+                <FileExcel className="h-4 w-4" /> Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('pdf')} className="cursor-pointer flex items-center gap-2">
+                <FilePdf className="h-4 w-4" /> PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('word')} className="cursor-pointer flex items-center gap-2">
+                <FileWord className="h-4 w-4" /> Word
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
@@ -264,21 +357,38 @@ const ReportsPage: React.FC = () => {
         <TabsContent value="sales" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Sales Overview</h2>
-            <div className="flex gap-2">
-              <Button 
-                variant={timeRange === 'week' ? 'default' : 'outline'} 
-                onClick={() => setTimeRange('week')}
-                size="sm"
-              >
-                Week
-              </Button>
-              <Button 
-                variant={timeRange === 'month' ? 'default' : 'outline'} 
-                onClick={() => setTimeRange('month')}
-                size="sm"
-              >
-                Month
-              </Button>
+            <div className="flex gap-2 items-center">
+              <div className="flex gap-2">
+                <Button 
+                  variant={timeRange === 'week' ? 'default' : 'outline'} 
+                  onClick={() => setTimeRange('week')}
+                  size="sm"
+                >
+                  Week
+                </Button>
+                <Button 
+                  variant={timeRange === 'month' ? 'default' : 'outline'} 
+                  onClick={() => setTimeRange('month')}
+                  size="sm"
+                >
+                  Month
+                </Button>
+              </div>
+              
+              <div className="flex gap-2 ml-4">
+                <Button onClick={() => handleExport('excel')} variant="outline" size="sm" className="flex gap-1">
+                  <FileExcel className="h-4 w-4" />
+                  Excel
+                </Button>
+                <Button onClick={() => handleExport('pdf')} variant="outline" size="sm" className="flex gap-1">
+                  <FilePdf className="h-4 w-4" />
+                  PDF
+                </Button>
+                <Button onClick={() => handleExport('word')} variant="outline" size="sm" className="flex gap-1">
+                  <FileWord className="h-4 w-4" />
+                  Word
+                </Button>
+              </div>
             </div>
           </div>
           
@@ -326,7 +436,23 @@ const ReportsPage: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="products" className="space-y-6">
-          <h2 className="text-xl font-semibold">Top Selling Products</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Top Selling Products</h2>
+            <div className="flex gap-2">
+              <Button onClick={() => handleExport('excel')} variant="outline" size="sm" className="flex gap-1">
+                <FileExcel className="h-4 w-4" />
+                Excel
+              </Button>
+              <Button onClick={() => handleExport('pdf')} variant="outline" size="sm" className="flex gap-1">
+                <FilePdf className="h-4 w-4" />
+                PDF
+              </Button>
+              <Button onClick={() => handleExport('word')} variant="outline" size="sm" className="flex gap-1">
+                <FileWord className="h-4 w-4" />
+                Word
+              </Button>
+            </div>
+          </div>
           
           <Card>
             <CardContent className="pt-6 pb-2">
@@ -357,7 +483,23 @@ const ReportsPage: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="inventory" className="space-y-6">
-          <h2 className="text-xl font-semibold">Inventory Status</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Inventory Status</h2>
+            <div className="flex gap-2">
+              <Button onClick={() => handleExport('excel')} variant="outline" size="sm" className="flex gap-1">
+                <FileExcel className="h-4 w-4" />
+                Excel
+              </Button>
+              <Button onClick={() => handleExport('pdf')} variant="outline" size="sm" className="flex gap-1">
+                <FilePdf className="h-4 w-4" />
+                PDF
+              </Button>
+              <Button onClick={() => handleExport('word')} variant="outline" size="sm" className="flex gap-1">
+                <FileWord className="h-4 w-4" />
+                Word
+              </Button>
+            </div>
+          </div>
           
           <Card>
             <CardContent className="pt-6 pb-2">
