@@ -8,6 +8,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ShopProvider } from "@/context/ShopContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { LanguageProvider } from "@/context/LanguageContext";
+import React from 'react';
 
 // Pages
 import DashboardPage from "@/pages/dashboard/DashboardPage";
@@ -26,48 +27,51 @@ import PurchasesPage from "@/pages/purchases/PurchasesPage";
 import SalesPage from "@/pages/sales/SalesPage";
 import UsersPage from "@/pages/users/UsersPage";
 
+// Create a client
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <LanguageProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <ShopProvider>
-              <Toaster />
-              <Sonner />
-              <Routes>
-                {/* Auth Routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                
-                {/* Protected Routes */}
-                <Route path="/" element={<MainLayout />}>
-                  <Route index element={<DashboardPage />} />
-                  <Route path="shops" element={<ShopsPage />} />
-                  <Route path="shops/add" element={<AddShopPage />} />
-                  <Route path="products" element={<ProductsPage />} />
-                  <Route path="products/add" element={<AddProductPage />} />
-                  <Route path="reports" element={<ReportsPage />} />
-                  <Route path="pos" element={<POSPage />} />
-                  <Route path="settings" element={<SettingsPage />} />
-                  <Route path="expenses" element={<ExpensesPage />} />
-                  <Route path="purchases" element={<PurchasesPage />} />
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <LanguageProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <ShopProvider>
+                <Toaster />
+                <Sonner />
+                <Routes>
+                  {/* Auth Routes */}
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
                   
-                  {/* Sales and users now active */}
-                  <Route path="sales" element={<SalesPage />} />
-                  <Route path="customers" element={<UsersPage />} />
-                </Route>
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </ShopProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </LanguageProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+                  {/* Protected Routes */}
+                  <Route path="/" element={<MainLayout />}>
+                    <Route index element={<DashboardPage />} />
+                    <Route path="shops" element={<ShopsPage />} />
+                    <Route path="shops/add" element={<AddShopPage />} />
+                    <Route path="products" element={<ProductsPage />} />
+                    <Route path="products/add" element={<AddProductPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="pos" element={<POSPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
+                    <Route path="expenses" element={<ExpensesPage />} />
+                    <Route path="purchases" element={<PurchasesPage />} />
+                    
+                    {/* Sales and users now active */}
+                    <Route path="sales" element={<SalesPage />} />
+                    <Route path="customers" element={<UsersPage />} />
+                  </Route>
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </ShopProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </LanguageProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;
