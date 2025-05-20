@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -185,17 +186,17 @@ const ReportsPage: React.FC = () => {
       switch (activeTab) {
         case 'sales':
           exportData = formatDataForExport(getDailyRevenueData(), 'sales', formatCurrency);
-          fileName = `sales_report_${format(new Date(), 'yyyy-MM-dd')}`;
+          fileName = `sales_report_${new Date().toISOString().split('T')[0]}`;
           reportTitle = 'Sales Report';
           break;
         case 'products':
           exportData = formatDataForExport(getTopSellingProducts(), 'products', formatCurrency);
-          fileName = `top_products_report_${format(new Date(), 'yyyy-MM-dd')}`;
+          fileName = `top_products_report_${new Date().toISOString().split('T')[0]}`;
           reportTitle = 'Top Products Report';
           break;
         case 'inventory':
           exportData = formatDataForExport(products, 'inventory', formatCurrency);
-          fileName = `inventory_report_${format(new Date(), 'yyyy-MM-dd')}`;
+          fileName = `inventory_report_${new Date().toISOString().split('T')[0]}`;
           reportTitle = 'Inventory Report';
           break;
       }

@@ -1,7 +1,6 @@
 
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Shop } from '@/types';
@@ -18,7 +17,7 @@ export type ExportableData = Array<Record<string, any>>;
 
 // Format current date and time
 const getCurrentDateTime = () => {
-  return format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+  return new Date().toLocaleString();
 };
 
 // Function to export data to Excel
