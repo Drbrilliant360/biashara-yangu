@@ -155,6 +155,17 @@ export const formatDataForExport = (
         'Stock Quantity': item.stockQuantity,
         Price: formatCurrency(item.price || 0)
       }));
+    case 'quotations':
+      return data.map(item => ({
+        'Product ID': item.id,
+        Description: item.description || item.name,
+        Brand: item.brand || 'N/A',
+        Quantity: item.quantity,
+        Rate: formatCurrency(item.price || 0),
+        Amount: formatCurrency(item.amount || 0),
+        VAT: formatCurrency(item.vat || 0),
+        Total: formatCurrency(item.total || 0)
+      }));
     default:
       return data;
   }

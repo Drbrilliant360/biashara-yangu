@@ -2,70 +2,103 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LineChart, 
-  Line, 
   BarChart, 
-  Bar,
+  Bar, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  Legend,
-  ResponsiveContainer 
-} from 'recharts';
-import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
-import { 
-  Calendar,
-  TrendingUp,
+  ResponsiveContainer,
   PieChart,
-  Package,
-  FileText, 
-  FileSpreadsheet, 
-  File, 
-  Clock,
-  Printer
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+  Pie,
+  Cell,
+  Legend
+} from 'recharts';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { 
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { useToast } from '@/components/ui/use-toast';
+  FileText,
+  FileText2,
+  Table as TableIcon,
+  Calendar,
+} from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useShop } from '@/context/ShopContext';
-import { getItem, STORAGE_KEYS } from '@/lib/storage';
-import { Sale, Product } from '@/types';
-import { exportToExcel, exportToPDF, exportToWord, formatDataForExport, ExportableData } from '@/utils/exportUtils';
+import { useToast } from '@/hooks/use-toast';
+import { DateRange } from 'react-day-picker';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { Product } from '@/types';
+import { formatDataForExport, exportToExcel, exportToPDF, exportToWord } from '@/utils/exportUtils';
+import QuotationTab from './components/QuotationTab';
+
+// Mock data for demonstration purposes
+// In a real app, this would come from an API or context
+
+// Mock sales data
+const mockSalesData = [
+  { date: '2023-05-01', sales: 12500, transactions: 45 },
+  { date: '2023-05-02', sales: 14200, transactions: 52 },
+  { date: '2023-05-03', sales: 15800, transactions: 61 },
+  { date: '2023-05-04', sales: 16900, transactions: 67 },
+  { date: '2023-05-05', sales: 17500, transactions: 72 },
+  { date: '2023-05-06', sales: 18100, transactions: 76 },
+  { date: '2023-05-07', sales: 16400, transactions: 68 },
+];
+
+// Mock products data
+const mockProducts: Product[] = [
+  { id: '1', name: 'T-Shirt', price: 1500, stockQuantity: 25, category: 'Clothing', shopId: '1', isActive: true },
+  { id: '2', name: 'Jeans', price: 3500, stockQuantity: 15, category: 'Clothing', shopId: '1', isActive: true },
+  { id: '3', name: 'Coffee Mug', price: 800, stockQuantity: 30, category: 'Household', shopId: '1', isActive: true },
+  { id: '4', name: 'Notebook', price: 250, stockQuantity: 50, category: 'Stationery', shopId: '1', isActive: true },
+  { id: '5', name: 'Water Bottle', price: 600, stockQuantity: 40, category: 'Household', shopId: '1', isActive: true },
+  { id: '6', name: 'Headphones', price: 4500, stockQuantity: 10, category: 'Electronics', shopId: '1', isActive: true },
+  { id: '7', name: 'Backpack', price: 3200, stockQuantity: 12, category: 'Accessories', shopId: '1', isActive: true },
+];
+
+// Mock product sales data
+const mockProductSales = [
+  { productId: '1', name: 'T-Shirt', quantity: 120, revenue: 180000 },
+  { productId: '2', name: 'Jeans', quantity: 85, revenue: 297500 },
+  { productId: '3', name: 'Coffee Mug', quantity: 200, revenue: 160000 },
+  { productId: '4', name: 'Notebook', quantity: 350, revenue: 87500 },
+  { productId: '5', name: 'Water Bottle', quantity: 175, revenue: 105000 },
+  { productId: '6', name: 'Headphones', quantity: 60, revenue: 270000 },
+  { productId: '7', name: 'Backpack', quantity: 45, revenue: 144000 },
+];
+
+// Colors for pie chart
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658'];
 
 const ReportsPage: React.FC = () => {
-  const navigate = useNavigate();
   const { currentShop } = useShop();
-  const [sales, setSales] = useState<Sale[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
-  const [activeTab, setActiveTab] = useState('sales');
   const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // State for active tab
+  const [activeTab, setActiveTab] = useState('sales');
+  
+  // State for date range
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(new Date().setDate(new Date().getDate() - 7)),
+    to: new Date(),
+  });
+  
+  // State for timeframe select
+  const [timeFrame, setTimeFrame] = useState('week');
+  
+  // Products state
+  const [products] = useState<Product[]>(mockProducts);
   
   useEffect(() => {
-    if (currentShop) {
-      // Load sales data
-      const allSales = getItem<Sale[]>(STORAGE_KEYS.SALES, [])
-        .filter(sale => sale.shopId === currentShop.id);
-      setSales(allSales);
-      
-      // Load products data
-      const allProducts = getItem<Product[]>(STORAGE_KEYS.PRODUCTS, [])
-        .filter(product => product.shopId === currentShop.id);
-      setProducts(allProducts);
-    }
-  }, [currentShop]);
+    // In a real app, we would fetch data based on the date range
+    console.log('Fetching data for date range:', dateRange);
+  }, [dateRange]);
   
   // Format currency based on shop settings
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currentShop?.currency || 'USD',
@@ -73,470 +106,481 @@ const ReportsPage: React.FC = () => {
     }).format(amount);
   };
   
-  // Prepare chart data
+  // Prepare data for daily revenue chart
   const getDailyRevenueData = () => {
-    // Define date range
-    const endDate = new Date();
-    const startDate = subDays(
-      endDate, 
-      timeRange === 'week' ? 7 : 30
-    );
-    
-    // Create array of dates
-    const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
-    
-    // Initialize data with zero values for all dates
-    const dailyData = dateRange.map(date => {
-      const dateStr = format(date, 'yyyy-MM-dd');
-      return {
-        date: dateStr,
-        displayDate: format(date, 'MMM dd'),
-        revenue: 0,
-        transactions: 0
-      };
-    });
-    
-    // Fill with actual sales data
-    sales.forEach(sale => {
-      const saleDate = format(new Date(sale.timestamp), 'yyyy-MM-dd');
-      const dataPoint = dailyData.find(d => d.date === saleDate);
-      
-      if (dataPoint) {
-        dataPoint.revenue += sale.total;
-        dataPoint.transactions += 1;
-      }
-    });
-    
-    return dailyData;
+    return mockSalesData.map(day => ({
+      displayDate: new Date(day.date).toLocaleDateString(),
+      date: day.date,
+      revenue: day.sales,
+      transactions: day.transactions
+    }));
   };
   
   // Get top selling products
   const getTopSellingProducts = () => {
-    // Create a map to count sold quantities per product
-    const productSales = new Map<string, { name: string, quantity: number, revenue: number }>();
-    
-    // Process all sales
-    sales.forEach(sale => {
-      sale.items.forEach(item => {
-        const existing = productSales.get(item.productId);
-        
-        if (existing) {
-          existing.quantity += item.quantity;
-          existing.revenue += item.subtotal;
-        } else {
-          productSales.set(item.productId, {
-            name: item.name,
-            quantity: item.quantity,
-            revenue: item.subtotal
-          });
-        }
-      });
-    });
-    
-    // Convert map to array and sort by quantity
-    return Array.from(productSales.values())
-      .sort((a, b) => b.quantity - a.quantity)
+    return [...mockProductSales]
+      .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
   };
   
-  // Calculate total stats
-  const calculateStats = () => {
-    const totalSales = sales.length;
-    const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0);
-    const totalItems = sales.reduce((sum, sale) => {
-      return sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
-    }, 0);
-    
-    // Get today's sales
-    const today = new Date();
-    const todaySales = sales.filter(sale => {
-      const saleDate = new Date(sale.timestamp);
-      return saleDate >= startOfDay(today) && saleDate <= endOfDay(today);
-    });
-    
-    const todayRevenue = todaySales.reduce((sum, sale) => sum + sale.total, 0);
-    const todayTransactions = todaySales.length;
-    
-    return {
-      totalSales,
-      totalRevenue,
-      totalItems,
-      todayRevenue,
-      todayTransactions
-    };
+  // Calculate total revenue
+  const getTotalRevenue = () => {
+    return mockSalesData.reduce((total, day) => total + day.sales, 0);
   };
   
-  // Handle exports
-  const handleExport = (format: 'excel' | 'pdf' | 'word') => {
-    if (!currentShop) {
+  // Calculate total transactions
+  const getTotalTransactions = () => {
+    return mockSalesData.reduce((total, day) => total + day.transactions, 0);
+  };
+  
+  // Calculate average transaction value
+  const getAverageTransactionValue = () => {
+    const totalRevenue = getTotalRevenue();
+    const totalTransactions = getTotalTransactions();
+    return totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+  };
+  
+  // Handle date range change
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    
+    // In a real app, this would trigger data refetch
+    toast({
+      title: "Date range updated",
+      description: range 
+        ? `From ${range.from?.toLocaleDateString()} to ${range.to?.toLocaleDateString()}` 
+        : "No date range selected",
+    });
+  };
+  
+  // Handle timeframe change
+  const handleTimeFrameChange = (value: string) => {
+    setTimeFrame(value);
+    
+    let newDateRange: DateRange | undefined;
+    const today = new Date();
+    
+    switch(value) {
+      case 'today':
+        newDateRange = {
+          from: today,
+          to: today
+        };
+        break;
+      case 'yesterday':
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        newDateRange = {
+          from: yesterday,
+          to: yesterday
+        };
+        break;
+      case 'week':
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        newDateRange = {
+          from: weekAgo,
+          to: today
+        };
+        break;
+      case 'month':
+        const monthAgo = new Date(today);
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        newDateRange = {
+          from: monthAgo,
+          to: today
+        };
+        break;
+    }
+    
+    setDateRange(newDateRange);
+  };
+  
+  // Export report data
+  const handleExport = (format: 'excel' | 'pdf' | 'word', reportType: string) => {
+    // Prepare data and file name based on active tab
+    let exportData: any[] = [];
+    let fileName: string;
+    let reportTitle: string;
+    
+    switch (activeTab) {
+      case 'sales':
+        exportData = formatDataForExport(getDailyRevenueData(), 'sales', formatCurrency);
+        fileName = `sales_report_${new Date().toISOString().split('T')[0]}`;
+        reportTitle = 'Sales Report';
+        break;
+      case 'products':
+        exportData = formatDataForExport(getTopSellingProducts(), 'products', formatCurrency);
+        fileName = `top_products_report_${new Date().toISOString().split('T')[0]}`;
+        reportTitle = 'Top Products Report';
+        break;
+      case 'inventory':
+        exportData = formatDataForExport(products, 'inventory', formatCurrency);
+        fileName = `inventory_report_${new Date().toISOString().split('T')[0]}`;
+        reportTitle = 'Inventory Report';
+        break;
+      case 'quotations':
+        // This will use the mockQuotationItems data from QuotationTab component
+        // We'll get it from there using the formatDataForExport function
+        fileName = `quotation_report_${new Date().toISOString().split('T')[0]}`;
+        reportTitle = 'Quotation Report';
+        break;
+    }
+    
+    if (exportData.length === 0) {
       toast({
-        title: "Export Failed",
-        description: "No shop selected.",
-        variant: "destructive",
+        title: "No data to export",
+        description: "There is no data available to export.",
+        variant: "destructive"
       });
       return;
     }
     
     try {
-      let exportData: ExportableData = [];
-      let fileName = '';
-      let reportTitle = '';
-      
-      // Prepare data based on active tab
-      switch (activeTab) {
-        case 'sales':
-          exportData = formatDataForExport(getDailyRevenueData(), 'sales', formatCurrency);
-          fileName = `sales_report_${new Date().toISOString().split('T')[0]}`;
-          reportTitle = 'Sales Report';
-          break;
-        case 'products':
-          exportData = formatDataForExport(getTopSellingProducts(), 'products', formatCurrency);
-          fileName = `top_products_report_${new Date().toISOString().split('T')[0]}`;
-          reportTitle = 'Top Products Report';
-          break;
-        case 'inventory':
-          exportData = formatDataForExport(products, 'inventory', formatCurrency);
-          fileName = `inventory_report_${new Date().toISOString().split('T')[0]}`;
-          reportTitle = 'Inventory Report';
-          break;
-      }
-      
-      // Export based on selected format
+      // Export based on format
       switch (format) {
         case 'excel':
-          exportToExcel(exportData, fileName, currentShop.name);
+          exportToExcel(exportData, fileName, currentShop?.name || 'Business');
           break;
         case 'pdf':
-          exportToPDF(exportData, fileName, currentShop.name, reportTitle);
+          exportToPDF(exportData, fileName, currentShop?.name || 'Business', reportTitle);
           break;
         case 'word':
-          exportToWord(exportData, fileName, currentShop.name, reportTitle);
+          exportToWord(exportData, fileName, currentShop?.name || 'Business', reportTitle);
           break;
       }
       
       toast({
-        title: "Export Successful",
-        description: `Report exported as ${format.toUpperCase()}`,
+        title: "Export successful",
+        description: `Your ${reportTitle} has been exported as ${format.toUpperCase()}.`,
       });
     } catch (error) {
       console.error('Export error:', error);
       toast({
-        title: "Export Failed",
-        description: "There was a problem exporting your report.",
-        variant: "destructive",
+        title: "Export failed",
+        description: "There was an error exporting your report. Please try again.",
+        variant: "destructive"
       });
     }
   };
-  
-  const revenueData = getDailyRevenueData();
-  const topProducts = getTopSellingProducts();
-  const stats = calculateStats();
-  
-  // If no shop is selected, show a message
-  if (!currentShop) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 h-[80vh]">
-        <h2 className="text-2xl font-bold mb-4">No Shop Selected</h2>
-        <p className="text-muted-foreground mb-6 text-center">
-          You need to add a shop before you can view reports.
-        </p>
-        <Button onClick={() => navigate('/shops/add')}>
-          Add Your First Shop
-        </Button>
-      </div>
-    );
-  }
-  
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Reports</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
           <p className="text-muted-foreground">
-            Analytics and insights for your business
+            View and analyze your business data
           </p>
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="flex gap-2">
-            <Calendar className="h-4 w-4" />
-            Date Range
-          </Button>
+          <Select value={timeFrame} onValueChange={handleTimeFrameChange}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Select timeframe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="yesterday">Yesterday</SelectItem>
+              <SelectItem value="week">Last 7 days</SelectItem>
+              <SelectItem value="month">Last 30 days</SelectItem>
+            </SelectContent>
+          </Select>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex gap-2">
-                <Printer className="h-4 w-4" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Export Options</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => handleExport('excel')} className="cursor-pointer flex items-center gap-2">
-                <FileSpreadsheet className="h-4 w-4" /> Excel
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport('pdf')} className="cursor-pointer flex items-center gap-2">
-                <FileText className="h-4 w-4" /> PDF
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport('word')} className="cursor-pointer flex items-center gap-2">
-                <File className="h-4 w-4" /> Word
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <DateRangePicker
+            value={dateRange}
+            onChange={handleDateRangeChange}
+            align="end"
+          />
         </div>
       </div>
       
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium">Total Revenue</p>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="text-2xl font-bold">
-              {formatCurrency(stats.totalRevenue)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              From {stats.totalSales} sales
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium">Today's Revenue</p>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="text-2xl font-bold">
-              {formatCurrency(stats.todayRevenue)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {stats.todayTransactions} transactions today
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium">Total Products</p>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="text-2xl font-bold">
-              {products.length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {products.filter(p => p.stockQuantity < 10).length} low stock
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium">Total Items Sold</p>
-              <PieChart className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="text-2xl font-bold">
-              {stats.totalItems}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Across all transactions
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Main tabs */}
-      <Tabs defaultValue="sales" onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="sales">Sales</TabsTrigger>
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="sales" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Sales Overview</h2>
-            <div className="flex gap-2 items-center">
-              <div className="flex gap-2">
-                <Button 
-                  variant={timeRange === 'week' ? 'default' : 'outline'} 
-                  onClick={() => setTimeRange('week')}
-                  size="sm"
-                >
-                  Week
-                </Button>
-                <Button 
-                  variant={timeRange === 'month' ? 'default' : 'outline'} 
-                  onClick={() => setTimeRange('month')}
-                  size="sm"
-                >
-                  Month
-                </Button>
+      <Card>
+        <CardContent className="pt-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="sales">Sales</TabsTrigger>
+              <TabsTrigger value="products">Products</TabsTrigger>
+              <TabsTrigger value="inventory">Inventory</TabsTrigger>
+              <TabsTrigger value="quotations">Quotations</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="sales" className="space-y-4">
+              {/* Sales summary cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Total Revenue
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(getTotalRevenue())}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Total Transactions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {getTotalTransactions()}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Average Transaction
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {formatCurrency(getAverageTransactionValue())}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
               
-              <div className="flex gap-2 ml-4">
-                <Button onClick={() => handleExport('excel')} variant="outline" size="sm" className="flex gap-1">
-                  <FileSpreadsheet className="h-4 w-4" />
-                  Excel
-                </Button>
-                <Button onClick={() => handleExport('pdf')} variant="outline" size="sm" className="flex gap-1">
-                  <FileText className="h-4 w-4" />
-                  PDF
-                </Button>
-                <Button onClick={() => handleExport('word')} variant="outline" size="sm" className="flex gap-1">
-                  <File className="h-4 w-4" />
-                  Word
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          {/* Sales chart */}
-          <Card>
-            <CardContent className="pt-6 pb-2">
-              <div className="h-[300px]">
-                {revenueData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={revenueData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="displayDate" 
-                        tick={{ fontSize: 12 }}
-                      />
-                      <YAxis 
-                        tickFormatter={(value) => formatCurrency(value).replace(/[^0-9]/g, '')} 
-                        tick={{ fontSize: 12 }}
-                      />
-                      <Tooltip 
-                        formatter={(value) => [formatCurrency(value as number), 'Revenue']} 
-                        labelFormatter={(label) => `Date: ${label}`}
-                      />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="revenue"
-                        name="Revenue"
-                        stroke="#8884d8"
-                        strokeWidth={2}
-                        activeDot={{ r: 8 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">No sales data available</p>
+              {/* Sales chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Daily Revenue</CardTitle>
+                  <CardDescription>
+                    Revenue and transactions for the selected period
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={getDailyRevenueData()}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="displayDate" />
+                        <YAxis />
+                        <Tooltip 
+                          formatter={(value: any) => formatCurrency(value)}
+                          labelFormatter={(label) => `Date: ${label}`}
+                        />
+                        <Legend />
+                        <Bar 
+                          dataKey="revenue" 
+                          name="Revenue" 
+                          fill="#0088FE"
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="products" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Top Selling Products</h2>
-            <div className="flex gap-2">
-              <Button onClick={() => handleExport('excel')} variant="outline" size="sm" className="flex gap-1">
-                <FileSpreadsheet className="h-4 w-4" />
-                Excel
-              </Button>
-              <Button onClick={() => handleExport('pdf')} variant="outline" size="sm" className="flex gap-1">
-                <FileText className="h-4 w-4" />
-                PDF
-              </Button>
-              <Button onClick={() => handleExport('word')} variant="outline" size="sm" className="flex gap-1">
-                <File className="h-4 w-4" />
-                Word
-              </Button>
-            </div>
-          </div>
-          
-          {/* Products chart */}
-          <Card>
-            <CardContent className="pt-6 pb-2">
-              <div className="h-[300px]">
-                {topProducts.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={topProducts}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                </CardContent>
+                <CardFooter className="flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleExport('excel', 'sales')}
+                  >
+                    <FileText className="mr-2 h-4 w-4" /> Export to Excel
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleExport('pdf', 'sales')}
+                  >
+                    <FileText2 className="mr-2 h-4 w-4" /> Export to PDF
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleExport('word', 'sales')}
+                  >
+                    <TableIcon className="mr-2 h-4 w-4" /> Export to Word
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="products" className="space-y-4">
+              {/* Products charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Top Selling Products</CardTitle>
+                    <CardDescription>
+                      By revenue
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={getTopSellingProducts()}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="revenue"
+                            nameKey="name"
+                          >
+                            {getTopSellingProducts().map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={COLORS[index % COLORS.length]} 
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value: any) => formatCurrency(value)}
+                          />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Top Products Table</CardTitle>
+                    <CardDescription>
+                      Top selling products by quantity and revenue
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Product</TableHead>
+                          <TableHead>Quantity Sold</TableHead>
+                          <TableHead>Revenue</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {getTopSellingProducts().map((product) => (
+                          <TableRow key={product.productId}>
+                            <TableCell>{product.name}</TableCell>
+                            <TableCell>{product.quantity}</TableCell>
+                            <TableCell>{formatCurrency(product.revenue)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                  <CardFooter className="flex justify-end space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleExport('excel', 'products')}
                     >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 12 }} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="quantity" name="Quantity Sold" fill="#82ca9d" />
-                      <Bar dataKey="revenue" name="Revenue" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">No sales data available</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="inventory" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Inventory Status</h2>
-            <div className="flex gap-2">
-              <Button onClick={() => handleExport('excel')} variant="outline" size="sm" className="flex gap-1">
-                <FileSpreadsheet className="h-4 w-4" />
-                Excel
-              </Button>
-              <Button onClick={() => handleExport('pdf')} variant="outline" size="sm" className="flex gap-1">
-                <FileText className="h-4 w-4" />
-                PDF
-              </Button>
-              <Button onClick={() => handleExport('word')} variant="outline" size="sm" className="flex gap-1">
-                <File className="h-4 w-4" />
-                Word
-              </Button>
-            </div>
-          </div>
-          
-          {/* Inventory chart */}
-          <Card>
-            <CardContent className="pt-6 pb-2">
-              <div className="h-[300px]">
-                {products.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={products.slice(0, 10)}
-                      layout="vertical"
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      <FileText className="mr-2 h-4 w-4" /> Export to Excel
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleExport('pdf', 'products')}
                     >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis 
-                        dataKey="name" 
-                        type="category" 
-                        width={150} 
-                        tick={{ fontSize: 12 }}
-                      />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="stockQuantity" name="Stock Quantity" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">No product data available</p>
-                  </div>
-                )}
+                      <FileText2 className="mr-2 h-4 w-4" /> Export to PDF
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleExport('word', 'products')}
+                    >
+                      <TableIcon className="mr-2 h-4 w-4" /> Export to Word
+                    </Button>
+                  </CardFooter>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+            
+            <TabsContent value="inventory" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Inventory Status</CardTitle>
+                  <CardDescription>
+                    Current stock levels for all products
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Stock</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {products.map((product) => (
+                        <TableRow key={product.id}>
+                          <TableCell>{product.name}</TableCell>
+                          <TableCell>{product.category || 'Uncategorized'}</TableCell>
+                          <TableCell>{formatCurrency(product.price)}</TableCell>
+                          <TableCell>{product.stockQuantity}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              product.stockQuantity > 20 
+                                ? 'bg-green-100 text-green-800'
+                                : product.stockQuantity > 5
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {product.stockQuantity > 20 
+                                ? 'In Stock' 
+                                : product.stockQuantity > 5
+                                ? 'Low Stock'
+                                : 'Critical'
+                              }
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+                <CardFooter className="flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleExport('excel', 'inventory')}
+                  >
+                    <FileText className="mr-2 h-4 w-4" /> Export to Excel
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleExport('pdf', 'inventory')}
+                  >
+                    <FileText2 className="mr-2 h-4 w-4" /> Export to PDF
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleExport('word', 'inventory')}
+                  >
+                    <TableIcon className="mr-2 h-4 w-4" /> Export to Word
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="quotations">
+              <QuotationTab handleExport={handleExport} />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };
