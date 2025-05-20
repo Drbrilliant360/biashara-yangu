@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -18,9 +19,9 @@ import {
   TrendingUp,
   PieChart,
   Package,
-  FileText, // Changed from FilePdf
-  FileSpreadsheet, // Changed from FileExcel
-  File, // Changed from FileWord
+  FileText, 
+  FileSpreadsheet, 
+  File, 
   Clock,
   Printer
 } from 'lucide-react';
@@ -38,7 +39,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useShop } from '@/context/ShopContext';
 import { getItem, STORAGE_KEYS } from '@/lib/storage';
 import { Sale, Product } from '@/types';
-import { exportToExcel, exportToPDF, exportToWord, formatDataForExport } from '@/utils/exportUtils';
+import { exportToExcel, exportToPDF, exportToWord, formatDataForExport, ExportableData } from '@/utils/exportUtils';
 
 const ReportsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -177,7 +178,7 @@ const ReportsPage: React.FC = () => {
     }
     
     try {
-      let exportData: any[] = [];
+      let exportData: ExportableData = [];
       let fileName = '';
       let reportTitle = '';
       

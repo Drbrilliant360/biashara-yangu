@@ -6,6 +6,13 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Shop } from '@/types';
 
+// Add type declaration for jsPDF with autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
+
 // Generic type for data that can be exported
 export type ExportableData = Array<Record<string, any>>;
 
