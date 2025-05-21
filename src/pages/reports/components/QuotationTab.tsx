@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, FileText2, Table as TableIcon } from 'lucide-react';
+import { FileText, FilePlus, Table as TableIcon } from 'lucide-react';
 import { useShop } from '@/context/ShopContext';
 
 // Sample quotation data - in a real app, this would come from an API
@@ -97,7 +97,7 @@ const QuotationTab: React.FC<QuotationTabProps> = ({ handleExport }) => {
             size="sm"
             onClick={() => handleExport('pdf', 'quotations')}
           >
-            <FileText2 className="mr-2 h-4 w-4" /> Export to PDF
+            <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
           </Button>
           <Button 
             variant="outline" 

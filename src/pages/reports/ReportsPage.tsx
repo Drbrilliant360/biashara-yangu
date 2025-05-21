@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -19,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { 
   FileText,
-  FileText2,
+  FilePlus,
   Table as TableIcon,
   Calendar,
 } from 'lucide-react';
@@ -393,7 +392,7 @@ const ReportsPage: React.FC = () => {
                     size="sm" 
                     onClick={() => handleExport('pdf', 'sales')}
                   >
-                    <FileText2 className="mr-2 h-4 w-4" /> Export to PDF
+                    <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
                   </Button>
                   <Button 
                     variant="outline" 
@@ -488,7 +487,7 @@ const ReportsPage: React.FC = () => {
                       size="sm" 
                       onClick={() => handleExport('pdf', 'products')}
                     >
-                      <FileText2 className="mr-2 h-4 w-4" /> Export to PDF
+                      <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
                     </Button>
                     <Button 
                       variant="outline" 
@@ -562,7 +561,7 @@ const ReportsPage: React.FC = () => {
                     size="sm" 
                     onClick={() => handleExport('pdf', 'inventory')}
                   >
-                    <FileText2 className="mr-2 h-4 w-4" /> Export to PDF
+                    <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
                   </Button>
                   <Button 
                     variant="outline" 
