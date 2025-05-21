@@ -157,14 +157,16 @@ export const formatDataForExport = (
       }));
     case 'quotations':
       return data.map(item => ({
-        'Product ID': item.id,
-        Description: item.description || item.name,
+        'SL No.': item.id,
+        'Part Number': item.partNumber,
+        Description: item.description || '',
         Brand: item.brand || 'N/A',
         Quantity: item.quantity,
-        Rate: formatCurrency(item.price || 0),
+        Rate: formatCurrency(item.rate || 0),
         Amount: formatCurrency(item.amount || 0),
-        VAT: formatCurrency(item.vat || 0),
-        Total: formatCurrency(item.total || 0)
+        'VAT %': `${item.vatPercentage}%` || '0%',
+        'VAT Amount': formatCurrency(item.vatAmount || 0),
+        'Total Amount': formatCurrency(item.totalAmount || 0)
       }));
     default:
       return data;
