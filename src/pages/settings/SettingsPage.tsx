@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/context/AuthContext';
 import { useShop } from '@/context/ShopContext';
-import { Settings, Moon, Sun, Globe, UserCircle, Wallet } from 'lucide-react';
+import { Settings, Moon, Sun, Globe, UserCircle, Wallet, CreditCard } from 'lucide-react';
 import { useLanguage } from "@/context/LanguageContext";
+import { PaymentDialog } from '@/components/billing/PaymentDialog';
+import { useBilling } from '@/hooks/useBilling';
 
 interface UIUser {
   phone?: string;
@@ -26,8 +28,8 @@ const SettingsPage: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { currentShop } = useShop();
-
   const { language, setLanguage, t } = useLanguage();
+  const { daysRemaining, isPaymentDialogOpen, setIsPaymentDialogOpen, subscriptionStatus } = useBilling();
 
   const [activeTab, setActiveTab] = useState("general");
   const [darkMode, setDarkMode] = useState(false);
@@ -65,12 +67,13 @@ const SettingsPage: React.FC = () => {
       </div>
 
       <Tabs defaultValue="general" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-3 md:grid-cols-5">
+        <TabsList className="grid grid-cols-3 md:grid-cols-6">
           <TabsTrigger value="general">{t("general")}</TabsTrigger>
           <TabsTrigger value="appearance">{t("appearance")}</TabsTrigger>
           <TabsTrigger value="notifications">{t("notifications")}</TabsTrigger>
           <TabsTrigger value="profile">{t("profile")}</TabsTrigger>
           <TabsTrigger value="business">{t("business")}</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-4">
@@ -264,7 +267,80 @@ const SettingsPage: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="billing" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Billing Settings</CardTitle>
+              <CardDescription>
+                Manage your subscription and payment information
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold">Subscription Status</h3>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' : 
+                    subscriptionStatus === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {subscriptionStatus === 'active' ? 'Active' : 
+                     subscriptionStatus === 'warning' ? 'Expiring Soon' : 'Expired'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-4">
+                  <span>Monthly Subscription Fee</span>
+                  <span className="font-medium">TZS 10,000</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Days Remaining</span>
+                  <span className={`font-medium ${daysRemaining <= 5 ? 'text-red-600' : ''}`}>
+                    {daysRemaining} days
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-medium">Payment Details</h3>
+                <div className="space-y-2">
+                  <Label>Payment Method</Label>
+                  <div className="flex items-center space-x-2 p-3 border rounded-md">
+                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+                    <span>Mobile Payment via PalmPesa</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Recipient Information</Label>
+                  <div className="p-3 border rounded-md space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Name:</span>
+                      <span>Bryan Kachocho</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Phone:</span>
+                      <span>0710698702</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                className="w-full" 
+                onClick={() => setIsPaymentDialogOpen(true)}
+              >
+                Pay Now
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      <PaymentDialog 
+        open={isPaymentDialogOpen}
+        onOpenChange={setIsPaymentDialogOpen}
+      />
     </div>
   );
 };
