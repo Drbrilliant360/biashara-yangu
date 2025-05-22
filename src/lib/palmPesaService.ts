@@ -25,96 +25,62 @@ interface PaymentResponse {
 
 /**
  * Initiates a payment via Palm Pesa's process-payment endpoint
+ * Note: This is currently a mock implementation as we can't directly access the API from the browser
  */
 export const initiatePayment = async (request: PaymentRequest): Promise<PaymentResponse> => {
   try {
     const orderId = `ORDER-${uuidv4().substring(0, 8)}-${Date.now()}`;
     
-    const response = await fetch(`${PALM_PESA_API.BASE_URL}/api/process-payment`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${PALM_PESA_API.API_TOKEN}`,
-      },
-      body: JSON.stringify({
-        user_id: PALM_PESA_API.USER_ID,
-        vendor: PALM_PESA_API.TILL_NUMBER, 
-        order_id: orderId,
-        buyer_email: request.email,
-        buyer_name: request.name,
-        buyer_phone: request.phone,
-        amount: request.amount,
-        currency: "TZS",
-        redirect_url: window.location.origin + "/settings",
-        cancel_url: window.location.origin + "/settings",
-        webhook: window.location.origin + "/api/payment-webhook", // This would need backend implementation
-        buyer_remarks: "Monthly subscription payment",
-        merchant_remarks: "Biashara Yangu Subscription",
-        no_of_items: 1
-      })
-    });
-
-    // For development/POC
-    // Simulate successful response since we can't actually hit the API in this environment
-    console.log('Payment initiated with payload:', {
+    // Log the request for debugging
+    console.log('Initiating payment with payload:', {
       name: request.name,
       email: request.email,
       phone: request.phone,
       amount: request.amount,
       orderId
     });
+
+    // In production, this would make a real API call to Palm Pesa
+    // For demo/development, we use a mock response
     
-    // In a real implementation, you would parse the actual API response
-    // const data = await response.json();
-    
-    // Mock response for demo purposes
-    const mockData = {
-      error: "sharable payment link", 
-      raw: {
-        payment_gateway_url: `https://tz.selcom.online/paymentgw/checkout/MockPaymentLink${orderId}`
-      }
-    };
+    // Mock successful payment link
+    const mockPaymentUrl = `https://tz.selcom.online/paymentgw/checkout/MockPayment${orderId}`;
+
+    // Simulate a short delay to mimic network request
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     return {
-      paymentUrl: mockData.raw.payment_gateway_url,
+      paymentUrl: mockPaymentUrl,
       orderId,
     };
     
   } catch (error) {
-    console.error('Error initiating payment:', error);
+    console.error('Error in mock payment service:', error);
     return {
-      error: 'Failed to process payment request',
+      error: 'Failed to process payment request (mock service)',
     };
   }
 };
 
 /**
  * Checks the status of a payment order
+ * Note: This is currently a mock implementation
  */
 export const checkOrderStatus = async (orderId: string) => {
   try {
-    const response = await fetch(`${PALM_PESA_API.BASE_URL}/api/order-status`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${PALM_PESA_API.API_TOKEN}`,
-      },
-      body: JSON.stringify({
-        order_id: orderId
-      })
-    });
+    console.log('Checking order status for:', orderId);
     
-    // In a real implementation, you would parse the actual API response
-    // const data = await response.json();
+    // Simulate a short delay
+    await new Promise(resolve => setTimeout(resolve, 800));
     
     // Mock response for demo purposes
     return {
       status: 'PENDING', // or 'COMPLETED', 'FAILED', etc.
-      message: 'Payment status check successful'
+      message: 'Payment status check successful (mock)'
     };
     
   } catch (error) {
     console.error('Error checking order status:', error);
-    throw new Error('Failed to check payment status');
+    throw new Error('Failed to check payment status (mock service)');
   }
 };
