@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -30,43 +31,6 @@ import { DateRange } from 'react-day-picker';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Product } from '@/types';
 import { formatDataForExport, exportToExcel, exportToPDF, exportToWord } from '@/utils/exportUtils';
-import QuotationTab from './components/QuotationTab';
-
-// Mock data for demonstration purposes
-// In a real app, this would come from an API or context
-
-// Mock sales data
-const mockSalesData = [
-  { date: '2023-05-01', sales: 12500, transactions: 45 },
-  { date: '2023-05-02', sales: 14200, transactions: 52 },
-  { date: '2023-05-03', sales: 15800, transactions: 61 },
-  { date: '2023-05-04', sales: 16900, transactions: 67 },
-  { date: '2023-05-05', sales: 17500, transactions: 72 },
-  { date: '2023-05-06', sales: 18100, transactions: 76 },
-  { date: '2023-05-07', sales: 16400, transactions: 68 },
-];
-
-// Mock products data
-const mockProducts: Product[] = [
-  { id: '1', name: 'T-Shirt', price: 1500, stockQuantity: 25, category: 'Clothing', shopId: '1', isActive: true },
-  { id: '2', name: 'Jeans', price: 3500, stockQuantity: 15, category: 'Clothing', shopId: '1', isActive: true },
-  { id: '3', name: 'Coffee Mug', price: 800, stockQuantity: 30, category: 'Household', shopId: '1', isActive: true },
-  { id: '4', name: 'Notebook', price: 250, stockQuantity: 50, category: 'Stationery', shopId: '1', isActive: true },
-  { id: '5', name: 'Water Bottle', price: 600, stockQuantity: 40, category: 'Household', shopId: '1', isActive: true },
-  { id: '6', name: 'Headphones', price: 4500, stockQuantity: 10, category: 'Electronics', shopId: '1', isActive: true },
-  { id: '7', name: 'Backpack', price: 3200, stockQuantity: 12, category: 'Accessories', shopId: '1', isActive: true },
-];
-
-// Mock product sales data
-const mockProductSales = [
-  { productId: '1', name: 'T-Shirt', quantity: 120, revenue: 180000 },
-  { productId: '2', name: 'Jeans', quantity: 85, revenue: 297500 },
-  { productId: '3', name: 'Coffee Mug', quantity: 200, revenue: 160000 },
-  { productId: '4', name: 'Notebook', quantity: 350, revenue: 87500 },
-  { productId: '5', name: 'Water Bottle', quantity: 175, revenue: 105000 },
-  { productId: '6', name: 'Headphones', quantity: 60, revenue: 270000 },
-  { productId: '7', name: 'Backpack', quantity: 45, revenue: 144000 },
-];
 
 // Colors for pie chart
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658'];
@@ -88,13 +52,16 @@ const ReportsPage: React.FC = () => {
   // State for timeframe select
   const [timeFrame, setTimeFrame] = useState('week');
   
-  // Products state
-  const [products] = useState<Product[]>(mockProducts);
+  // State for data
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [productsData, setProductsData] = useState<Product[]>([]);
+  const [productSalesData, setProductSalesData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
+  // Fetch data whenever date range changes
   useEffect(() => {
-    // In a real app, we would fetch data based on the date range
-    console.log('Fetching data for date range:', dateRange);
-  }, [dateRange]);
+    fetchReportData();
+  }, [dateRange, activeTab]);
   
   // Format currency based on shop settings
   const formatCurrency = (amount: number): string => {
@@ -105,9 +72,73 @@ const ReportsPage: React.FC = () => {
     }).format(amount);
   };
   
+  // Function to fetch data from database
+  const fetchReportData = async () => {
+    setIsLoading(true);
+    console.log('Fetching data for date range:', dateRange);
+    
+    try {
+      // In a real app, these would be API calls to your database
+      // For example:
+      // const salesResponse = await fetch(`/api/sales?from=${dateRange.from}&to=${dateRange.to}`);
+      // const salesData = await salesResponse.json();
+      // setSalesData(salesData);
+      
+      // For now, we'll simulate API calls with mock data
+      
+      // Simulate sales data fetch
+      const mockSalesData = [
+        { date: '2023-05-01', sales: 12500, transactions: 45 },
+        { date: '2023-05-02', sales: 14200, transactions: 52 },
+        { date: '2023-05-03', sales: 15800, transactions: 61 },
+        { date: '2023-05-04', sales: 16900, transactions: 67 },
+        { date: '2023-05-05', sales: 17500, transactions: 72 },
+        { date: '2023-05-06', sales: 18100, transactions: 76 },
+        { date: '2023-05-07', sales: 16400, transactions: 68 },
+      ];
+      setSalesData(mockSalesData);
+      
+      // Simulate products data fetch
+      const mockProducts = [
+        { id: '1', name: 'T-Shirt', price: 1500, stockQuantity: 25, category: 'Clothing', shopId: '1', isActive: true },
+        { id: '2', name: 'Jeans', price: 3500, stockQuantity: 15, category: 'Clothing', shopId: '1', isActive: true },
+        { id: '3', name: 'Coffee Mug', price: 800, stockQuantity: 30, category: 'Household', shopId: '1', isActive: true },
+        { id: '4', name: 'Notebook', price: 250, stockQuantity: 50, category: 'Stationery', shopId: '1', isActive: true },
+        { id: '5', name: 'Water Bottle', price: 600, stockQuantity: 40, category: 'Household', shopId: '1', isActive: true },
+      ];
+      setProductsData(mockProducts);
+      
+      // Simulate product sales data fetch
+      const mockProductSales = [
+        { productId: '1', name: 'T-Shirt', quantity: 120, revenue: 180000 },
+        { productId: '2', name: 'Jeans', quantity: 85, revenue: 297500 },
+        { productId: '3', name: 'Coffee Mug', quantity: 200, revenue: 160000 },
+        { productId: '4', name: 'Notebook', quantity: 350, revenue: 87500 },
+        { productId: '5', name: 'Water Bottle', quantity: 175, revenue: 105000 },
+      ];
+      setProductSalesData(mockProductSales);
+      
+      // In a real app, we would show toast only on manual refresh
+      // but for demo purposes we'll show it on initial load too
+      toast({
+        title: "Data loaded",
+        description: "Report data has been fetched successfully.",
+      });
+    } catch (error) {
+      console.error('Error fetching report data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch report data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   // Prepare data for daily revenue chart
   const getDailyRevenueData = () => {
-    return mockSalesData.map(day => ({
+    return salesData.map(day => ({
       displayDate: new Date(day.date).toLocaleDateString(),
       date: day.date,
       revenue: day.sales,
@@ -117,19 +148,19 @@ const ReportsPage: React.FC = () => {
   
   // Get top selling products
   const getTopSellingProducts = () => {
-    return [...mockProductSales]
+    return [...productSalesData]
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
   };
   
   // Calculate total revenue
   const getTotalRevenue = () => {
-    return mockSalesData.reduce((total, day) => total + day.sales, 0);
+    return salesData.reduce((total, day) => total + day.sales, 0);
   };
   
   // Calculate total transactions
   const getTotalTransactions = () => {
-    return mockSalesData.reduce((total, day) => total + day.transactions, 0);
+    return salesData.reduce((total, day) => total + day.transactions, 0);
   };
   
   // Calculate average transaction value
@@ -142,14 +173,6 @@ const ReportsPage: React.FC = () => {
   // Handle date range change
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range);
-    
-    // In a real app, this would trigger data refetch
-    toast({
-      title: "Date range updated",
-      description: range 
-        ? `From ${range.from?.toLocaleDateString()} to ${range.to?.toLocaleDateString()}` 
-        : "No date range selected",
-    });
   };
   
   // Handle timeframe change
@@ -214,15 +237,9 @@ const ReportsPage: React.FC = () => {
         reportTitle = 'Top Products Report';
         break;
       case 'inventory':
-        exportData = formatDataForExport(products, 'inventory', formatCurrency);
+        exportData = formatDataForExport(productsData, 'inventory', formatCurrency);
         fileName = `inventory_report_${new Date().toISOString().split('T')[0]}`;
         reportTitle = 'Inventory Report';
-        break;
-      case 'quotations':
-        // This will use the mockQuotationItems data from QuotationTab component
-        // We'll get it from there using the formatDataForExport function
-        fileName = `quotation_report_${new Date().toISOString().split('T')[0]}`;
-        reportTitle = 'Quotation Report';
         break;
     }
     
@@ -262,6 +279,11 @@ const ReportsPage: React.FC = () => {
       });
     }
   };
+  
+  // Navigate to Quotations page
+  const goToQuotations = () => {
+    navigate('/quotations');
+  };
 
   return (
     <div className="space-y-6">
@@ -273,24 +295,33 @@ const ReportsPage: React.FC = () => {
           </p>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Select value={timeFrame} onValueChange={handleTimeFrameChange}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Select timeframe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="yesterday">Yesterday</SelectItem>
-              <SelectItem value="week">Last 7 days</SelectItem>
-              <SelectItem value="month">Last 30 days</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <DateRangePicker
-            value={dateRange}
-            onChange={handleDateRangeChange}
-            align="end"
-          />
+        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={goToQuotations}
+            className="mb-2 sm:mb-0"
+          >
+            Go to Quotations
+          </Button>
+          <div className="flex items-center gap-2">
+            <Select value={timeFrame} onValueChange={handleTimeFrameChange}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Select timeframe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="yesterday">Yesterday</SelectItem>
+                <SelectItem value="week">Last 7 days</SelectItem>
+                <SelectItem value="month">Last 30 days</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <DateRangePicker
+              value={dateRange}
+              onChange={handleDateRangeChange}
+              align="end"
+            />
+          </div>
         </div>
       </div>
       
@@ -301,7 +332,6 @@ const ReportsPage: React.FC = () => {
               <TabsTrigger value="sales">Sales</TabsTrigger>
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="inventory">Inventory</TabsTrigger>
-              <TabsTrigger value="quotations">Quotations</TabsTrigger>
             </TabsList>
             
             <TabsContent value="sales" className="space-y-4">
@@ -356,34 +386,45 @@ const ReportsPage: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={getDailyRevenueData()}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="displayDate" />
-                        <YAxis />
-                        <Tooltip 
-                          formatter={(value: any) => formatCurrency(value)}
-                          labelFormatter={(label) => `Date: ${label}`}
-                        />
-                        <Legend />
-                        <Bar 
-                          dataKey="revenue" 
-                          name="Revenue" 
-                          fill="#0088FE"
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
+                  {isLoading ? (
+                    <div className="h-80 flex items-center justify-center">
+                      <p>Loading data...</p>
+                    </div>
+                  ) : salesData.length > 0 ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={getDailyRevenueData()}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="displayDate" />
+                          <YAxis />
+                          <Tooltip 
+                            formatter={(value: any) => formatCurrency(value)}
+                            labelFormatter={(label) => `Date: ${label}`}
+                          />
+                          <Legend />
+                          <Bar 
+                            dataKey="revenue" 
+                            name="Revenue" 
+                            fill="#0088FE"
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-80 flex items-center justify-center">
+                      <p>No data available for the selected period</p>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="flex justify-end space-x-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={() => handleExport('excel', 'sales')}
+                    disabled={salesData.length === 0}
                   >
                     <FileText className="mr-2 h-4 w-4" /> Export to Excel
                   </Button>
@@ -391,6 +432,7 @@ const ReportsPage: React.FC = () => {
                     variant="outline" 
                     size="sm" 
                     onClick={() => handleExport('pdf', 'sales')}
+                    disabled={salesData.length === 0}
                   >
                     <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
                   </Button>
@@ -398,6 +440,7 @@ const ReportsPage: React.FC = () => {
                     variant="outline" 
                     size="sm" 
                     onClick={() => handleExport('word', 'sales')}
+                    disabled={salesData.length === 0}
                   >
                     <TableIcon className="mr-2 h-4 w-4" /> Export to Word
                   </Button>
@@ -416,34 +459,44 @@ const ReportsPage: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={getTopSellingProducts()}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="revenue"
-                            nameKey="name"
-                          >
-                            {getTopSellingProducts().map((entry, index) => (
-                              <Cell 
-                                key={`cell-${index}`} 
-                                fill={COLORS[index % COLORS.length]} 
-                              />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            formatter={(value: any) => formatCurrency(value)}
-                          />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
+                    {isLoading ? (
+                      <div className="h-80 flex items-center justify-center">
+                        <p>Loading data...</p>
+                      </div>
+                    ) : productSalesData.length > 0 ? (
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={getTopSellingProducts()}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="revenue"
+                              nameKey="name"
+                            >
+                              {getTopSellingProducts().map((entry, index) => (
+                                <Cell 
+                                  key={`cell-${index}`} 
+                                  fill={COLORS[index % COLORS.length]} 
+                                />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              formatter={(value: any) => formatCurrency(value)}
+                            />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    ) : (
+                      <div className="h-80 flex items-center justify-center">
+                        <p>No data available for the selected period</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
                 
@@ -455,30 +508,41 @@ const ReportsPage: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Product</TableHead>
-                          <TableHead>Quantity Sold</TableHead>
-                          <TableHead>Revenue</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {getTopSellingProducts().map((product) => (
-                          <TableRow key={product.productId}>
-                            <TableCell>{product.name}</TableCell>
-                            <TableCell>{product.quantity}</TableCell>
-                            <TableCell>{formatCurrency(product.revenue)}</TableCell>
+                    {isLoading ? (
+                      <div className="h-80 flex items-center justify-center">
+                        <p>Loading data...</p>
+                      </div>
+                    ) : productSalesData.length > 0 ? (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Product</TableHead>
+                            <TableHead>Quantity Sold</TableHead>
+                            <TableHead>Revenue</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {getTopSellingProducts().map((product) => (
+                            <TableRow key={product.productId}>
+                              <TableCell>{product.name}</TableCell>
+                              <TableCell>{product.quantity}</TableCell>
+                              <TableCell>{formatCurrency(product.revenue)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    ) : (
+                      <div className="h-40 flex items-center justify-center">
+                        <p>No data available for the selected period</p>
+                      </div>
+                    )}
                   </CardContent>
                   <CardFooter className="flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
                       size="sm" 
                       onClick={() => handleExport('excel', 'products')}
+                      disabled={productSalesData.length === 0}
                     >
                       <FileText className="mr-2 h-4 w-4" /> Export to Excel
                     </Button>
@@ -486,6 +550,7 @@ const ReportsPage: React.FC = () => {
                       variant="outline" 
                       size="sm" 
                       onClick={() => handleExport('pdf', 'products')}
+                      disabled={productSalesData.length === 0}
                     >
                       <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
                     </Button>
@@ -493,6 +558,7 @@ const ReportsPage: React.FC = () => {
                       variant="outline" 
                       size="sm" 
                       onClick={() => handleExport('word', 'products')}
+                      disabled={productSalesData.length === 0}
                     >
                       <TableIcon className="mr-2 h-4 w-4" /> Export to Word
                     </Button>
@@ -510,49 +576,60 @@ const ReportsPage: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Stock</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {products.map((product) => (
-                        <TableRow key={product.id}>
-                          <TableCell>{product.name}</TableCell>
-                          <TableCell>{product.category || 'Uncategorized'}</TableCell>
-                          <TableCell>{formatCurrency(product.price)}</TableCell>
-                          <TableCell>{product.stockQuantity}</TableCell>
-                          <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              product.stockQuantity > 20 
-                                ? 'bg-green-100 text-green-800'
-                                : product.stockQuantity > 5
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {product.stockQuantity > 20 
-                                ? 'In Stock' 
-                                : product.stockQuantity > 5
-                                ? 'Low Stock'
-                                : 'Critical'
-                              }
-                            </span>
-                          </TableCell>
+                  {isLoading ? (
+                    <div className="h-40 flex items-center justify-center">
+                      <p>Loading data...</p>
+                    </div>
+                  ) : productsData.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Product</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Stock</TableHead>
+                          <TableHead>Status</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {productsData.map((product) => (
+                          <TableRow key={product.id}>
+                            <TableCell>{product.name}</TableCell>
+                            <TableCell>{product.category || 'Uncategorized'}</TableCell>
+                            <TableCell>{formatCurrency(product.price)}</TableCell>
+                            <TableCell>{product.stockQuantity}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                product.stockQuantity > 20 
+                                  ? 'bg-green-100 text-green-800'
+                                  : product.stockQuantity > 5
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {product.stockQuantity > 20 
+                                  ? 'In Stock' 
+                                  : product.stockQuantity > 5
+                                  ? 'Low Stock'
+                                  : 'Critical'
+                                }
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="h-40 flex items-center justify-center">
+                      <p>No inventory data available</p>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="flex justify-end space-x-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={() => handleExport('excel', 'inventory')}
+                    disabled={productsData.length === 0}
                   >
                     <FileText className="mr-2 h-4 w-4" /> Export to Excel
                   </Button>
@@ -560,6 +637,7 @@ const ReportsPage: React.FC = () => {
                     variant="outline" 
                     size="sm" 
                     onClick={() => handleExport('pdf', 'inventory')}
+                    disabled={productsData.length === 0}
                   >
                     <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
                   </Button>
@@ -567,15 +645,12 @@ const ReportsPage: React.FC = () => {
                     variant="outline" 
                     size="sm" 
                     onClick={() => handleExport('word', 'inventory')}
+                    disabled={productsData.length === 0}
                   >
                     <TableIcon className="mr-2 h-4 w-4" /> Export to Word
                   </Button>
                 </CardFooter>
               </Card>
-            </TabsContent>
-            
-            <TabsContent value="quotations">
-              <QuotationTab handleExport={handleExport} />
             </TabsContent>
           </Tabs>
         </CardContent>

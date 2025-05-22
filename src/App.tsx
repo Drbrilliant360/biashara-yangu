@@ -26,6 +26,7 @@ import ExpensesPage from "@/pages/expenses/ExpensesPage";
 import PurchasesPage from "@/pages/purchases/PurchasesPage";
 import SalesPage from "@/pages/sales/SalesPage";
 import UsersPage from "@/pages/users/UsersPage";
+import QuotationsPage from "@/pages/quotations/QuotationsPage";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -57,10 +58,11 @@ const App = () => (
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="expenses" element={<ExpensesPage />} />
                     <Route path="purchases" element={<PurchasesPage />} />
-                    
-                    {/* Sales and users now active */}
                     <Route path="sales" element={<SalesPage />} />
                     <Route path="customers" element={<UsersPage />} />
+                    
+                    {/* New Quotations Route */}
+                    <Route path="quotations" element={<QuotationsPage />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
