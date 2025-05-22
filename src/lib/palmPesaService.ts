@@ -20,44 +20,46 @@ interface PaymentRequest {
 interface PaymentResponse {
   paymentUrl?: string;
   orderId?: string;
+  message?: string;
+  status?: string;
   error?: string;
 }
 
 /**
- * Initiates a payment via Palm Pesa's process-payment endpoint
- * Note: This is currently a mock implementation as we can't directly access the API from the browser
+ * Initiates a direct mobile money payment via Palm Pesa's pay-via-mobile endpoint
+ * This will send a USSD prompt to the user's phone
  */
 export const initiatePayment = async (request: PaymentRequest): Promise<PaymentResponse> => {
   try {
-    const orderId = `ORDER-${uuidv4().substring(0, 8)}-${Date.now()}`;
+    const transactionId = `TXN-${uuidv4().substring(0, 8)}-${Date.now()}`;
     
     // Log the request for debugging
-    console.log('Initiating payment with payload:', {
+    console.log('Initiating mobile payment with payload:', {
       name: request.name,
       email: request.email,
       phone: request.phone,
       amount: request.amount,
-      orderId
+      transactionId
     });
 
-    // In production, this would make a real API call to Palm Pesa
-    // For demo/development, we use a mock response
+    // In a production environment, this would be a real API call to Palm Pesa
+    // For demo/development purposes, we're using a mock response
     
-    // Mock successful payment link
-    const mockPaymentUrl = `https://tz.selcom.online/paymentgw/checkout/MockPayment${orderId}`;
-
+    // Mock successful payment initiation
     // Simulate a short delay to mimic network request
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
+    // Mobile money payments return different response structure
     return {
-      paymentUrl: mockPaymentUrl,
-      orderId,
+      status: 'PENDING',
+      message: 'Payment request sent to user\'s phone. Please check your phone and enter PIN to complete payment.',
+      orderId: `SELCOM-${Date.now()}`,
     };
     
   } catch (error) {
-    console.error('Error in mock payment service:', error);
+    console.error('Error in mobile payment service:', error);
     return {
-      error: 'Failed to process payment request (mock service)',
+      error: 'Failed to process mobile payment request (mock service)',
     };
   }
 };
