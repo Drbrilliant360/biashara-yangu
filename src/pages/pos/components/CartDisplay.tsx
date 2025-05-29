@@ -49,7 +49,7 @@ export const CartDisplay: React.FC<CartDisplayProps> = ({
               size="icon"
               className="h-8 w-8"
               onClick={() => updateCartItemQuantity(item.product.id, item.quantity + 1)}
-              disabled={item.quantity >= item.product.stockQuantity}
+              disabled={item.quantity >= item.product.stock_quantity}
             >
               <Plus size={16} />
             </Button>

@@ -1,660 +1,299 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend
-} from 'recharts';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState } from 'react';
+import { Calendar, TrendingUp, TrendingDown, DollarSign, Package, Download, FileText, FileSpreadsheet } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  FileText,
-  FilePlus,
-  Table as TableIcon,
-  Calendar,
-} from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { Badge } from '@/components/ui/badge';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { useReportsData } from '@/hooks/useReportsData';
 import { useShop } from '@/context/ShopContext';
-import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/context/LanguageContext';
 import { DateRange } from 'react-day-picker';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { Product } from '@/types';
-import { formatDataForExport, exportToExcel, exportToPDF, exportToWord } from '@/utils/exportUtils';
-
-// Colors for pie chart
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658'];
 
 const ReportsPage: React.FC = () => {
   const { currentShop } = useShop();
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const { t } = useLanguage();
   
-  // State for active tab
-  const [activeTab, setActiveTab] = useState('sales');
-  
-  // State for date range
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: new Date(new Date().setDate(new Date().getDate() - 7)),
+    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
     to: new Date(),
   });
-  
-  // State for timeframe select
-  const [timeFrame, setTimeFrame] = useState('week');
-  
-  // State for data
-  const [salesData, setSalesData] = useState<any[]>([]);
-  const [productsData, setProductsData] = useState<Product[]>([]);
-  const [productSalesData, setProductSalesData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Fetch data whenever date range changes
-  useEffect(() => {
-    fetchReportData();
-  }, [dateRange, activeTab]);
-  
-  // Format currency based on shop settings
-  const formatCurrency = (amount: number): string => {
+
+  console.log('Fetching data for date range:', dateRange);
+
+  const {
+    sales,
+    expenses,
+    products,
+    totalSales,
+    totalExpenses,
+    profit,
+    dailySales,
+    topProducts,
+    lowStockProducts,
+    isLoading,
+  } = useReportsData({
+    from: dateRange?.from || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    to: dateRange?.to || new Date(),
+  });
+
+  const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currentShop?.currency || 'USD',
+      currency: currentShop?.currency || 'KES',
       minimumFractionDigits: 0,
     }).format(amount);
   };
-  
-  // Function to fetch data from database
-  const fetchReportData = async () => {
-    setIsLoading(true);
-    console.log('Fetching data for date range:', dateRange);
-    
-    try {
-      // In a real app, these would be API calls to your database
-      // For example:
-      // const salesResponse = await fetch(`/api/sales?from=${dateRange.from}&to=${dateRange.to}`);
-      // const salesData = await salesResponse.json();
-      // setSalesData(salesData);
-      
-      // For now, we'll simulate API calls with mock data
-      
-      // Simulate sales data fetch
-      const mockSalesData = [
-        { date: '2023-05-01', sales: 12500, transactions: 45 },
-        { date: '2023-05-02', sales: 14200, transactions: 52 },
-        { date: '2023-05-03', sales: 15800, transactions: 61 },
-        { date: '2023-05-04', sales: 16900, transactions: 67 },
-        { date: '2023-05-05', sales: 17500, transactions: 72 },
-        { date: '2023-05-06', sales: 18100, transactions: 76 },
-        { date: '2023-05-07', sales: 16400, transactions: 68 },
-      ];
-      setSalesData(mockSalesData);
-      
-      // Simulate products data fetch
-      const mockProducts = [
-        { id: '1', name: 'T-Shirt', price: 1500, stockQuantity: 25, category: 'Clothing', shopId: '1', isActive: true },
-        { id: '2', name: 'Jeans', price: 3500, stockQuantity: 15, category: 'Clothing', shopId: '1', isActive: true },
-        { id: '3', name: 'Coffee Mug', price: 800, stockQuantity: 30, category: 'Household', shopId: '1', isActive: true },
-        { id: '4', name: 'Notebook', price: 250, stockQuantity: 50, category: 'Stationery', shopId: '1', isActive: true },
-        { id: '5', name: 'Water Bottle', price: 600, stockQuantity: 40, category: 'Household', shopId: '1', isActive: true },
-      ];
-      setProductsData(mockProducts);
-      
-      // Simulate product sales data fetch
-      const mockProductSales = [
-        { productId: '1', name: 'T-Shirt', quantity: 120, revenue: 180000 },
-        { productId: '2', name: 'Jeans', quantity: 85, revenue: 297500 },
-        { productId: '3', name: 'Coffee Mug', quantity: 200, revenue: 160000 },
-        { productId: '4', name: 'Notebook', quantity: 350, revenue: 87500 },
-        { productId: '5', name: 'Water Bottle', quantity: 175, revenue: 105000 },
-      ];
-      setProductSalesData(mockProductSales);
-      
-      // In a real app, we would show toast only on manual refresh
-      // but for demo purposes we'll show it on initial load too
-      toast({
-        title: "Data loaded",
-        description: "Report data has been fetched successfully.",
-      });
-    } catch (error) {
-      console.error('Error fetching report data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch report data.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  // Prepare data for daily revenue chart
-  const getDailyRevenueData = () => {
-    return salesData.map(day => ({
-      displayDate: new Date(day.date).toLocaleDateString(),
-      date: day.date,
-      revenue: day.sales,
-      transactions: day.transactions
-    }));
-  };
-  
-  // Get top selling products
-  const getTopSellingProducts = () => {
-    return [...productSalesData]
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5);
-  };
-  
-  // Calculate total revenue
-  const getTotalRevenue = () => {
-    return salesData.reduce((total, day) => total + day.sales, 0);
-  };
-  
-  // Calculate total transactions
-  const getTotalTransactions = () => {
-    return salesData.reduce((total, day) => total + day.transactions, 0);
-  };
-  
-  // Calculate average transaction value
-  const getAverageTransactionValue = () => {
-    const totalRevenue = getTotalRevenue();
-    const totalTransactions = getTotalTransactions();
-    return totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
-  };
-  
-  // Handle date range change
-  const handleDateRangeChange = (range: DateRange | undefined) => {
-    setDateRange(range);
-  };
-  
-  // Handle timeframe change
-  const handleTimeFrameChange = (value: string) => {
-    setTimeFrame(value);
-    
-    let newDateRange: DateRange | undefined;
-    const today = new Date();
-    
-    switch(value) {
-      case 'today':
-        newDateRange = {
-          from: today,
-          to: today
-        };
-        break;
-      case 'yesterday':
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        newDateRange = {
-          from: yesterday,
-          to: yesterday
-        };
-        break;
-      case 'week':
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        newDateRange = {
-          from: weekAgo,
-          to: today
-        };
-        break;
-      case 'month':
-        const monthAgo = new Date(today);
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
-        newDateRange = {
-          from: monthAgo,
-          to: today
-        };
-        break;
-    }
-    
-    setDateRange(newDateRange);
-  };
-  
-  // Export report data
-  const handleExport = (format: 'excel' | 'pdf' | 'word', reportType: string) => {
-    // Prepare data and file name based on active tab
-    let exportData: any[] = [];
-    let fileName: string;
-    let reportTitle: string;
-    
-    switch (activeTab) {
-      case 'sales':
-        exportData = formatDataForExport(getDailyRevenueData(), 'sales', formatCurrency);
-        fileName = `sales_report_${new Date().toISOString().split('T')[0]}`;
-        reportTitle = 'Sales Report';
-        break;
-      case 'products':
-        exportData = formatDataForExport(getTopSellingProducts(), 'products', formatCurrency);
-        fileName = `top_products_report_${new Date().toISOString().split('T')[0]}`;
-        reportTitle = 'Top Products Report';
-        break;
-      case 'inventory':
-        exportData = formatDataForExport(productsData, 'inventory', formatCurrency);
-        fileName = `inventory_report_${new Date().toISOString().split('T')[0]}`;
-        reportTitle = 'Inventory Report';
-        break;
-    }
-    
-    if (exportData.length === 0) {
-      toast({
-        title: "No data to export",
-        description: "There is no data available to export.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      // Export based on format
-      switch (format) {
-        case 'excel':
-          exportToExcel(exportData, fileName, currentShop?.name || 'Business');
-          break;
-        case 'pdf':
-          exportToPDF(exportData, fileName, currentShop?.name || 'Business', reportTitle);
-          break;
-        case 'word':
-          exportToWord(exportData, fileName, currentShop?.name || 'Business', reportTitle);
-          break;
-      }
-      
-      toast({
-        title: "Export successful",
-        description: `Your ${reportTitle} has been exported as ${format.toUpperCase()}.`,
-      });
-    } catch (error) {
-      console.error('Export error:', error);
-      toast({
-        title: "Export failed",
-        description: "There was an error exporting your report. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Navigate to Quotations page
-  const goToQuotations = () => {
-    navigate('/quotations');
+
+  const exportToPDF = () => {
+    // Implementation for PDF export
+    console.log('Exporting to PDF...');
   };
 
+  const exportToExcel = () => {
+    // Implementation for Excel export
+    console.log('Exporting to Excel...');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading reports...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
-          <p className="text-muted-foreground">
-            View and analyze your business data
-          </p>
+          <h1 className="text-2xl md:text-3xl font-bold">{t("reports")}</h1>
+          <p className="text-muted-foreground">{t("business analytics and insights")}</p>
         </div>
         
-        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-          <Button 
-            variant="outline" 
-            onClick={goToQuotations}
-            className="mb-2 sm:mb-0"
-          >
-            Go to Quotations
-          </Button>
-          <div className="flex items-center gap-2">
-            <Select value={timeFrame} onValueChange={handleTimeFrameChange}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Select timeframe" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="yesterday">Yesterday</SelectItem>
-                <SelectItem value="week">Last 7 days</SelectItem>
-                <SelectItem value="month">Last 30 days</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <DateRangePicker
-              value={dateRange}
-              onChange={handleDateRangeChange}
-              align="end"
-            />
+        <div className="flex flex-col sm:flex-row gap-2">
+          <DatePickerWithRange
+            date={dateRange}
+            setDate={setDateRange}
+            className="w-full sm:w-auto"
+          />
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={exportToPDF}>
+              <FileText className="w-4 h-4 mr-2" />
+              PDF
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportToExcel}>
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Excel
+            </Button>
           </div>
         </div>
       </div>
-      
-      <Card>
-        <CardContent className="pt-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="sales">Sales</TabsTrigger>
-              <TabsTrigger value="products">Products</TabsTrigger>
-              <TabsTrigger value="inventory">Inventory</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="sales" className="space-y-4">
-              {/* Sales summary cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Total Revenue
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {formatCurrency(getTotalRevenue())}
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Total Transactions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {getTotalTransactions()}
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Average Transaction
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {formatCurrency(getAverageTransactionValue())}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              {/* Sales chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Daily Revenue</CardTitle>
-                  <CardDescription>
-                    Revenue and transactions for the selected period
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="h-80 flex items-center justify-center">
-                      <p>Loading data...</p>
-                    </div>
-                  ) : salesData.length > 0 ? (
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={getDailyRevenueData()}
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="displayDate" />
-                          <YAxis />
-                          <Tooltip 
-                            formatter={(value: any) => formatCurrency(value)}
-                            labelFormatter={(label) => `Date: ${label}`}
-                          />
-                          <Legend />
-                          <Bar 
-                            dataKey="revenue" 
-                            name="Revenue" 
-                            fill="#0088FE"
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  ) : (
-                    <div className="h-80 flex items-center justify-center">
-                      <p>No data available for the selected period</p>
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="flex justify-end space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleExport('excel', 'sales')}
-                    disabled={salesData.length === 0}
-                  >
-                    <FileText className="mr-2 h-4 w-4" /> Export to Excel
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleExport('pdf', 'sales')}
-                    disabled={salesData.length === 0}
-                  >
-                    <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleExport('word', 'sales')}
-                    disabled={salesData.length === 0}
-                  >
-                    <TableIcon className="mr-2 h-4 w-4" /> Export to Word
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="products" className="space-y-4">
-              {/* Products charts */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Top Selling Products</CardTitle>
-                    <CardDescription>
-                      By revenue
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoading ? (
-                      <div className="h-80 flex items-center justify-center">
-                        <p>Loading data...</p>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t("total sales")}</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(totalSales)}</div>
+            <p className="text-xs text-muted-foreground">
+              {sales.length} {t("transactions")}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t("total expenses")}</CardTitle>
+            <TrendingDown className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(totalExpenses)}</div>
+            <p className="text-xs text-muted-foreground">
+              {expenses.length} {t("expense entries")}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t("profit")}</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {formatCurrency(profit)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {profit >= 0 ? t("profit") : t("loss")}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t("products")}</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{products.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {products.filter(p => p.is_active).length} {t("active")}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Sales Trend */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("sales trend")}</CardTitle>
+            <CardDescription>{t("daily sales over time")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={dailySales}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                <Line 
+                  type="monotone" 
+                  dataKey="totalSales" 
+                  stroke="#8884d8" 
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Top Products */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("top products")}</CardTitle>
+            <CardDescription>{t("products by stock quantity")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {topProducts.length > 0 ? (
+                topProducts.map((product, index) => (
+                  <div key={product.id} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-xs font-medium">
+                        {index + 1}
                       </div>
-                    ) : productSalesData.length > 0 ? (
-                      <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie
-                              data={getTopSellingProducts()}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                              outerRadius={80}
-                              fill="#8884d8"
-                              dataKey="revenue"
-                              nameKey="name"
-                            >
-                              {getTopSellingProducts().map((entry, index) => (
-                                <Cell 
-                                  key={`cell-${index}`} 
-                                  fill={COLORS[index % COLORS.length]} 
-                                />
-                              ))}
-                            </Pie>
-                            <Tooltip 
-                              formatter={(value: any) => formatCurrency(value)}
-                            />
-                            <Legend />
-                          </PieChart>
-                        </ResponsiveContainer>
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-muted-foreground">{product.category}</p>
                       </div>
-                    ) : (
-                      <div className="h-80 flex items-center justify-center">
-                        <p>No data available for the selected period</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Top Products Table</CardTitle>
-                    <CardDescription>
-                      Top selling products by quantity and revenue
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoading ? (
-                      <div className="h-80 flex items-center justify-center">
-                        <p>Loading data...</p>
-                      </div>
-                    ) : productSalesData.length > 0 ? (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Product</TableHead>
-                            <TableHead>Quantity Sold</TableHead>
-                            <TableHead>Revenue</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {getTopSellingProducts().map((product) => (
-                            <TableRow key={product.productId}>
-                              <TableCell>{product.name}</TableCell>
-                              <TableCell>{product.quantity}</TableCell>
-                              <TableCell>{formatCurrency(product.revenue)}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    ) : (
-                      <div className="h-40 flex items-center justify-center">
-                        <p>No data available for the selected period</p>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="flex justify-end space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleExport('excel', 'products')}
-                      disabled={productSalesData.length === 0}
-                    >
-                      <FileText className="mr-2 h-4 w-4" /> Export to Excel
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleExport('pdf', 'products')}
-                      disabled={productSalesData.length === 0}
-                    >
-                      <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => handleExport('word', 'products')}
-                      disabled={productSalesData.length === 0}
-                    >
-                      <TableIcon className="mr-2 h-4 w-4" /> Export to Word
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="inventory" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Inventory Status</CardTitle>
-                  <CardDescription>
-                    Current stock levels for all products
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="h-40 flex items-center justify-center">
-                      <p>Loading data...</p>
                     </div>
-                  ) : productsData.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Product</TableHead>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Price</TableHead>
-                          <TableHead>Stock</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {productsData.map((product) => (
-                          <TableRow key={product.id}>
-                            <TableCell>{product.name}</TableCell>
-                            <TableCell>{product.category || 'Uncategorized'}</TableCell>
-                            <TableCell>{formatCurrency(product.price)}</TableCell>
-                            <TableCell>{product.stockQuantity}</TableCell>
-                            <TableCell>
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                product.stockQuantity > 20 
-                                  ? 'bg-green-100 text-green-800'
-                                  : product.stockQuantity > 5
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {product.stockQuantity > 20 
-                                  ? 'In Stock' 
-                                  : product.stockQuantity > 5
-                                  ? 'Low Stock'
-                                  : 'Critical'
-                                }
-                              </span>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  ) : (
-                    <div className="h-40 flex items-center justify-center">
-                      <p>No inventory data available</p>
+                    <div className="text-right">
+                      <p className="font-medium">{product.stock_quantity}</p>
+                      <p className="text-sm text-muted-foreground">{t("in stock")}</p>
                     </div>
-                  )}
-                </CardContent>
-                <CardFooter className="flex justify-end space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleExport('excel', 'inventory')}
-                    disabled={productsData.length === 0}
-                  >
-                    <FileText className="mr-2 h-4 w-4" /> Export to Excel
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleExport('pdf', 'inventory')}
-                    disabled={productsData.length === 0}
-                  >
-                    <FilePlus className="mr-2 h-4 w-4" /> Export to PDF
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleExport('word', 'inventory')}
-                    disabled={productsData.length === 0}
-                  >
-                    <TableIcon className="mr-2 h-4 w-4" /> Export to Word
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground">{t("no products found")}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Low Stock Alert */}
+      {lowStockProducts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-600">{t("low stock alert")}</CardTitle>
+            <CardDescription>{t("products running low on stock")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {lowStockProducts.map((product) => (
+                <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">{product.name}</p>
+                    <p className="text-sm text-muted-foreground">{product.category}</p>
+                  </div>
+                  <Badge variant={product.stock_quantity <= 5 ? "destructive" : "secondary"}>
+                    {product.stock_quantity} {t("left")}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recent Transactions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("recent sales")}</CardTitle>
+            <CardDescription>{t("latest sales transactions")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {sales.length > 0 ? (
+                sales.slice(0, 5).map((sale) => (
+                  <div key={sale.id} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{sale.receipt_number || `Sale #${sale.id.slice(0, 8)}`}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(sale.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{formatCurrency(Number(sale.total))}</p>
+                      <p className="text-sm text-muted-foreground">{sale.payment_method}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground">{t("no sales found")}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("recent expenses")}</CardTitle>
+            <CardDescription>{t("latest expense entries")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {expenses.length > 0 ? (
+                expenses.slice(0, 5).map((expense) => (
+                  <div key={expense.id} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{expense.category}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {expense.description || new Date(expense.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-red-600">-{formatCurrency(Number(expense.amount))}</p>
+                      <p className="text-sm text-muted-foreground">{t("expense")}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground">{t("no expenses found")}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
