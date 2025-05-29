@@ -30,9 +30,11 @@ export interface Shop {
   currency: string;
   ownerId: string;
   createdAt: string;
-  taxId?: string; // Added this property
-  address?: string; // Added this property
-  receiptMessage?: string; // Added this property
+  taxId?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  receiptMessage?: string;
 }
 
 // Product Types
@@ -48,6 +50,37 @@ export interface Product {
   shopId: string;
   imageUrl?: string;
   isActive: boolean;
+}
+
+// Quotation Types
+export interface Quotation {
+  id: string;
+  user_id: string;
+  client_name: string;
+  client_location?: string;
+  reference_number?: string;
+  quotation_date: string;
+  total_amount: number;
+  vat_amount: number;
+  grand_total: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuotationItem {
+  id: string;
+  quotation_id: string;
+  part_number: string;
+  description?: string;
+  brand?: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+  vat_percentage: number;
+  vat_amount: number;
+  total_amount: number;
+  created_at: string;
 }
 
 // Sales Types
@@ -139,4 +172,3 @@ export interface DailySales {
 }
 
 export type TimeRange = "today" | "yesterday" | "week" | "month" | "custom";
-

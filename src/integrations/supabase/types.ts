@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           group_id: string
@@ -77,6 +104,51 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          brand: string | null
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          part_number: string | null
+          price: number
+          stock_quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          part_number?: string | null
+          price?: number
+          stock_quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          part_number?: string | null
+          price?: number
+          stock_quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -119,6 +191,134 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      quotation_items: {
+        Row: {
+          amount: number
+          brand: string | null
+          created_at: string
+          description: string | null
+          id: string
+          part_number: string
+          quantity: number
+          quotation_id: string
+          rate: number
+          total_amount: number
+          vat_amount: number
+          vat_percentage: number
+        }
+        Insert: {
+          amount: number
+          brand?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          part_number: string
+          quantity?: number
+          quotation_id: string
+          rate: number
+          total_amount?: number
+          vat_amount?: number
+          vat_percentage?: number
+        }
+        Update: {
+          amount?: number
+          brand?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          part_number?: string
+          quantity?: number
+          quotation_id?: string
+          rate?: number
+          total_amount?: number
+          vat_amount?: number
+          vat_percentage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotations: {
+        Row: {
+          client_location: string | null
+          client_name: string
+          created_at: string
+          grand_total: number
+          id: string
+          quotation_date: string
+          reference_number: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+          vat_amount: number
+        }
+        Insert: {
+          client_location?: string | null
+          client_name: string
+          created_at?: string
+          grand_total?: number
+          id?: string
+          quotation_date?: string
+          reference_number?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+          vat_amount?: number
+        }
+        Update: {
+          client_location?: string | null
+          client_name?: string
+          created_at?: string
+          grand_total?: number
+          id?: string
+          quotation_date?: string
+          reference_number?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+          vat_amount?: number
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          created_at: string
+          customer_name: string | null
+          id: string
+          payment_method: string
+          receipt_number: string | null
+          total: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          payment_method: string
+          receipt_number?: string | null
+          total: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string | null
+          id?: string
+          payment_method?: string
+          receipt_number?: string | null
+          total?: number
+          user_id?: string
         }
         Relationships: []
       }
