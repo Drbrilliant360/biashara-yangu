@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Package, ShoppingCart, BarChart2, CreditCard, Settings, Users, LogOut, Store, FileMinus, FileText } from 'lucide-react';
+import { Home, Package, BarChart2, CreditCard, Settings, Users, LogOut, Store, FileMinus, FileText, Quote } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useShop } from '@/context/ShopContext';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,7 @@ export const Sidebar: React.FC = () => {
   
   const navItems = [
     { name: t("dashboard"), path: "/", icon: <Home size={20} /> },
-    { name: t("pos"), path: "/pos", icon: <ShoppingCart size={20} /> },
+    { name: t("quotations"), path: "/quotations", icon: <Quote size={20} /> },
     { name: t("products"), path: "/products", icon: <Package size={20} /> },
     { name: t("sales"), path: "/sales", icon: <CreditCard size={20} /> },
     { name: t("purchases"), path: "/purchases", icon: <FileText size={20} /> },

@@ -20,7 +20,6 @@ import AddShopPage from "@/pages/shops/AddShopPage";
 import ProductsPage from "@/pages/products/ProductsPage";
 import AddProductPage from "@/pages/products/AddProductPage";
 import ReportsPage from "@/pages/reports/ReportsPage";
-import POSPage from "@/pages/pos/POSPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import NotFound from "@/pages/NotFound";
 import ExpensesPage from "@/pages/expenses/ExpensesPage";
@@ -67,7 +66,6 @@ const App = () => (
                       <Route path="products" element={<ProductsPage />} />
                       <Route path="products/add" element={<AddProductPage />} />
                       <Route path="reports" element={<ReportsPage />} />
-                      <Route path="pos" element={<POSPage />} />
                       <Route path="settings" element={<SettingsPage />} />
                       <Route path="expenses" element={<ExpensesPage />} />
                       <Route path="purchases" element={<PurchasesPage />} />
