@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Quotation, QuotationItem, Product } from '@/types';
+import { Product } from '@/types';
 
 interface CreateQuotationDialogProps {
   open: boolean;
@@ -111,8 +111,9 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
     const product = products.find(p => p.id === productId);
     if (product) {
       updateItem(index, 'product_id', productId);
-      updateItem(index, 'part_number', product.barcode || product.name);
+      updateItem(index, 'part_number', product.part_number || product.name);
       updateItem(index, 'description', product.description || product.name);
+      updateItem(index, 'brand', product.brand || '');
       updateItem(index, 'rate', product.price);
     }
   };
@@ -226,7 +227,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Quotation</DialogTitle>
           <DialogDescription>
@@ -240,7 +241,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
             <CardHeader>
               <CardTitle className="text-lg">Client Information</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <Label htmlFor="client_name">Client Name *</Label>
                 <Input
@@ -248,6 +249,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
                   value={quotationData.client_name}
                   onChange={(e) => setQuotationData({ ...quotationData, client_name: e.target.value })}
                   required
+                  className="text-sm"
                 />
               </div>
               <div>
@@ -256,6 +258,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
                   id="client_location"
                   value={quotationData.client_location}
                   onChange={(e) => setQuotationData({ ...quotationData, client_location: e.target.value })}
+                  className="text-sm"
                 />
               </div>
               <div>
@@ -264,6 +267,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
                   id="reference_number"
                   value={quotationData.reference_number}
                   onChange={(e) => setQuotationData({ ...quotationData, reference_number: e.target.value })}
+                  className="text-sm"
                 />
               </div>
               <div>
@@ -274,6 +278,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
                   value={quotationData.quotation_date}
                   onChange={(e) => setQuotationData({ ...quotationData, quotation_date: e.target.value })}
                   required
+                  className="text-sm"
                 />
               </div>
             </CardContent>
@@ -281,42 +286,42 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
 
           {/* Quotation Items */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <CardTitle className="text-lg">Quotation Items</CardTitle>
-              <Button type="button" onClick={addItem} size="sm">
-                <Plus className="mr-2 h-4 w-4" /> Add Item
+              <Button type="button" onClick={addItem} size="sm" className="text-xs">
+                <Plus className="mr-1 h-3 w-3" /> Add Item
               </Button>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="min-w-[200px]">Product/Part Number</TableHead>
-                      <TableHead className="min-w-[200px]">Description</TableHead>
-                      <TableHead className="min-w-[120px]">Brand</TableHead>
-                      <TableHead className="w-20">Qty</TableHead>
-                      <TableHead className="w-24">Rate</TableHead>
-                      <TableHead className="w-20">VAT %</TableHead>
-                      <TableHead className="w-24">Amount</TableHead>
-                      <TableHead className="w-12">Action</TableHead>
+                    <TableRow className="text-xs">
+                      <TableHead className="min-w-[180px] text-xs p-2">Product/Part Number</TableHead>
+                      <TableHead className="min-w-[150px] text-xs p-2">Description</TableHead>
+                      <TableHead className="min-w-[100px] text-xs p-2">Brand</TableHead>
+                      <TableHead className="w-16 text-xs p-2">Qty</TableHead>
+                      <TableHead className="w-20 text-xs p-2">Rate</TableHead>
+                      <TableHead className="w-16 text-xs p-2">VAT %</TableHead>
+                      <TableHead className="w-20 text-xs p-2">Amount</TableHead>
+                      <TableHead className="w-10 text-xs p-2">Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {items.map((item, index) => {
-                      const { amount, vat_amount, total_amount } = calculateItemTotals(item);
+                      const { total_amount } = calculateItemTotals(item);
                       return (
                         <TableRow key={index}>
-                          <TableCell>
-                            <div className="space-y-2">
+                          <TableCell className="p-2">
+                            <div className="space-y-1">
                               <Select onValueChange={(value) => selectProduct(index, value)}>
-                                <SelectTrigger className="text-xs">
+                                <SelectTrigger className="text-xs h-8">
                                   <SelectValue placeholder="Select product" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {products.map((product) => (
-                                    <SelectItem key={product.id} value={product.id}>
-                                      {product.name} - {product.price}
+                                    <SelectItem key={product.id} value={product.id} className="text-xs">
+                                      {product.name} - ${product.price}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -325,49 +330,49 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
                                 placeholder="Part Number"
                                 value={item.part_number}
                                 onChange={(e) => updateItem(index, 'part_number', e.target.value)}
-                                className="text-xs"
+                                className="text-xs h-8"
                                 required
                               />
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="p-2">
                             <Input
                               placeholder="Description"
                               value={item.description}
                               onChange={(e) => updateItem(index, 'description', e.target.value)}
-                              className="text-xs"
+                              className="text-xs h-8"
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="p-2">
                             <Input
                               placeholder="Brand"
                               value={item.brand}
                               onChange={(e) => updateItem(index, 'brand', e.target.value)}
-                              className="text-xs"
+                              className="text-xs h-8"
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="p-2">
                             <Input
                               type="number"
                               min="1"
                               value={item.quantity}
                               onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                              className="text-xs"
+                              className="text-xs h-8"
                               required
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="p-2">
                             <Input
                               type="number"
                               step="0.01"
                               min="0"
                               value={item.rate}
                               onChange={(e) => updateItem(index, 'rate', parseFloat(e.target.value) || 0)}
-                              className="text-xs"
+                              className="text-xs h-8"
                               required
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="p-2">
                             <Input
                               type="number"
                               step="0.01"
@@ -375,22 +380,22 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
                               max="100"
                               value={item.vat_percentage}
                               onChange={(e) => updateItem(index, 'vat_percentage', parseFloat(e.target.value) || 0)}
-                              className="text-xs"
+                              className="text-xs h-8"
                             />
                           </TableCell>
-                          <TableCell className="text-xs font-medium">
-                            {total_amount.toFixed(2)}
+                          <TableCell className="text-xs font-medium p-2">
+                            ${total_amount.toFixed(2)}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="p-2">
                             <Button
                               type="button"
                               variant="ghost"
                               size="icon"
                               onClick={() => removeItem(index)}
                               disabled={items.length === 1}
-                              className="h-8 w-8"
+                              className="h-6 w-6"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -401,11 +406,11 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
               </div>
 
               {/* Totals Summary */}
-              <div className="mt-4 border-t pt-4">
-                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-8 text-sm">
-                  <div>Total Amount: <span className="font-medium">{totals.total_amount.toFixed(2)}</span></div>
-                  <div>VAT Amount: <span className="font-medium">{totals.vat_amount.toFixed(2)}</span></div>
-                  <div className="text-lg font-bold">Grand Total: <span>{totals.grand_total.toFixed(2)}</span></div>
+              <div className="mt-4 border-t pt-4 px-4 pb-4">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:justify-end sm:space-y-0 sm:space-x-8 text-sm">
+                  <div>Total Amount: <span className="font-medium">${totals.total_amount.toFixed(2)}</span></div>
+                  <div>VAT Amount: <span className="font-medium">${totals.vat_amount.toFixed(2)}</span></div>
+                  <div className="text-lg font-bold">Grand Total: <span>${totals.grand_total.toFixed(2)}</span></div>
                 </div>
               </div>
             </CardContent>

@@ -37,19 +37,20 @@ export interface Shop {
   receiptMessage?: string;
 }
 
-// Product Types
+// Product Types - Updated to match database schema
 export interface Product {
   id: string;
   name: string;
-  barcode?: string;
+  part_number?: string;
   description?: string;
+  brand?: string;
   price: number;
-  costPrice?: number;
-  stockQuantity: number;
+  stock_quantity: number;
   category?: string;
-  shopId: string;
-  imageUrl?: string;
-  isActive: boolean;
+  user_id: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // Quotation Types
@@ -93,20 +94,12 @@ export interface CartItem {
 
 export interface Sale {
   id: string;
-  shopId: string;
-  items: {
-    productId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    subtotal: number;
-  }[];
+  user_id: string;
   total: number;
-  paymentMethod: "cash" | "mpesa" | "card" | "credit";
-  customerId?: string;
-  cashierId: string;
-  timestamp: string;
-  receiptNumber: string;
+  payment_method: string;
+  customer_name?: string;
+  receipt_number?: string;
+  created_at: string;
 }
 
 // Customer Types
@@ -122,12 +115,11 @@ export interface Customer {
 // Expense Types
 export interface Expense {
   id: string;
-  shopId: string;
+  user_id: string;
   amount: number;
   category: string;
   description?: string;
-  timestamp: string;
-  addedBy: string;
+  created_at: string;
 }
 
 // Purchase Types
