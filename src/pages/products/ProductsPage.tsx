@@ -30,7 +30,7 @@ const ProductsPage: React.FC = () => {
     if (currentShop) {
       // Load products for the current shop
       const allProducts = getItem<Product[]>(STORAGE_KEYS.PRODUCTS, [])
-        .filter(product => product.shopId === currentShop.id);
+        .filter(product => product.shop_id === currentShop.id);
       
       setProducts(allProducts);
     }
@@ -40,7 +40,7 @@ const ProductsPage: React.FC = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currentShop?.currency || 'USD',
+      currency: currentShop?.currency || 'KES',
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -146,18 +146,18 @@ const ProductsPage: React.FC = () => {
                   )}
                 </div>
               </TableHead>
-              <TableHead onClick={() => handleSort('price')} className="cursor-pointer text-right">
+              <TableHead onClick={() => handleSort('selling_price')} className="cursor-pointer text-right">
                 <div className="flex items-center justify-end gap-1">
                   {t("price")}
-                  {sortColumn === 'price' && (
+                  {sortColumn === 'selling_price' && (
                     <ArrowUpDown className="h-3 w-3" />
                   )}
                 </div>
               </TableHead>
-              <TableHead onClick={() => handleSort('stockQuantity')} className="cursor-pointer text-right">
+              <TableHead onClick={() => handleSort('stock_quantity')} className="cursor-pointer text-right">
                 <div className="flex items-center justify-end gap-1">
                   {t("stock")}
-                  {sortColumn === 'stockQuantity' && (
+                  {sortColumn === 'stock_quantity' && (
                     <ArrowUpDown className="h-3 w-3" />
                   )}
                 </div>
@@ -174,8 +174,8 @@ const ProductsPage: React.FC = () => {
                 >
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.category || t('uncategorized')}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
-                  <TableCell className="text-right">{product.stockQuantity}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(product.selling_price)}</TableCell>
+                  <TableCell className="text-right">{product.stock_quantity}</TableCell>
                 </TableRow>
               ))
             ) : (

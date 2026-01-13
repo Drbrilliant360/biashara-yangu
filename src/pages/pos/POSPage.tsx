@@ -13,16 +13,16 @@ import { CheckoutDialog } from './components/CheckoutDialog';
 
 // Mock products data - in a real app, this would come from context/API
 const mockProducts: Product[] = [
-  { id: '1', name: 'T-Shirt', price: 1500, stockQuantity: 25, barcode: '123456', category: 'Clothing', shopId: '1', isActive: true },
-  { id: '2', name: 'Jeans', price: 3500, stockQuantity: 15, barcode: '234567', category: 'Clothing', shopId: '1', isActive: true },
-  { id: '3', name: 'Coffee Mug', price: 800, stockQuantity: 30, barcode: '345678', category: 'Household', shopId: '1', isActive: true },
-  { id: '4', name: 'Notebook', price: 250, stockQuantity: 50, barcode: '456789', category: 'Stationery', shopId: '1', isActive: true },
-  { id: '5', name: 'Water Bottle', price: 600, stockQuantity: 40, barcode: '567890', category: 'Household', shopId: '1', isActive: true },
-  { id: '6', name: 'Headphones', price: 4500, stockQuantity: 10, barcode: '678901', category: 'Electronics', shopId: '1', isActive: true },
-  { id: '7', name: 'Backpack', price: 3200, stockQuantity: 12, barcode: '789012', category: 'Accessories', shopId: '1', isActive: true },
-  { id: '8', name: 'Phone Charger', price: 1200, stockQuantity: 18, barcode: '890123', category: 'Electronics', shopId: '1', isActive: true },
-  { id: '9', name: 'Hand Sanitizer', price: 350, stockQuantity: 60, barcode: '901234', category: 'Health', shopId: '1', isActive: true },
-  { id: '10', name: 'Face Mask Pack', price: 450, stockQuantity: 75, barcode: '012345', category: 'Health', shopId: '1', isActive: true }
+  { id: '1', name: 'T-Shirt', selling_price: 1500, buying_price: 1000, stock_quantity: 25, barcode: '123456', category: 'Clothing', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' },
+  { id: '2', name: 'Jeans', selling_price: 3500, buying_price: 2500, stock_quantity: 15, barcode: '234567', category: 'Clothing', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' },
+  { id: '3', name: 'Coffee Mug', selling_price: 800, buying_price: 500, stock_quantity: 30, barcode: '345678', category: 'Household', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' },
+  { id: '4', name: 'Notebook', selling_price: 250, buying_price: 150, stock_quantity: 50, barcode: '456789', category: 'Stationery', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' },
+  { id: '5', name: 'Water Bottle', selling_price: 600, buying_price: 400, stock_quantity: 40, barcode: '567890', category: 'Household', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' },
+  { id: '6', name: 'Headphones', selling_price: 4500, buying_price: 3000, stock_quantity: 10, barcode: '678901', category: 'Electronics', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' },
+  { id: '7', name: 'Backpack', selling_price: 3200, buying_price: 2200, stock_quantity: 12, barcode: '789012', category: 'Accessories', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' },
+  { id: '8', name: 'Phone Charger', selling_price: 1200, buying_price: 800, stock_quantity: 18, barcode: '890123', category: 'Electronics', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' },
+  { id: '9', name: 'Hand Sanitizer', selling_price: 350, buying_price: 200, stock_quantity: 60, barcode: '901234', category: 'Health', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' },
+  { id: '10', name: 'Face Mask Pack', selling_price: 450, buying_price: 300, stock_quantity: 75, barcode: '012345', category: 'Health', shop_id: '1', is_active: true, min_stock_level: 5, created_at: '', updated_at: '' }
 ];
 
 const POSPage: React.FC = () => {
@@ -43,7 +43,7 @@ const POSPage: React.FC = () => {
     // Filter products based on search term
     const filtered = mockProducts.filter(product => 
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.barcode.includes(searchTerm)
+      (product.barcode && product.barcode.includes(searchTerm))
     );
     setFilteredProducts(filtered);
   }, [searchTerm]);
@@ -72,11 +72,11 @@ const POSPage: React.FC = () => {
       
       if (existingItem) {
         // Product already in cart, increase quantity if stock allows
-        if (existingItem.quantity >= product.stockQuantity) {
+        if (existingItem.quantity >= product.stock_quantity) {
           toast({
             variant: "destructive",
             title: "Stock limit reached",
-            description: `Only ${product.stockQuantity} available in stock.`,
+            description: `Only ${product.stock_quantity} available in stock.`,
           });
           return prevItems;
         }
@@ -86,7 +86,7 @@ const POSPage: React.FC = () => {
             ? { 
                 ...item, 
                 quantity: item.quantity + 1,
-                subtotal: (item.quantity + 1) * item.product.price 
+                subtotal: (item.quantity + 1) * item.product.selling_price 
               }
             : item
         );
@@ -97,7 +97,7 @@ const POSPage: React.FC = () => {
           {
             product,
             quantity: 1,
-            subtotal: product.price
+            subtotal: product.selling_price
           }
         ];
       }
@@ -117,11 +117,11 @@ const POSPage: React.FC = () => {
     if (!cartItem) return;
     
     // Check if new quantity exceeds stock
-    if (newQuantity > cartItem.product.stockQuantity) {
+    if (newQuantity > cartItem.product.stock_quantity) {
       toast({
         variant: "destructive",
         title: "Stock limit reached",
-        description: `Only ${cartItem.product.stockQuantity} available in stock.`,
+        description: `Only ${cartItem.product.stock_quantity} available in stock.`,
       });
       return;
     }
@@ -133,7 +133,7 @@ const POSPage: React.FC = () => {
           ? {
               ...item,
               quantity: newQuantity,
-              subtotal: newQuantity * item.product.price
+              subtotal: newQuantity * item.product.selling_price
             }
           : item
       )
@@ -231,7 +231,7 @@ const POSPage: React.FC = () => {
               </CardHeader>
               <CardContent className="p-3 pt-0">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground">Stock: {product.stockQuantity}</div>
+                  <div className="text-sm text-muted-foreground">Stock: {product.stock_quantity}</div>
                   <div>
                     <PackageIcon className="h-4 w-4 text-muted-foreground" />
                   </div>
@@ -241,7 +241,7 @@ const POSPage: React.FC = () => {
                     style: 'currency',
                     currency: currencyCode,
                     minimumFractionDigits: 0,
-                  }).format(product.price)}
+                  }).format(product.selling_price)}
                 </div>
               </CardContent>
               <CardFooter className="p-2">
@@ -250,7 +250,7 @@ const POSPage: React.FC = () => {
                   size="sm" 
                   className="w-full" 
                   onClick={() => addToCart(product)}
-                  disabled={product.stockQuantity === 0}
+                  disabled={product.stock_quantity === 0}
                 >
                   <Plus className="mr-1 h-4 w-4" /> Add
                 </Button>
