@@ -29,10 +29,10 @@ const DashboardPage: React.FC = () => {
     if (currentShop) {
       // Load data from storage
       const allProducts = getItem<Product[]>(STORAGE_KEYS.PRODUCTS, [])
-        .filter(p => p.shopId === currentShop.id);
+        .filter(p => p.shop_id === currentShop.id);
       
       const allSales = getItem<Sale[]>(STORAGE_KEYS.SALES, [])
-        .filter(s => s.shopId === currentShop.id);
+        .filter(s => s.shop_id === currentShop.id);
       
       setProducts(allProducts);
       setSales(allSales);
@@ -40,15 +40,15 @@ const DashboardPage: React.FC = () => {
       // Get recent sales (last 5)
       setRecentSales(
         [...allSales]
-          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(0, 5)
       );
       
-      // Get low stock products (less than 10 items)
+      // Get low stock products (less than min_stock_level)
       setLowStockProducts(
         allProducts
-          .filter(p => p.stockQuantity < 10 && p.isActive)
-          .sort((a, b) => a.stockQuantity - b.stockQuantity)
+          .filter(p => p.stock_quantity < p.min_stock_level && p.is_active)
+          .sort((a, b) => a.stock_quantity - b.stock_quantity)
           .slice(0, 5)
       );
     }
@@ -56,7 +56,7 @@ const DashboardPage: React.FC = () => {
   
   // Calculate sales statistics
   const todaySales = sales.filter(sale => {
-    const saleDate = new Date(sale.timestamp).toDateString();
+    const saleDate = new Date(sale.created_at).toDateString();
     const today = new Date().toDateString();
     return saleDate === today;
   });
@@ -66,7 +66,7 @@ const DashboardPage: React.FC = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currentShop?.currency || 'USD',
+      currency: currentShop?.currency || 'KES',
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -171,10 +171,10 @@ const DashboardPage: React.FC = () => {
                   <div>
                     <div className="font-medium">{formatCurrency(sale.total)}</div>
                     <div className="text-xs text-muted-foreground">
-                      {new Date(sale.timestamp).toLocaleTimeString()} • Receipt #{sale.receiptNumber}
+                      {new Date(sale.created_at).toLocaleTimeString()} • Receipt #{sale.receipt_number || sale.id.slice(0, 8)}
                     </div>
                   </div>
-                  <div className="text-sm">{sale.items.length} items</div>
+                  <div className="text-sm">{sale.payment_method}</div>
                 </div>
               ))}
             </div>
@@ -216,13 +216,13 @@ const DashboardPage: React.FC = () => {
                   <div>
                     <div className="font-medium">{product.name}</div>
                     <div className="text-xs text-muted-foreground">
-                      {product.barcode || 'No barcode'} • {formatCurrency(product.price)}
+                      {product.barcode || 'No barcode'} • {formatCurrency(product.selling_price)}
                     </div>
                   </div>
                   <div className={`text-sm font-medium ${
-                    product.stockQuantity <= 5 ? 'text-red-500' : 'text-amber-500'
+                    product.stock_quantity <= 5 ? 'text-red-500' : 'text-amber-500'
                   }`}>
-                    {product.stockQuantity} in stock
+                    {product.stock_quantity} in stock
                   </div>
                 </div>
               ))}

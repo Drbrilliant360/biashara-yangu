@@ -26,7 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useShop } from '@/context/ShopContext';
 import { useAuth } from '@/context/AuthContext';
@@ -74,7 +73,7 @@ const ExpensesPage: React.FC = () => {
     if (!currentShop) return;
     
     const allExpenses = getItem<Expense[]>(STORAGE_KEYS.EXPENSES, [])
-      .filter(expense => expense.shopId === currentShop.id);
+      .filter(expense => expense.shop_id === currentShop.id);
     
     setExpenses(allExpenses);
   };
@@ -100,12 +99,15 @@ const ExpensesPage: React.FC = () => {
 
     const newExpense: Expense = {
       id: crypto.randomUUID(),
-      shopId: currentShop.id,
+      shop_id: currentShop.id,
+      user_id: user.id,
       amount: parseFloat(amount),
       category,
       description,
-      timestamp: new Date().toISOString(),
-      addedBy: user.id,
+      payment_method: 'cash',
+      expense_date: new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
     const updatedExpenses = [...getItem<Expense[]>(STORAGE_KEYS.EXPENSES, []), newExpense];
@@ -140,6 +142,7 @@ const ExpensesPage: React.FC = () => {
       amount: parseFloat(amount),
       category,
       description,
+      updated_at: new Date().toISOString(),
     };
 
     const allExpenses = getItem<Expense[]>(STORAGE_KEYS.EXPENSES, []);
@@ -214,18 +217,18 @@ const ExpensesPage: React.FC = () => {
         break;
     }
     
-    filtered = filtered.filter(exp => new Date(exp.timestamp) >= startDate);
+    filtered = filtered.filter(exp => new Date(exp.created_at) >= startDate);
     
     // Sort by newest first
     return filtered.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currentShop?.currency || 'USD',
+      currency: currentShop?.currency || 'KES',
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -351,7 +354,7 @@ const ExpensesPage: React.FC = () => {
             <TableBody>
               {filterExpenses().map((expense) => (
                 <TableRow key={expense.id}>
-                  <TableCell>{formatDate(expense.timestamp)}</TableCell>
+                  <TableCell>{formatDate(expense.created_at)}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(expense.category)}`}>
                       {expense.category.charAt(0).toUpperCase() + expense.category.slice(1)}
@@ -514,6 +517,7 @@ const ExpensesPage: React.FC = () => {
                 id="edit-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                placeholder="Enter expense details"
               />
             </div>
           </div>

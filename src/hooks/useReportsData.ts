@@ -1,23 +1,48 @@
 
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { Product, Sale, Expense } from '@/types';
+import { useShop } from '@/context/ShopContext';
+
+interface ReportProduct {
+  id: string;
+  name: string;
+  category?: string;
+  stock_quantity: number;
+  selling_price: number;
+  is_active: boolean;
+}
+
+interface ReportSale {
+  id: string;
+  receipt_number?: string;
+  total: number;
+  payment_method: string;
+  created_at: string;
+}
+
+interface ReportExpense {
+  id: string;
+  category: string;
+  description?: string;
+  amount: number;
+  created_at: string;
+}
 
 export const useReportsData = (dateRange: { from: Date; to: Date }) => {
   const { user } = useAuth();
+  const { currentShop } = useShop();
   
   // Fetch sales data
   const { data: sales = [], isLoading: salesLoading } = useQuery({
-    queryKey: ['sales', user?.id, dateRange],
+    queryKey: ['sales', currentShop?.id, dateRange],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!currentShop?.id) return [];
       
       const { data, error } = await supabase
         .from('sales')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('shop_id', currentShop.id)
         .gte('created_at', dateRange.from.toISOString())
         .lte('created_at', dateRange.to.toISOString())
         .order('created_at', { ascending: false });
@@ -27,21 +52,21 @@ export const useReportsData = (dateRange: { from: Date; to: Date }) => {
         return [];
       }
       
-      return data as Sale[];
+      return (data || []) as ReportSale[];
     },
-    enabled: !!user?.id,
+    enabled: !!currentShop?.id,
   });
 
   // Fetch expenses data
   const { data: expenses = [], isLoading: expensesLoading } = useQuery({
-    queryKey: ['expenses', user?.id, dateRange],
+    queryKey: ['expenses', currentShop?.id, dateRange],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!currentShop?.id) return [];
       
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('shop_id', currentShop.id)
         .gte('created_at', dateRange.from.toISOString())
         .lte('created_at', dateRange.to.toISOString())
         .order('created_at', { ascending: false });
@@ -51,21 +76,21 @@ export const useReportsData = (dateRange: { from: Date; to: Date }) => {
         return [];
       }
       
-      return data as Expense[];
+      return (data || []) as ReportExpense[];
     },
-    enabled: !!user?.id,
+    enabled: !!currentShop?.id,
   });
 
   // Fetch products data
   const { data: products = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['products', user?.id],
+    queryKey: ['products', currentShop?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!currentShop?.id) return [];
       
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('shop_id', currentShop.id)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       
@@ -74,9 +99,9 @@ export const useReportsData = (dateRange: { from: Date; to: Date }) => {
         return [];
       }
       
-      return data as Product[];
+      return (data || []) as ReportProduct[];
     },
-    enabled: !!user?.id,
+    enabled: !!currentShop?.id,
   });
 
   // Calculate totals
@@ -93,7 +118,7 @@ export const useReportsData = (dateRange: { from: Date; to: Date }) => {
     acc[date].totalSales += Number(sale.total);
     acc[date].transactions += 1;
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, { date: string; totalSales: number; transactions: number }>);
 
   // Top selling products
   const topProducts = products

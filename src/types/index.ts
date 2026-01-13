@@ -4,14 +4,14 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password: string;  // Required for email/password login
-  pin?: string;      // Made optional as we're moving to password
-  role: "owner" | "manager" | "cashier";
-  shops: string[]; // shop IDs the user has access to
+  password: string;
+  pin?: string;
+  role: "owner" | "manager" | "cashier" | "user";
+  shops: string[];
   phone?: string;
-  profilePicture?: string; // URL to profile image
-  securityQuestion?: string; // Security question text
-  securityAnswer?: string; // Answer to security question
+  profilePicture?: string;
+  securityQuestion?: string;
+  securityAnswer?: string;
   permissions?: {
     viewSales: boolean;
     viewProducts: boolean;
@@ -21,67 +21,51 @@ export interface User {
   };
 }
 
+// Profile (from database)
+export interface Profile {
+  id: string;
+  user_id: string;
+  full_name?: string;
+  phone?: string;
+  avatar_url?: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Shop Types
 export interface Shop {
   id: string;
+  owner_id: string;
   name: string;
   location?: string;
-  logo?: string;
-  currency: string;
-  ownerId: string;
-  createdAt: string;
-  taxId?: string;
-  address?: string;
   phone?: string;
   email?: string;
-  receiptMessage?: string;
-}
-
-// Product Types - Updated to match database schema
-export interface Product {
-  id: string;
-  name: string;
-  part_number?: string;
-  description?: string;
-  brand?: string;
-  price: number;
-  stock_quantity: number;
-  category?: string;
-  user_id: string;
+  currency: string;
+  logo_url?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-// Quotation Types
-export interface Quotation {
+// Product Types - Updated to match database schema
+export interface Product {
   id: string;
-  user_id: string;
-  client_name: string;
-  client_location?: string;
-  reference_number?: string;
-  quotation_date: string;
-  total_amount: number;
-  vat_amount: number;
-  grand_total: number;
-  status: string;
+  shop_id: string;
+  name: string;
+  sku?: string;
+  barcode?: string;
+  category?: string;
+  description?: string;
+  buying_price: number;
+  selling_price: number;
+  stock_quantity: number;
+  min_stock_level: number;
+  unit?: string;
+  image_url?: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
-}
-
-export interface QuotationItem {
-  id: string;
-  quotation_id: string;
-  part_number: string;
-  description?: string;
-  brand?: string;
-  quantity: number;
-  rate: number;
-  amount: number;
-  vat_percentage: number;
-  vat_amount: number;
-  total_amount: number;
-  created_at: string;
 }
 
 // Sales Types
@@ -94,11 +78,103 @@ export interface CartItem {
 
 export interface Sale {
   id: string;
+  shop_id: string;
   user_id: string;
+  receipt_number?: string;
+  subtotal: number;
+  discount: number;
+  tax: number;
   total: number;
   payment_method: string;
+  payment_status: string;
   customer_name?: string;
-  receipt_number?: string;
+  customer_phone?: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface SaleItem {
+  id: string;
+  sale_id: string;
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  discount: number;
+  total: number;
+  created_at: string;
+}
+
+// Expense Types
+export interface Expense {
+  id: string;
+  shop_id: string;
+  user_id: string;
+  category: string;
+  description?: string;
+  amount: number;
+  payment_method: string;
+  expense_date: string;
+  receipt_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Purchase Types
+export interface Purchase {
+  id: string;
+  shop_id: string;
+  user_id: string;
+  supplier_name?: string;
+  supplier_phone?: string;
+  total_amount: number;
+  payment_method: string;
+  payment_status: string;
+  notes?: string;
+  purchase_date: string;
+  created_at: string;
+}
+
+export interface PurchaseItem {
+  id: string;
+  purchase_id: string;
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  total: number;
+  created_at: string;
+}
+
+// Quotation Types
+export interface Quotation {
+  id: string;
+  shop_id: string;
+  user_id: string;
+  quotation_number: string;
+  customer_name: string;
+  customer_phone?: string;
+  customer_email?: string;
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  status: string;
+  valid_until?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuotationItem {
+  id: string;
+  quotation_id: string;
+  product_id?: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  discount: number;
+  total: number;
   created_at: string;
 }
 
@@ -109,41 +185,17 @@ export interface Customer {
   phone?: string;
   email?: string;
   loyaltyPoints?: number;
-  shopId: string;
+  shop_id: string;
 }
 
-// Expense Types
-export interface Expense {
+// Shop Users (for multi-user shops)
+export interface ShopUser {
   id: string;
+  shop_id: string;
   user_id: string;
-  amount: number;
-  category: string;
-  description?: string;
+  role: string;
+  is_active: boolean;
   created_at: string;
-}
-
-// Purchase Types
-export interface Purchase {
-  id: string;
-  shopId: string;
-  supplierId?: string;
-  items: PurchaseItem[];
-  total: number;
-  paymentStatus: "paid" | "partial" | "unpaid";
-  paymentMethod?: "cash" | "mpesa" | "bank" | "credit";
-  amountPaid: number;
-  balance: number;
-  reference?: string;
-  timestamp: string;
-  addedBy: string;
-}
-
-export interface PurchaseItem {
-  productId: string;
-  name: string;
-  quantity: number;
-  unitCost: number;
-  subtotal: number;
 }
 
 export interface Supplier {
@@ -152,7 +204,7 @@ export interface Supplier {
   phone?: string;
   email?: string;
   address?: string;
-  shopId: string;
+  shop_id: string;
 }
 
 // For Analytics and Reports

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Calendar, TrendingUp, TrendingDown, DollarSign, Package, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useReportsData } from '@/hooks/useReportsData';
@@ -74,10 +74,9 @@ const ReportsPage: React.FC = () => {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-2">
-          <DatePickerWithRange
-            date={dateRange}
-            setDate={setDateRange}
-            className="w-full sm:w-auto"
+          <DateRangePicker
+            value={dateRange}
+            onChange={setDateRange}
           />
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={exportToPDF}>

@@ -24,11 +24,14 @@ import { toast } from 'sonner';
 const productSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   barcode: z.string().optional(),
+  sku: z.string().optional(),
   description: z.string().optional(),
-  price: z.string().min(1, "Price is required"),
-  costPrice: z.string().optional(),
+  sellingPrice: z.string().min(1, "Selling price is required"),
+  buyingPrice: z.string().optional(),
   stockQuantity: z.string().min(1, "Stock quantity is required"),
+  minStockLevel: z.string().optional(),
   category: z.string().optional(),
+  unit: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof productSchema>;
@@ -43,11 +46,14 @@ const AddProductPage: React.FC = () => {
     defaultValues: {
       name: '',
       barcode: '',
+      sku: '',
       description: '',
-      price: '',
-      costPrice: '',
+      sellingPrice: '',
+      buyingPrice: '',
       stockQuantity: '1',
+      minStockLevel: '5',
       category: '',
+      unit: 'piece',
     },
   });
   
@@ -63,15 +69,20 @@ const AddProductPage: React.FC = () => {
       // Convert string values to numbers
       const newProduct: Product = {
         id: crypto.randomUUID(),
+        shop_id: currentShop.id,
         name: data.name,
         barcode: data.barcode || undefined,
+        sku: data.sku || undefined,
         description: data.description || undefined,
-        price: parseFloat(data.price),
-        costPrice: data.costPrice ? parseFloat(data.costPrice) : undefined,
-        stockQuantity: parseInt(data.stockQuantity, 10),
+        selling_price: parseFloat(data.sellingPrice),
+        buying_price: data.buyingPrice ? parseFloat(data.buyingPrice) : 0,
+        stock_quantity: parseInt(data.stockQuantity, 10),
+        min_stock_level: data.minStockLevel ? parseInt(data.minStockLevel, 10) : 5,
         category: data.category || undefined,
-        shopId: currentShop.id,
-        isActive: true,
+        unit: data.unit || 'piece',
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
       
       // Get existing products and add the new one
@@ -153,7 +164,21 @@ const AddProductPage: React.FC = () => {
             
             <FormField
               control={form.control}
-              name="price"
+              name="sku"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SKU</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter SKU" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="sellingPrice"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Selling Price *</FormLabel>
@@ -173,10 +198,10 @@ const AddProductPage: React.FC = () => {
             
             <FormField
               control={form.control}
-              name="costPrice"
+              name="buyingPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cost Price</FormLabel>
+                  <FormLabel>Buying Price (Cost)</FormLabel>
                   <FormControl>
                     <Input 
                       type="number" 
@@ -213,12 +238,46 @@ const AddProductPage: React.FC = () => {
             
             <FormField
               control={form.control}
+              name="minStockLevel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Minimum Stock Level</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      step="1" 
+                      placeholder="5"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <FormControl>
                     <Input placeholder="Product category" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="unit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Unit</FormLabel>
+                  <FormControl>
+                    <Input placeholder="piece, kg, liter, etc." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
