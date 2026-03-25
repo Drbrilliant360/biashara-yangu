@@ -34,6 +34,11 @@ const QuotationsPage: React.FC = () => {
 
   // Function to fetch quotations from database
   const fetchQuotations = async () => {
+    if (!currentShop) {
+      setQuotations([]);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -52,7 +57,7 @@ const QuotationsPage: React.FC = () => {
           *,
           quotation_items (*)
         `)
-        .eq('user_id', user.id)
+        .eq('shop_id', currentShop.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -78,7 +83,7 @@ const QuotationsPage: React.FC = () => {
   // Load data on component mount
   useEffect(() => {
     fetchQuotations();
-  }, []);
+  }, [currentShop]);
   
   // Handle exporting data in different formats
   const handleExport = (format: 'excel' | 'pdf' | 'word', quotation?: QuotationWithItems) => {
@@ -97,18 +102,15 @@ const QuotationsPage: React.FC = () => {
     const exportData = dataToExport.flatMap(q => 
       q.quotation_items.map((item, index) => ({
         'Quotation ID': q.id,
-        'Client': q.client_name,
-        'Date': new Date(q.quotation_date).toLocaleDateString(),
-        'SL No.': index + 1,
-        'Part Number': item.part_number,
-        'Description': item.description || '',
-        'Brand': item.brand || 'N/A',
+        'Quotation Number': q.quotation_number,
+        'Customer': q.customer_name,
+        'Date': new Date(q.created_at).toLocaleDateString(),
+        'Line': index + 1,
+        'Product': item.product_name,
         'Quantity': item.quantity,
-        'Rate': formatCurrency(item.rate),
-        'Amount': formatCurrency(item.amount),
-        'VAT %': `${item.vat_percentage}%`,
-        'VAT Amount': formatCurrency(item.vat_amount),
-        'Total Amount': formatCurrency(item.total_amount)
+        'Unit Price': formatCurrency(item.unit_price),
+        'Discount': formatCurrency(item.discount),
+        'Total': formatCurrency(item.total),
       }))
     );
     
@@ -116,7 +118,7 @@ const QuotationsPage: React.FC = () => {
       ? `quotation_${quotation.id}_${new Date().toISOString().split('T')[0]}`
       : `quotations_${new Date().toISOString().split('T')[0]}`;
     const shopName = currentShop?.name || 'Business';
-    const reportTitle = quotation ? `Quotation - ${quotation.client_name}` : 'Quotations';
+    const reportTitle = quotation ? `Quotation - ${quotation.customer_name}` : 'Quotations';
     
     try {
       switch (format) {
@@ -189,7 +191,7 @@ const QuotationsPage: React.FC = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Quotation - ${quotation.client_name}</title>
+          <title>Quotation - ${quotation.customer_name}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .header { display: flex; justify-content: space-between; margin-bottom: 30px; }
@@ -210,55 +212,49 @@ const QuotationsPage: React.FC = () => {
           <div class="header">
             <div class="company-info">
               <h2>${currentShop?.name || 'Your Business Name'}</h2>
-              <p>${currentShop?.address || 'Business Address'}</p>
+              <p>${currentShop?.location || 'Business Address'}</p>
               <p>Tel: ${currentShop?.phone || 'Phone Number'}</p>
               <p>Email: ${currentShop?.email || 'Email Address'}</p>
             </div>
             <div class="client-info">
-              <h3>${quotation.client_name}</h3>
-              <p>${quotation.client_location || ''}</p>
-              <p>Reference: ${quotation.reference_number || 'N/A'}</p>
-              <p>Date: ${new Date(quotation.quotation_date).toLocaleDateString()}</p>
+              <h3>${quotation.customer_name}</h3>
+              <p>${quotation.customer_phone || ''}</p>
+              <p>${quotation.customer_email || ''}</p>
+              <p>Quotation #: ${quotation.quotation_number}</p>
+              <p>Date: ${new Date(quotation.created_at).toLocaleDateString()}</p>
             </div>
           </div>
           
           <table>
             <thead>
               <tr>
-                <th>SL No.</th>
-                <th>Part Number</th>
-                <th>Description</th>
-                <th>Brand</th>
+                <th>Line</th>
+                <th>Product</th>
                 <th>Qty</th>
-                <th>Rate</th>
-                <th>Amount</th>
-                <th>VAT %</th>
-                <th>VAT Amount</th>
-                <th>Total Amount</th>
+                <th>Unit Price</th>
+                <th>Discount</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
               ${quotation.quotation_items.map((item, index) => `
                 <tr>
                   <td>${index + 1}</td>
-                  <td>${item.part_number}</td>
-                  <td>${item.description || ''}</td>
-                  <td>${item.brand || ''}</td>
+                  <td>${item.product_name}</td>
                   <td>${item.quantity}</td>
-                  <td>${formatCurrency(item.rate)}</td>
-                  <td>${formatCurrency(item.amount)}</td>
-                  <td>${item.vat_percentage}%</td>
-                  <td>${formatCurrency(item.vat_amount)}</td>
-                  <td>${formatCurrency(item.total_amount)}</td>
+                  <td>${formatCurrency(item.unit_price)}</td>
+                  <td>${formatCurrency(item.discount)}</td>
+                  <td>${formatCurrency(item.total)}</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
           
           <div class="totals">
-            <div>Total Amount: ${formatCurrency(quotation.total_amount)}</div>
-            <div>VAT Amount: ${formatCurrency(quotation.vat_amount)}</div>
-            <div class="grand-total">Grand Total: ${formatCurrency(quotation.grand_total)}</div>
+            <div>Subtotal: ${formatCurrency(quotation.subtotal)}</div>
+            <div>Discount: ${formatCurrency(quotation.discount)}</div>
+            <div>Tax: ${formatCurrency(quotation.tax)}</div>
+            <div class="grand-total">Grand Total: ${formatCurrency(quotation.total)}</div>
           </div>
         </body>
       </html>
@@ -327,10 +323,10 @@ const QuotationsPage: React.FC = () => {
                   <CardHeader className="pb-3">
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                       <div>
-                        <CardTitle className="text-lg">{quotation.client_name}</CardTitle>
+                        <CardTitle className="text-lg">{quotation.customer_name}</CardTitle>
                         <CardDescription className="text-sm">
-                          Date: {new Date(quotation.quotation_date).toLocaleDateString()} | 
-                          Reference: {quotation.reference_number || 'N/A'}
+                          Date: {new Date(quotation.created_at).toLocaleDateString()} | 
+                          Quotation #: {quotation.quotation_number}
                         </CardDescription>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -376,33 +372,26 @@ const QuotationsPage: React.FC = () => {
                       <Table className="text-sm">
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="min-w-[80px]">Part #</TableHead>
-                            <TableHead className="min-w-[150px]">Description</TableHead>
-                            <TableHead className="min-w-[80px] hidden sm:table-cell">Brand</TableHead>
+                            <TableHead className="min-w-[180px]">Product</TableHead>
                             <TableHead className="text-right min-w-[60px]">Qty</TableHead>
-                            <TableHead className="text-right min-w-[80px] hidden md:table-cell">Rate</TableHead>
+                            <TableHead className="text-right min-w-[80px] hidden md:table-cell">Unit Price</TableHead>
+                            <TableHead className="text-right min-w-[80px] hidden sm:table-cell">Discount</TableHead>
                             <TableHead className="text-right min-w-[80px]">Total</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {quotation.quotation_items.map((item) => (
                             <TableRow key={item.id}>
-                              <TableCell className="font-medium">{item.part_number}</TableCell>
-                              <TableCell>
-                                <div>
-                                  {item.description}
-                                  <div className="sm:hidden text-xs text-muted-foreground mt-1">
-                                    {item.brand && `Brand: ${item.brand}`}
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="hidden sm:table-cell">{item.brand}</TableCell>
+                              <TableCell className="font-medium">{item.product_name}</TableCell>
                               <TableCell className="text-right">{item.quantity}</TableCell>
                               <TableCell className="text-right hidden md:table-cell">
-                                {formatCurrency(item.rate)}
+                                {formatCurrency(item.unit_price)}
+                              </TableCell>
+                              <TableCell className="text-right hidden sm:table-cell">
+                                {formatCurrency(item.discount)}
                               </TableCell>
                               <TableCell className="text-right font-medium">
-                                {formatCurrency(item.total_amount)}
+                                {formatCurrency(item.total)}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -413,9 +402,10 @@ const QuotationsPage: React.FC = () => {
                     {/* Totals */}
                     <div className="mt-4 border-t pt-4">
                       <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-8 text-sm">
-                        <div>Subtotal: <span className="font-medium">{formatCurrency(quotation.total_amount)}</span></div>
-                        <div>VAT: <span className="font-medium">{formatCurrency(quotation.vat_amount)}</span></div>
-                        <div className="text-lg font-bold">Total: <span>{formatCurrency(quotation.grand_total)}</span></div>
+                        <div>Subtotal: <span className="font-medium">{formatCurrency(quotation.subtotal)}</span></div>
+                        <div>Discount: <span className="font-medium">{formatCurrency(quotation.discount)}</span></div>
+                        <div>Tax: <span className="font-medium">{formatCurrency(quotation.tax)}</span></div>
+                        <div className="text-lg font-bold">Total: <span>{formatCurrency(quotation.total)}</span></div>
                       </div>
                     </div>
                   </CardContent>

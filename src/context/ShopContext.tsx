@@ -5,10 +5,12 @@ import { Shop } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from './AuthContext';
 
+type CreateShopInput = Omit<Shop, 'id' | 'owner_id' | 'created_at' | 'updated_at' | 'is_active'>;
+
 interface ShopContextType {
   currentShop: Shop | null;
   shops: Shop[];
-  addShop: (shop: Omit<Shop, 'id' | 'createdAt'>) => Promise<boolean>;
+  addShop: (shop: CreateShopInput) => Promise<boolean>;
   updateShop: (shop: Shop) => Promise<boolean>;
   deleteShop: (shopId: string) => Promise<boolean>;
   switchShop: (shopId: string) => void;
@@ -34,6 +36,29 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const normalizeShop = (shop: Partial<Shop> & {
+    ownerId?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    isActive?: boolean;
+  }): Shop => {
+    const now = new Date().toISOString();
+
+    return {
+      id: shop.id || `shop_${Date.now()}`,
+      owner_id: shop.owner_id || shop.ownerId || '',
+      name: shop.name || 'Untitled Shop',
+      location: shop.location,
+      phone: shop.phone,
+      email: shop.email,
+      currency: shop.currency || 'KES',
+      logo_url: shop.logo_url,
+      is_active: shop.is_active ?? shop.isActive ?? true,
+      created_at: shop.created_at || shop.createdAt || now,
+      updated_at: shop.updated_at || shop.updatedAt || shop.created_at || shop.createdAt || now,
+    };
+  };
+
   useEffect(() => {
     if (user) {
       loadShops();
@@ -47,11 +72,12 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadShops = () => {
     try {
       // Get all shops
-      const allShops = getItem<Shop[]>(STORAGE_KEYS.SHOPS, []);
+      const allShops = getItem<Array<Partial<Shop> & { ownerId?: string; createdAt?: string; updatedAt?: string; isActive?: boolean }>>(STORAGE_KEYS.SHOPS, [])
+        .map(normalizeShop);
       
       // Filter shops for the current user
       const userShops = user ? allShops.filter(shop => 
-        shop.ownerId === user.id || user.shops.includes(shop.id)
+        shop.owner_id === user.id || user.shops.includes(shop.id)
       ) : [];
       
       setShops(userShops);
@@ -86,7 +112,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addShop = async (newShop: Omit<Shop, 'id' | 'createdAt'>): Promise<boolean> => {
+  const addShop = async (newShop: CreateShopInput): Promise<boolean> => {
     if (!user) {
       toast({
         title: "Error",
@@ -97,14 +123,18 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     try {
-      const allShops = getItem<Shop[]>(STORAGE_KEYS.SHOPS, []);
-      
-      const shop: Shop = {
+      const allShops = getItem<Array<Partial<Shop> & { ownerId?: string; createdAt?: string; updatedAt?: string; isActive?: boolean }>>(STORAGE_KEYS.SHOPS, [])
+        .map(normalizeShop);
+      const now = new Date().toISOString();
+
+      const shop = normalizeShop({
         ...newShop,
         id: `shop_${Date.now()}`,
-        ownerId: user.id,
-        createdAt: new Date().toISOString()
-      };
+        owner_id: user.id,
+        created_at: now,
+        updated_at: now,
+        is_active: true,
+      });
       
       const updatedShops = [...allShops, shop];
       setItem(STORAGE_KEYS.SHOPS, updatedShops);

@@ -56,9 +56,8 @@ const AddShopPage: React.FC = () => {
     
     const success = await addShop({
       name,
-      location,
+      location: location || undefined,
       currency,
-      ownerId: '', // Will be set in the context
     });
     
     setIsSubmitting(false);
