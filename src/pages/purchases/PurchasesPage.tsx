@@ -31,25 +31,128 @@ import { useToast } from '@/hooks/use-toast';
 import { useShop } from '@/context/ShopContext';
 import { useAuth } from '@/context/AuthContext';
 import { getItem, setItem, STORAGE_KEYS } from '@/lib/storage';
-import { Product, Purchase, PurchaseItem, Supplier, TimeRange } from '@/types';
+import { Product, TimeRange } from '@/types';
+
+interface SupplierRecord {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  shop_id: string;
+}
+
+interface PurchaseLineItem {
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  total: number;
+}
+
+interface PurchaseRecord {
+  id: string;
+  shop_id: string;
+  user_id: string;
+  supplier_id?: string;
+  supplier_name?: string;
+  supplier_phone?: string;
+  items: PurchaseLineItem[];
+  total_amount: number;
+  payment_method: 'cash' | 'mpesa' | 'bank' | 'credit';
+  payment_status: 'paid' | 'partial' | 'unpaid';
+  amount_paid: number;
+  balance: number;
+  reference?: string;
+  notes?: string;
+  purchase_date: string;
+  created_at: string;
+}
+
+type LegacySupplierRecord = Partial<SupplierRecord> & { shopId?: string };
+type LegacyPurchaseLineItem = Partial<PurchaseLineItem> & {
+  productId?: string;
+  name?: string;
+  unitCost?: number;
+  subtotal?: number;
+};
+type LegacyPurchaseRecord = Partial<PurchaseRecord> & {
+  shopId?: string;
+  supplierId?: string;
+  total?: number;
+  paymentStatus?: PurchaseRecord['payment_status'];
+  paymentMethod?: PurchaseRecord['payment_method'];
+  amountPaid?: number;
+  timestamp?: string;
+  addedBy?: string;
+  items?: LegacyPurchaseLineItem[];
+};
+
+const normalizeSupplier = (supplier: LegacySupplierRecord): SupplierRecord => ({
+  id: supplier.id || crypto.randomUUID(),
+  name: supplier.name || 'General Supplier',
+  phone: supplier.phone,
+  email: supplier.email,
+  address: supplier.address,
+  shop_id: supplier.shop_id || supplier.shopId || '',
+});
+
+const normalizePurchaseItem = (item: LegacyPurchaseLineItem): PurchaseLineItem => {
+  const unitPrice = item.unit_price ?? item.unitCost ?? 0;
+  const quantity = item.quantity ?? 0;
+
+  return {
+    product_id: item.product_id || item.productId || '',
+    product_name: item.product_name || item.name || 'Unnamed product',
+    quantity,
+    unit_price: unitPrice,
+    total: item.total ?? item.subtotal ?? quantity * unitPrice,
+  };
+};
+
+const normalizePurchase = (purchase: LegacyPurchaseRecord): PurchaseRecord => {
+  const items = (purchase.items || []).map(normalizePurchaseItem);
+  const totalAmount = purchase.total_amount ?? purchase.total ?? items.reduce((sum, item) => sum + item.total, 0);
+  const amountPaid = purchase.amount_paid ?? purchase.amountPaid ?? (purchase.payment_status === 'paid' || purchase.paymentStatus === 'paid' ? totalAmount : 0);
+  const createdAt = purchase.created_at || purchase.timestamp || new Date().toISOString();
+
+  return {
+    id: purchase.id || crypto.randomUUID(),
+    shop_id: purchase.shop_id || purchase.shopId || '',
+    user_id: purchase.user_id || purchase.addedBy || '',
+    supplier_id: purchase.supplier_id || purchase.supplierId,
+    supplier_name: purchase.supplier_name,
+    supplier_phone: purchase.supplier_phone,
+    items,
+    total_amount: totalAmount,
+    payment_method: purchase.payment_method || purchase.paymentMethod || 'cash',
+    payment_status: purchase.payment_status || purchase.paymentStatus || 'paid',
+    amount_paid: amountPaid,
+    balance: purchase.balance ?? Math.max(totalAmount - amountPaid, 0),
+    reference: purchase.reference,
+    notes: purchase.notes,
+    purchase_date: purchase.purchase_date || createdAt.split('T')[0],
+    created_at: createdAt,
+  };
+};
 
 const PurchasesPage: React.FC = () => {
   const { toast } = useToast();
   const { currentShop } = useShop();
   const { user } = useAuth();
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
+  const [suppliers, setSuppliers] = useState<SupplierRecord[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [isAddPurchaseOpen, setIsAddPurchaseOpen] = useState(false);
   const [isViewPurchaseOpen, setIsViewPurchaseOpen] = useState(false);
-  const [currentPurchase, setCurrentPurchase] = useState<Purchase | null>(null);
+  const [currentPurchase, setCurrentPurchase] = useState<PurchaseRecord | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
   const [selectedSupplier, setSelectedSupplier] = useState<string>('all');
   
   // New purchase form state
   const [supplierId, setSupplierId] = useState<string>('');
-  const [purchaseItems, setPurchaseItems] = useState<PurchaseItem[]>([]);
+  const [purchaseItems, setPurchaseItems] = useState<PurchaseLineItem[]>([]);
   const [reference, setReference] = useState<string>('');
   const [paymentStatus, setPaymentStatus] = useState<'paid' | 'partial' | 'unpaid'>('paid');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'mpesa' | 'bank' | 'credit'>('cash');
@@ -94,8 +197,9 @@ const PurchasesPage: React.FC = () => {
   const loadPurchases = () => {
     if (!currentShop) return;
     
-    const allPurchases = getItem<Purchase[]>('biashara_purchases', [])
-      .filter(purchase => purchase.shopId === currentShop.id);
+    const allPurchases = getItem<LegacyPurchaseRecord[]>('biashara_purchases', [])
+      .map(normalizePurchase)
+      .filter(purchase => purchase.shop_id === currentShop.id);
     
     setPurchases(allPurchases);
   };
@@ -103,8 +207,9 @@ const PurchasesPage: React.FC = () => {
   const loadSuppliers = () => {
     if (!currentShop) return;
     
-    const allSuppliers = getItem<Supplier[]>('biashara_suppliers', [])
-      .filter(supplier => supplier.shopId === currentShop.id);
+    const allSuppliers = getItem<LegacySupplierRecord[]>('biashara_suppliers', [])
+      .map(normalizeSupplier)
+      .filter(supplier => supplier.shop_id === currentShop.id);
     
     setSuppliers(allSuppliers);
     
@@ -113,10 +218,10 @@ const PurchasesPage: React.FC = () => {
       const defaultSupplier: Supplier = {
         id: crypto.randomUUID(),
         name: 'General Supplier',
-        shopId: currentShop.id,
+        shop_id: currentShop.id,
       };
       
-      const updatedSuppliers = [...getItem<Supplier[]>('biashara_suppliers', []), defaultSupplier];
+      const updatedSuppliers = [...getItem<LegacySupplierRecord[]>('biashara_suppliers', []), defaultSupplier];
       setItem('biashara_suppliers', updatedSuppliers);
       setSuppliers([defaultSupplier]);
     }
@@ -126,13 +231,13 @@ const PurchasesPage: React.FC = () => {
     if (!currentShop) return;
     
     const allProducts = getItem<Product[]>(STORAGE_KEYS.PRODUCTS, [])
-      .filter(product => product.shopId === currentShop.id);
+      .filter(product => product.shop_id === currentShop.id);
     
     setProducts(allProducts);
   };
 
-  const calculatePurchaseTotal = (items: PurchaseItem[]) => {
-    return items.reduce((sum, item) => sum + item.subtotal, 0);
+  const calculatePurchaseTotal = (items: PurchaseLineItem[]) => {
+    return items.reduce((sum, item) => sum + item.total, 0);
   };
 
   const handleAddItem = () => {
@@ -169,16 +274,16 @@ const PurchasesPage: React.FC = () => {
       return;
     }
     
-    const newItem: PurchaseItem = {
-      productId: product.id,
-      name: product.name,
+    const newItem: PurchaseLineItem = {
+      product_id: product.id,
+      product_name: product.name,
       quantity,
-      unitCost,
-      subtotal: quantity * unitCost
+      unit_price: unitCost,
+      total: quantity * unitCost,
     };
     
     // Check if product already exists in the list
-    const existingItemIndex = purchaseItems.findIndex(item => item.productId === product.id);
+    const existingItemIndex = purchaseItems.findIndex(item => item.product_id === product.id);
     
     if (existingItemIndex >= 0) {
       // Update existing item
@@ -188,7 +293,8 @@ const PurchasesPage: React.FC = () => {
       updatedItems[existingItemIndex] = {
         ...existingItem,
         quantity: existingItem.quantity + quantity,
-        subtotal: (existingItem.quantity + quantity) * unitCost
+        unit_price: unitCost,
+        total: (existingItem.quantity + quantity) * unitCost,
       };
       
       setPurchaseItems(updatedItems);
@@ -250,33 +356,36 @@ const PurchasesPage: React.FC = () => {
       return;
     }
     
-    const newPurchase: Purchase = {
+    const createdAt = new Date().toISOString();
+
+    const newPurchase: PurchaseRecord = {
       id: crypto.randomUUID(),
-      shopId: currentShop.id,
-      supplierId: supplierId || undefined,
+      shop_id: currentShop.id,
+      user_id: user.id,
+      supplier_id: supplierId || undefined,
       items: purchaseItems,
-      total,
-      paymentStatus,
-      paymentMethod,
-      amountPaid: amountPaidValue,
+      total_amount: total,
+      payment_status: paymentStatus,
+      payment_method: paymentMethod,
+      amount_paid: amountPaidValue,
       balance: total - amountPaidValue,
       reference: reference || undefined,
-      timestamp: new Date().toISOString(),
-      addedBy: user.id,
+      purchase_date: createdAt.split('T')[0],
+      created_at: createdAt,
     };
 
-    const updatedPurchases = [...getItem<Purchase[]>('biashara_purchases', []), newPurchase];
+    const updatedPurchases = [...getItem<PurchaseRecord[]>('biashara_purchases', []), newPurchase];
     setItem('biashara_purchases', updatedPurchases);
     
     // Update product stock quantities
     const allProducts = getItem<Product[]>(STORAGE_KEYS.PRODUCTS, []);
     const updatedProducts = allProducts.map(product => {
-      const purchaseItem = purchaseItems.find(item => item.productId === product.id);
+      const purchaseItem = purchaseItems.find(item => item.product_id === product.id);
       if (purchaseItem) {
         return {
           ...product,
-          stockQuantity: product.stockQuantity + purchaseItem.quantity,
-          costPrice: purchaseItem.unitCost // Update cost price from the latest purchase
+          stock_quantity: product.stock_quantity + purchaseItem.quantity,
+          buying_price: purchaseItem.unit_price,
         };
       }
       return product;
@@ -301,7 +410,7 @@ const PurchasesPage: React.FC = () => {
     });
   };
 
-  const viewPurchase = (purchase: Purchase) => {
+  const viewPurchase = (purchase: PurchaseRecord) => {
     setCurrentPurchase(purchase);
     setIsViewPurchaseOpen(true);
   };
@@ -316,13 +425,13 @@ const PurchasesPage: React.FC = () => {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(purchase => 
         purchase.reference?.toLowerCase().includes(term) ||
-        (purchase.supplierId && getSupplierName(purchase.supplierId).toLowerCase().includes(term))
+        (purchase.supplier_id && getSupplierName(purchase.supplier_id).toLowerCase().includes(term))
       );
     }
     
     // Filter by supplier
     if (selectedSupplier !== 'all') {
-      filtered = filtered.filter(purchase => purchase.supplierId === selectedSupplier);
+      filtered = filtered.filter(purchase => purchase.supplier_id === selectedSupplier);
     }
     
     // Filter by time range
@@ -348,11 +457,11 @@ const PurchasesPage: React.FC = () => {
         break;
     }
     
-    filtered = filtered.filter(purchase => new Date(purchase.timestamp) >= startDate);
+    filtered = filtered.filter(purchase => new Date(purchase.created_at) >= startDate);
     
     // Sort by newest first
     return filtered.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   };
 
@@ -390,7 +499,7 @@ const PurchasesPage: React.FC = () => {
     }
   };
 
-  const totalPurchases = filterPurchases().reduce((sum, purchase) => sum + purchase.total, 0);
+  const totalPurchases = filterPurchases().reduce((sum, purchase) => sum + purchase.total_amount, 0);
   
   // Don't show the page if no shop is selected
   if (!currentShop) {
@@ -490,19 +599,19 @@ const PurchasesPage: React.FC = () => {
             <TableBody>
               {filterPurchases().map((purchase) => (
                 <TableRow key={purchase.id}>
-                  <TableCell>{formatDate(purchase.timestamp)}</TableCell>
+                  <TableCell>{formatDate(purchase.created_at)}</TableCell>
                   <TableCell>
-                    {purchase.supplierId ? getSupplierName(purchase.supplierId) : 'N/A'}
+                    {purchase.supplier_id ? getSupplierName(purchase.supplier_id) : 'N/A'}
                   </TableCell>
                   <TableCell>{purchase.items.length} items</TableCell>
                   <TableCell>{purchase.reference || 'N/A'}</TableCell>
                   <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(purchase.paymentStatus)}`}>
-                      {purchase.paymentStatus.charAt(0).toUpperCase() + purchase.paymentStatus.slice(1)}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(purchase.payment_status)}`}>
+                      {purchase.payment_status.charAt(0).toUpperCase() + purchase.payment_status.slice(1)}
                     </span>
                   </TableCell>
                   <TableCell className="text-right font-medium">
-                    {formatCurrency(purchase.total)}
+                    {formatCurrency(purchase.total_amount)}
                   </TableCell>
                   <TableCell>
                     <Button 
@@ -686,13 +795,13 @@ const PurchasesPage: React.FC = () => {
                     {purchaseItems.map((item, index) => (
                       <div key={index} className="p-2 flex justify-between items-center">
                         <div>
-                          <div className="font-medium">{item.name}</div>
+                          <div className="font-medium">{item.product_name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {item.quantity} × {formatCurrency(item.unitCost)}
+                            {item.quantity} × {formatCurrency(item.unit_price)}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="font-medium">{formatCurrency(item.subtotal)}</div>
+                          <div className="font-medium">{formatCurrency(item.total)}</div>
                           <Button 
                             size="icon"
                             variant="ghost"
@@ -748,7 +857,7 @@ const PurchasesPage: React.FC = () => {
             <DialogTitle className="flex justify-between items-center">
               <span>Purchase Details</span>
               <span className="text-sm font-normal">
-                {currentPurchase && formatDate(currentPurchase.timestamp)}
+                {currentPurchase && formatDate(currentPurchase.created_at)}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -759,7 +868,7 @@ const PurchasesPage: React.FC = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">Supplier</p>
                   <p className="font-medium">
-                    {currentPurchase.supplierId ? getSupplierName(currentPurchase.supplierId) : 'N/A'}
+                    {currentPurchase.supplier_id ? getSupplierName(currentPurchase.supplier_id) : 'N/A'}
                   </p>
                 </div>
                 <div>
@@ -774,12 +883,12 @@ const PurchasesPage: React.FC = () => {
                   {currentPurchase.items.map((item, index) => (
                     <div key={index} className="flex justify-between text-sm border-b pb-2">
                       <div>
-                        <p className="font-medium">{item.name}</p>
+                        <p className="font-medium">{item.product_name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {item.quantity} × {formatCurrency(item.unitCost)}
+                          {item.quantity} × {formatCurrency(item.unit_price)}
                         </p>
                       </div>
-                      <p className="font-medium">{formatCurrency(item.subtotal)}</p>
+                      <p className="font-medium">{formatCurrency(item.total)}</p>
                     </div>
                   ))}
                 </div>
@@ -788,28 +897,28 @@ const PurchasesPage: React.FC = () => {
               <div className="border-t pt-4">
                 <div className="flex justify-between mb-1">
                   <p>Total</p>
-                  <p className="font-bold">{formatCurrency(currentPurchase.total)}</p>
+                  <p className="font-bold">{formatCurrency(currentPurchase.total_amount)}</p>
                 </div>
                 
                 <div className="flex justify-between mb-1">
                   <p className="text-sm">Payment Status</p>
-                  <p className={`text-sm ${currentPurchase.paymentStatus === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>
-                    {currentPurchase.paymentStatus.charAt(0).toUpperCase() + currentPurchase.paymentStatus.slice(1)}
+                  <p className={`text-sm ${currentPurchase.payment_status === 'paid' ? 'text-green-600' : 'text-amber-600'}`}>
+                    {currentPurchase.payment_status.charAt(0).toUpperCase() + currentPurchase.payment_status.slice(1)}
                   </p>
                 </div>
                 
-                {currentPurchase.paymentStatus !== 'unpaid' && (
+                {currentPurchase.payment_status !== 'unpaid' && (
                   <div className="flex justify-between mb-1">
                     <p className="text-sm">Payment Method</p>
-                    <p className="text-sm">{currentPurchase.paymentMethod}</p>
+                    <p className="text-sm">{currentPurchase.payment_method}</p>
                   </div>
                 )}
                 
-                {currentPurchase.paymentStatus === 'partial' && (
+                {currentPurchase.payment_status === 'partial' && (
                   <>
                     <div className="flex justify-between mb-1">
                       <p className="text-sm">Amount Paid</p>
-                      <p className="text-sm">{formatCurrency(currentPurchase.amountPaid)}</p>
+                      <p className="text-sm">{formatCurrency(currentPurchase.amount_paid)}</p>
                     </div>
                     <div className="flex justify-between">
                       <p className="text-sm">Balance</p>

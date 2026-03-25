@@ -28,7 +28,7 @@ export const CartDisplay: React.FC<CartDisplayProps> = ({
                 style: 'currency',
                 currency: currencyCode,
                 minimumFractionDigits: 0,
-              }).format(item.product.price)} × {item.quantity}
+              }).format(item.product.selling_price)} × {item.quantity}
             </div>
           </div>
           
