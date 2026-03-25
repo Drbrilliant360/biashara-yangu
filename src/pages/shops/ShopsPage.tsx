@@ -74,7 +74,7 @@ const ShopsPage: React.FC = () => {
                   <span>Shop ID: {shop.id.substring(5, 11)}</span>
                 </div>
                 <div className="text-sm text-gray-600 mt-2">
-                  Created: {new Date(shop.createdAt).toLocaleDateString()}
+                  Created: {new Date(shop.created_at).toLocaleDateString()}
                 </div>
               </CardContent>
               

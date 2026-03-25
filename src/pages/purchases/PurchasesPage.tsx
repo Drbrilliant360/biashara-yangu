@@ -215,7 +215,7 @@ const PurchasesPage: React.FC = () => {
     
     // Add a default supplier if none exists
     if (allSuppliers.length === 0) {
-      const defaultSupplier: Supplier = {
+      const defaultSupplier: SupplierRecord = {
         id: crypto.randomUUID(),
         name: 'General Supplier',
         shop_id: currentShop.id,

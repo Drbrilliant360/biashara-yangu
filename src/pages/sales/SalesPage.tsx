@@ -3,12 +3,93 @@ import React, { useEffect, useState } from "react";
 import { getItem, setItem, STORAGE_KEYS } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Product, Sale, Customer } from "@/types";
+import { Product, Customer } from "@/types";
 import { useShop } from "@/context/ShopContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Card } from "@/components/ui/card";
-import { CreditCard, ReceiptText, FilePlus, Search, Plus, X } from "lucide-react";
+import { ReceiptText, FilePlus, Search, Plus, X } from "lucide-react";
+
+interface SaleLineItem {
+  product_id: string;
+  product_name: string;
+  unit_price: number;
+  quantity: number;
+  total: number;
+}
+
+interface SaleRecord {
+  id: string;
+  shop_id: string;
+  user_id: string;
+  items: SaleLineItem[];
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  payment_method: string;
+  payment_status: string;
+  customer_id?: string;
+  receipt_number?: string;
+  created_at: string;
+}
+
+type LegacyCustomer = Customer & { shopId?: string };
+type LegacySaleLineItem = Partial<SaleLineItem> & {
+  productId?: string;
+  name?: string;
+  price?: number;
+  subtotal?: number;
+};
+type LegacySaleRecord = Partial<SaleRecord> & {
+  shopId?: string;
+  items?: LegacySaleLineItem[];
+  paymentMethod?: string;
+  customerId?: string;
+  cashierId?: string;
+  timestamp?: string;
+  receiptNumber?: string;
+};
+
+const normalizeCustomer = (customer: LegacyCustomer): Customer => ({
+  ...customer,
+  shop_id: customer.shop_id || customer.shopId || '',
+});
+
+const normalizeSaleItem = (item: LegacySaleLineItem): SaleLineItem => {
+  const unitPrice = item.unit_price ?? item.price ?? 0;
+  const quantity = item.quantity ?? 0;
+
+  return {
+    product_id: item.product_id || item.productId || '',
+    product_name: item.product_name || item.name || 'Unnamed product',
+    unit_price: unitPrice,
+    quantity,
+    total: item.total ?? item.subtotal ?? unitPrice * quantity,
+  };
+};
+
+const normalizeSale = (sale: LegacySaleRecord): SaleRecord => {
+  const items = (sale.items || []).map(normalizeSaleItem);
+  const subtotal = sale.subtotal ?? items.reduce((sum, item) => sum + item.total, 0);
+  const tax = sale.tax ?? 0;
+  const discount = sale.discount ?? 0;
+
+  return {
+    id: sale.id || `${Date.now()}`,
+    shop_id: sale.shop_id || sale.shopId || '',
+    user_id: sale.user_id || sale.cashierId || 'demo',
+    items,
+    subtotal,
+    discount,
+    tax,
+    total: sale.total ?? Math.max(subtotal + tax - discount, 0),
+    payment_method: sale.payment_method || sale.paymentMethod || 'cash',
+    payment_status: sale.payment_status || 'paid',
+    customer_id: sale.customer_id || sale.customerId,
+    receipt_number: sale.receipt_number || sale.receiptNumber,
+    created_at: sale.created_at || sale.timestamp || new Date().toISOString(),
+  };
+};
 
 // Payment methods
 const paymentMethods = [
@@ -25,7 +106,7 @@ const SalesPage: React.FC = () => {
   // Load products, customers, and existing sales
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [sales, setSales] = useState<Sale[]>([]);
+  const [sales, setSales] = useState<SaleRecord[]>([]);
   const [search, setSearch] = useState("");
   
   // New sale form state
@@ -38,9 +119,9 @@ const SalesPage: React.FC = () => {
   // Filtered products for shop
   useEffect(() => {
     if (!currentShop) return;
-    setProducts(getItem<Product[]>(STORAGE_KEYS.PRODUCTS, []).filter(p => p.shopId === currentShop.id));
-    setCustomers(getItem<Customer[]>(STORAGE_KEYS.CUSTOMERS, []).filter(c => c.shopId === currentShop.id));
-    setSales(getItem<Sale[]>(STORAGE_KEYS.SALES, []).filter(s => s.shopId === currentShop.id));
+    setProducts(getItem<Product[]>(STORAGE_KEYS.PRODUCTS, []).filter((p) => p.shop_id === currentShop.id));
+    setCustomers(getItem<LegacyCustomer[]>(STORAGE_KEYS.CUSTOMERS, []).map(normalizeCustomer).filter((c) => c.shop_id === currentShop.id));
+    setSales(getItem<LegacySaleRecord[]>(STORAGE_KEYS.SALES, []).map(normalizeSale).filter((s) => s.shop_id === currentShop.id));
   }, [currentShop]);
 
   // Handle Add Sale
@@ -48,33 +129,40 @@ const SalesPage: React.FC = () => {
     if (!selectedProductId || quantity < 1) return;
     const product = products.find(p => p.id === selectedProductId);
     if (!product) return;
-    if (quantity > product.stockQuantity) {
+    if (quantity > product.stock_quantity) {
       alert("Not enough stock.");
       return;
     }
 
-    const newSale: Sale = {
+    const unitPrice = product.selling_price;
+    const lineTotal = unitPrice * quantity;
+
+    const newSale: SaleRecord = {
       id: `${Date.now()}`,
-      shopId: currentShop!.id,
+      shop_id: currentShop!.id,
+      user_id: "demo",
       items: [{
-        productId: product.id,
-        name: product.name,
-        price: product.price,
+        product_id: product.id,
+        product_name: product.name,
+        unit_price: unitPrice,
         quantity,
-        subtotal: product.price * quantity,
+        total: lineTotal,
       }],
-      total: product.price * quantity,
-      paymentMethod: paymentMethod as Sale["paymentMethod"],
-      customerId: selectedCustomerId || undefined,
-      cashierId: "demo", // should be current user
-      timestamp: new Date().toISOString(),
-      receiptNumber: (1000 + sales.length).toString(),
+      subtotal: lineTotal,
+      discount: 0,
+      tax: 0,
+      total: lineTotal,
+      payment_method: paymentMethod,
+      payment_status: "paid",
+      customer_id: selectedCustomerId || undefined,
+      created_at: new Date().toISOString(),
+      receipt_number: (1000 + sales.length).toString(),
     };
 
     // Update product stock
     const updatedProducts = products.map(p =>
       p.id === product.id
-        ? { ...p, stockQuantity: p.stockQuantity - quantity }
+        ? { ...p, stock_quantity: p.stock_quantity - quantity }
         : p
     );
     setProducts(updatedProducts);
@@ -98,8 +186,8 @@ const SalesPage: React.FC = () => {
     if (!search) return true;
     const searchLower = search.toLowerCase();
     return (
-      sale.items.some(i => i.name.toLowerCase().includes(searchLower)) ||
-      (sale.customerId && customers.find(c => c.id === sale.customerId)?.name.toLowerCase().includes(searchLower))
+      sale.items.some(i => i.product_name.toLowerCase().includes(searchLower)) ||
+      (sale.customer_id && customers.find(c => c.id === sale.customer_id)?.name.toLowerCase().includes(searchLower))
     );
   });
 
@@ -132,7 +220,7 @@ const SalesPage: React.FC = () => {
               >
                 <option value="">Select...</option>
                 {products.map(p => (
-                  <option key={p.id} value={p.id}>{p.name} ({p.stockQuantity} left)</option>
+                  <option key={p.id} value={p.id}>{p.name} ({p.stock_quantity} left)</option>
                 ))}
               </select>
             </div>
@@ -141,7 +229,7 @@ const SalesPage: React.FC = () => {
               <Input
                 type="number"
                 min={1}
-                max={selectedProductId ? (products.find(p => p.id === selectedProductId)?.stockQuantity ?? 1) : 1}
+                max={selectedProductId ? (products.find(p => p.id === selectedProductId)?.stock_quantity ?? 1) : 1}
                 value={quantity}
                 onChange={e => setQuantity(Number(e.target.value))}
               />
@@ -205,17 +293,17 @@ const SalesPage: React.FC = () => {
             <Card key={sale.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-3">
               <div className="flex-1">
                 <div className="font-semibold">
-                  {sale.items.map(i => i.name).join(", ")}
+                  {sale.items.map(i => i.product_name).join(", ")}
                   <span className="ml-2 text-xs text-gray-400">
                     × {sale.items.map(i => i.quantity).join(", ")}
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">
-                  {new Date(sale.timestamp).toLocaleString()}
-                  {sale.customerId && (
-                    <> • {customers.find(c => c.id === sale.customerId)?.name || "Customer"}</>
+                  {new Date(sale.created_at).toLocaleString()}
+                  {sale.customer_id && (
+                    <> • {customers.find(c => c.id === sale.customer_id)?.name || "Customer"}</>
                   )}
-                  <> • #{sale.receiptNumber}</>
+                  <> • #{sale.receipt_number}</>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1 mt-2 md:mt-0">
@@ -223,7 +311,7 @@ const SalesPage: React.FC = () => {
                   {new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 0 }).format(sale.total)}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {sale.paymentMethod.charAt(0).toUpperCase() + sale.paymentMethod.slice(1)}
+                  {sale.payment_method.charAt(0).toUpperCase() + sale.payment_method.slice(1)}
                 </span>
               </div>
             </Card>
