@@ -1,17 +1,22 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getItem, setItem, STORAGE_KEYS } from '@/lib/storage';
-import { User } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+interface AppUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  register: (userData: Omit<User, 'id'>) => Promise<boolean>;
-  resetPassword: (email: string, securityAnswer: string, newPassword: string) => Promise<boolean>;
-  verifySecurityQuestion: (email: string) => Promise<{ success: boolean; question?: string }>;
+  register: (userData: { name: string; email: string; password: string }) => Promise<boolean>;
   isAuthenticated: boolean;
   loading: boolean;
 }
@@ -21,59 +26,69 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => false,
   logout: () => {},
   register: async () => false,
-  resetPassword: async () => false,
-  verifySecurityQuestion: async () => ({ success: false }),
   isAuthenticated: false,
   loading: true,
 });
 
 export const useAuth = () => useContext(AuthContext);
 
+const mapSupabaseUser = (su: SupabaseUser): AppUser => ({
+  id: su.id,
+  name: su.user_metadata?.full_name || su.email?.split('@')[0] || 'User',
+  email: su.email || '',
+  role: 'owner',
+});
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const savedUser = getItem<User | null>(STORAGE_KEYS.CURRENT_USER, null);
-    
-    if (savedUser) {
-      setUser(savedUser);
-    }
-    
-    setLoading(false);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(mapSupabaseUser(session.user));
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(mapSupabaseUser(session.user));
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
-    
     try {
-      // Get all users from storage
-      const users = getItem<User[]>(STORAGE_KEYS.USERS, []);
-      
-      // Find user with matching email and password
-      const foundUser = users.find(u => u.email === email && u.password === password);
-      
-      if (foundUser) {
-        setUser(foundUser);
-        setItem(STORAGE_KEYS.CURRENT_USER, foundUser);
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${foundUser.name}!`,
-        });
-        setLoading(false);
-        return true;
-      } else {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
         toast({
           title: "Login Failed",
-          description: "Incorrect email or password. Please try again.",
+          description: error.message,
           variant: "destructive",
         });
         setLoading(false);
         return false;
       }
+      if (data.user) {
+        setUser(mapSupabaseUser(data.user));
+        toast({
+          title: "Login Successful",
+          description: `Welcome back!`,
+        });
+      }
+      setLoading(false);
+      return true;
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -85,41 +100,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
   };
-  
-  const register = async (newUser: Omit<User, 'id'>): Promise<boolean> => {
+
+  const register = async (userData: { name: string; email: string; password: string }): Promise<boolean> => {
     setLoading(true);
-    
     try {
-      const users = getItem<User[]>(STORAGE_KEYS.USERS, []);
-      
-      // Check if email is already in use
-      if (users.some(u => u.email === newUser.email)) {
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: { full_name: userData.name },
+        },
+      });
+
+      if (error) {
         toast({
           title: "Registration Failed",
-          description: "Email is already in use. Please choose another.",
+          description: error.message,
           variant: "destructive",
         });
         setLoading(false);
         return false;
       }
-      
-      // Create new user with ID
-      const user: User = {
-        ...newUser,
-        id: Date.now().toString(),
-      };
-      
-      // Add to users list and set as current user
-      const updatedUsers = [...users, user];
-      setItem(STORAGE_KEYS.USERS, updatedUsers);
-      setItem(STORAGE_KEYS.CURRENT_USER, user);
-      
-      setUser(user);
-      toast({
-        title: "Registration Successful",
-        description: `Welcome, ${user.name}!`,
-      });
-      
+
+      if (data.user && !data.session) {
+        // Email confirmation required
+        toast({
+          title: "Check Your Email",
+          description: "We've sent you a confirmation email. Please verify your email to continue.",
+        });
+        setLoading(false);
+        return true;
+      }
+
+      if (data.user) {
+        setUser(mapSupabaseUser(data.user));
+        toast({
+          title: "Registration Successful",
+          description: `Welcome, ${userData.name}!`,
+        });
+      }
+
       setLoading(false);
       return true;
     } catch (error) {
@@ -133,79 +153,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
   };
-  
-  const verifySecurityQuestion = async (email: string): Promise<{ success: boolean; question?: string }> => {
-    try {
-      const users = getItem<User[]>(STORAGE_KEYS.USERS, []);
-      const user = users.find(u => u.email === email);
-      
-      if (user && user.securityQuestion) {
-        return { success: true, question: user.securityQuestion };
-      } else {
-        toast({
-          title: "Account Not Found",
-          description: "We couldn't find an account with that email.",
-          variant: "destructive",
-        });
-        return { success: false };
-      }
-    } catch (error) {
-      console.error('Security question verification error:', error);
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-      return { success: false };
-    }
-  };
-  
-  const resetPassword = async (email: string, securityAnswer: string, newPassword: string): Promise<boolean> => {
-    try {
-      const users = getItem<User[]>(STORAGE_KEYS.USERS, []);
-      const userIndex = users.findIndex(u => u.email === email);
-      
-      if (userIndex === -1) {
-        toast({
-          title: "Account Not Found",
-          description: "We couldn't find an account with that email.",
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      if (users[userIndex].securityAnswer !== securityAnswer) {
-        toast({
-          title: "Incorrect Answer",
-          description: "The security answer provided is incorrect.",
-          variant: "destructive",
-        });
-        return false;
-      }
-      
-      // Update the user's password
-      users[userIndex].password = newPassword;
-      setItem(STORAGE_KEYS.USERS, users);
-      
-      toast({
-        title: "Password Reset Successful",
-        description: "Your password has been updated. You can now log in with your new password.",
-      });
-      return true;
-    } catch (error) {
-      console.error('Password reset error:', error);
-      toast({
-        title: "Reset Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-  
+
   const logout = () => {
+    supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
     toast({
       title: "Logged Out",
       description: "You have been logged out successfully.",
@@ -214,15 +165,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      login, 
+    <AuthContext.Provider value={{
+      user,
+      login,
       logout,
       register,
-      resetPassword,
-      verifySecurityQuestion,
       isAuthenticated: !!user,
-      loading 
+      loading
     }}>
       {children}
     </AuthContext.Provider>
