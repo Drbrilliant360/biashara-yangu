@@ -29,13 +29,23 @@ interface ReportExpense {
   created_at: string;
 }
 
+interface ReportPurchase {
+  id: string;
+  supplier_name?: string;
+  total_amount: number;
+  payment_method: string;
+  payment_status: string;
+  purchase_date: string;
+  created_at: string;
+}
+
 export const useReportsData = (dateRange: { from: Date; to: Date }) => {
   const { user } = useAuth();
   const { currentShop } = useShop();
   
   // Fetch sales data
   const { data: sales = [], isLoading: salesLoading } = useQuery({
-    queryKey: ['sales', currentShop?.id, dateRange],
+    queryKey: ['report-sales', currentShop?.id, dateRange],
     queryFn: async () => {
       if (!currentShop?.id) return [];
       
@@ -59,7 +69,7 @@ export const useReportsData = (dateRange: { from: Date; to: Date }) => {
 
   // Fetch expenses data
   const { data: expenses = [], isLoading: expensesLoading } = useQuery({
-    queryKey: ['expenses', currentShop?.id, dateRange],
+    queryKey: ['report-expenses', currentShop?.id, dateRange],
     queryFn: async () => {
       if (!currentShop?.id) return [];
       
@@ -81,9 +91,33 @@ export const useReportsData = (dateRange: { from: Date; to: Date }) => {
     enabled: !!currentShop?.id,
   });
 
+  // Fetch purchases data
+  const { data: purchases = [], isLoading: purchasesLoading } = useQuery({
+    queryKey: ['report-purchases', currentShop?.id, dateRange],
+    queryFn: async () => {
+      if (!currentShop?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('purchases')
+        .select('*')
+        .eq('shop_id', currentShop.id)
+        .gte('created_at', dateRange.from.toISOString())
+        .lte('created_at', dateRange.to.toISOString())
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching purchases:', error);
+        return [];
+      }
+      
+      return (data || []) as ReportPurchase[];
+    },
+    enabled: !!currentShop?.id,
+  });
+
   // Fetch products data
   const { data: products = [], isLoading: productsLoading } = useQuery({
-    queryKey: ['products', currentShop?.id],
+    queryKey: ['report-products', currentShop?.id],
     queryFn: async () => {
       if (!currentShop?.id) return [];
       
@@ -107,6 +141,7 @@ export const useReportsData = (dateRange: { from: Date; to: Date }) => {
   // Calculate totals
   const totalSales = sales.reduce((sum, sale) => sum + Number(sale.total), 0);
   const totalExpenses = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+  const totalPurchases = purchases.reduce((sum, p) => sum + Number(p.total_amount), 0);
   const profit = totalSales - totalExpenses;
 
   // Calculate daily sales for chart
