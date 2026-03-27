@@ -169,13 +169,15 @@ export const useReportsData = (dateRange: { from: Date; to: Date }) => {
   return {
     sales,
     expenses,
+    purchases,
     products,
     totalSales,
     totalExpenses,
+    totalPurchases,
     profit,
     dailySales: Object.values(dailySales),
     topProducts,
     lowStockProducts,
-    isLoading: salesLoading || expensesLoading || productsLoading,
+    isLoading: salesLoading || expensesLoading || purchasesLoading || productsLoading,
   };
 };
