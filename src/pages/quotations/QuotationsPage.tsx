@@ -287,7 +287,7 @@ const QuotationsPage: React.FC = () => {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={fetchQuotations}
+              onClick={() => fetchQuotations(true)}
               disabled={isLoading}
               className="w-full sm:w-auto"
             >
