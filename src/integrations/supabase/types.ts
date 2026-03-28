@@ -568,7 +568,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_has_shop_access: { Args: { shop_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
