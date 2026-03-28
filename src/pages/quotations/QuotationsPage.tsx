@@ -33,7 +33,7 @@ const QuotationsPage: React.FC = () => {
   };
 
   // Function to fetch quotations from database
-  const fetchQuotations = async () => {
+  const fetchQuotations = async (showToast = false) => {
     if (!currentShop) {
       setQuotations([]);
       return;
@@ -41,16 +41,6 @@ const QuotationsPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in to view quotations.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { data, error } = await supabase
         .from('quotations')
         .select(`
@@ -64,11 +54,14 @@ const QuotationsPage: React.FC = () => {
       
       setQuotations(data || []);
       
-      toast({
-        title: "Data Refreshed",
-        description: "Quotation data has been fetched from the database.",
-      });
-    } catch (error) {
+      if (showToast) {
+        toast({
+          title: "Data Refreshed",
+          description: "Quotation data has been fetched from the database.",
+        });
+      }
+    } catch (error: any) {
+      if (error?.name === 'AbortError') return;
       console.error('Error fetching quotations:', error);
       toast({
         title: "Error",
