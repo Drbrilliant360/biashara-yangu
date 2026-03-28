@@ -1,16 +1,22 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, ArrowUpDown } from 'lucide-react';
+import { Plus, Search, ArrowUpDown, Trash2, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useShop } from '@/context/ShopContext';
 import { Product } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const ProductsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -38,10 +44,30 @@ const ProductsPage: React.FC = () => {
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 
-    if (!error && data) {
+    if (error) {
+      console.error('Error loading products:', error);
+      toast.error('Failed to load products');
+    }
+    if (data) {
       setProducts(data as Product[]);
     }
     setLoading(false);
+  };
+
+  const handleDelete = async (productId: string, productName: string) => {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', productId);
+
+    if (error) {
+      console.error('Error deleting product:', error);
+      toast.error(error.message || 'Failed to delete product');
+      return;
+    }
+
+    setProducts(prev => prev.filter(p => p.id !== productId));
+    toast.success(`"${productName}" deleted successfully`);
   };
 
   const formatCurrency = (amount: number) => {
@@ -124,16 +150,17 @@ const ProductsPage: React.FC = () => {
               <TableHead className="cursor-pointer text-right" onClick={() => handleSort('stock_quantity')}>
                 Stock <ArrowUpDown size={14} className="inline ml-1" />
               </TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
               </TableRow>
             ) : sortedProducts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No products found</TableCell>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No products found</TableCell>
               </TableRow>
             ) : (
               sortedProducts.map(product => (
@@ -145,6 +172,29 @@ const ProductsPage: React.FC = () => {
                   <TableCell className="text-right">{formatCurrency(product.selling_price)}</TableCell>
                   <TableCell className={`text-right ${product.stock_quantity <= product.min_stock_level ? 'text-destructive font-bold' : ''}`}>
                     {product.stock_quantity}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                          <Trash2 size={16} />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete "{product.name}"?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete this product.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(product.id, product.name)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))
