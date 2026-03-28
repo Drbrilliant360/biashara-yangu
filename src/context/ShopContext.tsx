@@ -93,6 +93,13 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
+      // Verify we have an active session
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        toast({ title: "Error", description: "Session expired. Please log in again.", variant: "destructive" });
+        return false;
+      }
+
       const { data, error } = await supabase
         .from('shops')
         .insert({
@@ -102,12 +109,15 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: newShop.email,
           currency: newShop.currency || 'KES',
           logo_url: newShop.logo_url,
-          owner_id: user.id,
+          owner_id: sessionData.session.user.id,
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error.message, error.details, error.hint, error.code);
+        throw error;
+      }
 
       const shop = data as Shop;
       setShops(prev => [shop, ...prev]);
