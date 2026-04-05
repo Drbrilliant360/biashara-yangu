@@ -26,7 +26,14 @@ import { PaymentDialog } from '@/components/billing/PaymentDialog';
 const DashboardPage: React.FC = () => {
   const { currentShop } = useShop();
   const navigate = useNavigate();
-
+  const {
+    subscription,
+    showReminder,
+    setShowReminder,
+    showPayment,
+    setShowPayment,
+    extendSubscription,
+  } = useSubscription();
   const shopId = currentShop?.id;
 
   // Fetch products
