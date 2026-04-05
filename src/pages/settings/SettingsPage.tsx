@@ -12,7 +12,7 @@ import { useShop } from '@/context/ShopContext';
 import { Settings, Moon, Sun, Globe, UserCircle, Wallet, CreditCard } from 'lucide-react';
 import { useLanguage } from "@/context/LanguageContext";
 import { PaymentDialog } from '@/components/billing/PaymentDialog';
-import { useBilling } from '@/hooks/useBilling';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface UIUser {
   phone?: string;
