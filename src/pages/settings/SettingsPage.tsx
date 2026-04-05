@@ -330,7 +330,7 @@ const SettingsPage: React.FC = () => {
 
               <Button 
                 className="w-full" 
-                onClick={() => setIsPaymentDialogOpen(true)}
+                onClick={() => setShowPayment(true)}
               >
                 Pay Now
               </Button>
