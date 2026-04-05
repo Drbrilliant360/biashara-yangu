@@ -19,7 +19,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <ShopProvider>
-              <BillingReminderWrapper>
+              <>
                 <Toaster />
                 <Sonner />
                 <Routes>
