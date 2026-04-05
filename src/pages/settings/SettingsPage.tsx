@@ -340,8 +340,9 @@ const SettingsPage: React.FC = () => {
       </Tabs>
 
       <PaymentDialog 
-        open={isPaymentDialogOpen}
-        onOpenChange={setIsPaymentDialogOpen}
+        open={showPayment}
+        onOpenChange={setShowPayment}
+        onPaymentSuccess={extendSubscription}
       />
     </div>
   );
