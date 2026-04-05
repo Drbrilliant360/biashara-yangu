@@ -86,9 +86,12 @@ export function PaymentDialog({ open, onOpenChange, onPaymentSuccess }: PaymentD
     // In a real implementation, this would poll the status endpoint
     // For demo purposes, we'll simulate a successful payment after a delay
     setTimeout(() => {
-      // Simulate successful payment
       setPaymentStatus('success');
       setPaymentMessage('Payment completed successfully! Your subscription has been renewed.');
+      
+      if (onPaymentSuccess) {
+        onPaymentSuccess();
+      }
       
       toast({
         title: "Payment Successful",
