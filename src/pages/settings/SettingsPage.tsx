@@ -29,7 +29,9 @@ const SettingsPage: React.FC = () => {
   const { user } = useAuth();
   const { currentShop } = useShop();
   const { language, setLanguage, t } = useLanguage();
-  const { daysRemaining, isPaymentDialogOpen, setIsPaymentDialogOpen, subscriptionStatus } = useBilling();
+  const { subscription, showPayment, setShowPayment, extendSubscription } = useSubscription();
+  const daysRemaining = subscription.daysRemaining;
+  const subscriptionStatus = subscription.status;
 
   const [activeTab, setActiveTab] = useState("general");
   const [darkMode, setDarkMode] = useState(false);
