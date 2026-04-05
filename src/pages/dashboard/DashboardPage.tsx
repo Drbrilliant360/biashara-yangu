@@ -18,11 +18,22 @@ import { Button } from '@/components/ui/button';
 import { useShop } from '@/context/ShopContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useSubscription } from '@/hooks/useSubscription';
+import { SubscriptionWidget } from '@/components/billing/SubscriptionWidget';
+import { SubscriptionReminder } from '@/components/billing/SubscriptionReminder';
+import { PaymentDialog } from '@/components/billing/PaymentDialog';
 
 const DashboardPage: React.FC = () => {
   const { currentShop } = useShop();
   const navigate = useNavigate();
-
+  const {
+    subscription,
+    showReminder,
+    setShowReminder,
+    showPayment,
+    setShowPayment,
+    extendSubscription,
+  } = useSubscription();
   const shopId = currentShop?.id;
 
   // Fetch products
@@ -116,6 +127,27 @@ const DashboardPage: React.FC = () => {
           Today: {new Date().toLocaleDateString()}
         </div>
       </div>
+
+      {/* Subscription Status */}
+      <SubscriptionWidget
+        subscription={subscription}
+        onPayNow={() => setShowPayment(true)}
+      />
+
+      {/* Subscription Reminder Pop-up */}
+      <SubscriptionReminder
+        open={showReminder}
+        onOpenChange={setShowReminder}
+        subscription={subscription}
+        onPayNow={() => setShowPayment(true)}
+      />
+
+      {/* Payment Dialog */}
+      <PaymentDialog
+        open={showPayment}
+        onOpenChange={setShowPayment}
+        onPaymentSuccess={extendSubscription}
+      />
 
       {/* Quick stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

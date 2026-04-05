@@ -12,9 +12,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 interface PaymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onPaymentSuccess?: () => void;
 }
 
-export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
+export function PaymentDialog({ open, onOpenChange, onPaymentSuccess }: PaymentDialogProps) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
@@ -48,7 +49,7 @@ export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
         email,
         phone: formattedPhone,
         name,
-        amount: 10000, // TZS 10,000
+        amount: 5000, // TZS 5,000
       });
       
       if (response.status === 'PENDING' && response.orderId) {
@@ -85,9 +86,12 @@ export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
     // In a real implementation, this would poll the status endpoint
     // For demo purposes, we'll simulate a successful payment after a delay
     setTimeout(() => {
-      // Simulate successful payment
       setPaymentStatus('success');
       setPaymentMessage('Payment completed successfully! Your subscription has been renewed.');
+      
+      if (onPaymentSuccess) {
+        onPaymentSuccess();
+      }
       
       toast({
         title: "Payment Successful",
@@ -224,7 +228,7 @@ export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLoading ? "Processing..." : "Pay Now (TZS 10,000)"}
+                {isLoading ? "Processing..." : "Pay Now (TZS 5,000)"}
               </Button>
             </DialogFooter>
           </form>
@@ -238,7 +242,7 @@ export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
         <DialogHeader>
           <DialogTitle>Pay Subscription</DialogTitle>
           <DialogDescription>
-            Make a payment of TZS 10,000 for your monthly subscription
+            Make a payment of TZS 5,000 for your monthly subscription
           </DialogDescription>
         </DialogHeader>
         

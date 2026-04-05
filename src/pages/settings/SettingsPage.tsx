@@ -12,7 +12,7 @@ import { useShop } from '@/context/ShopContext';
 import { Settings, Moon, Sun, Globe, UserCircle, Wallet, CreditCard } from 'lucide-react';
 import { useLanguage } from "@/context/LanguageContext";
 import { PaymentDialog } from '@/components/billing/PaymentDialog';
-import { useBilling } from '@/hooks/useBilling';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface UIUser {
   phone?: string;
@@ -29,7 +29,9 @@ const SettingsPage: React.FC = () => {
   const { user } = useAuth();
   const { currentShop } = useShop();
   const { language, setLanguage, t } = useLanguage();
-  const { daysRemaining, isPaymentDialogOpen, setIsPaymentDialogOpen, subscriptionStatus } = useBilling();
+  const { subscription, showPayment, setShowPayment, extendSubscription } = useSubscription();
+  const daysRemaining = subscription.daysRemaining;
+  const subscriptionStatus = subscription.status;
 
   const [activeTab, setActiveTab] = useState("general");
   const [darkMode, setDarkMode] = useState(false);
@@ -282,16 +284,16 @@ const SettingsPage: React.FC = () => {
                   <h3 className="text-lg font-semibold">Subscription Status</h3>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                     subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' : 
-                    subscriptionStatus === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                    subscriptionStatus === 'trial' ? 'bg-blue-100 text-blue-800' :
                     'bg-red-100 text-red-800'
                   }`}>
                     {subscriptionStatus === 'active' ? 'Active' : 
-                     subscriptionStatus === 'warning' ? 'Expiring Soon' : 'Expired'}
+                     subscriptionStatus === 'trial' ? 'Free Trial' : 'Expired'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center mb-4">
                   <span>Monthly Subscription Fee</span>
-                  <span className="font-medium">TZS 10,000</span>
+                  <span className="font-medium">TZS 5,000</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Days Remaining</span>
@@ -328,7 +330,7 @@ const SettingsPage: React.FC = () => {
 
               <Button 
                 className="w-full" 
-                onClick={() => setIsPaymentDialogOpen(true)}
+                onClick={() => setShowPayment(true)}
               >
                 Pay Now
               </Button>
@@ -338,8 +340,9 @@ const SettingsPage: React.FC = () => {
       </Tabs>
 
       <PaymentDialog 
-        open={isPaymentDialogOpen}
-        onOpenChange={setIsPaymentDialogOpen}
+        open={showPayment}
+        onOpenChange={setShowPayment}
+        onPaymentSuccess={extendSubscription}
       />
     </div>
   );

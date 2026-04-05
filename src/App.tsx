@@ -9,7 +9,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ShopProvider } from "@/context/ShopContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { LanguageProvider } from "@/context/LanguageContext";
-import { useBilling } from "@/hooks/useBilling";
 
 // Pages
 import DashboardPage from "@/pages/dashboard/DashboardPage";
@@ -31,17 +30,6 @@ import QuotationsPage from "@/pages/quotations/QuotationsPage";
 // Create a client
 const queryClient = new QueryClient();
 
-const BillingReminderWrapper = ({ children }: { children: React.ReactNode }) => {
-  const { PaymentReminder } = useBilling();
-  
-  return (
-    <>
-      {children}
-      <PaymentReminder />
-    </>
-  );
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -49,7 +37,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <ShopProvider>
-              <BillingReminderWrapper>
+              <>
                 <Toaster />
                 <Sonner />
                 <Routes>
@@ -75,7 +63,7 @@ const App = () => (
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </BillingReminderWrapper>
+              </>
             </ShopProvider>
           </AuthProvider>
         </BrowserRouter>
