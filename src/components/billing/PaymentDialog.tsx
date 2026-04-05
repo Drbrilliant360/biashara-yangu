@@ -15,7 +15,7 @@ interface PaymentDialogProps {
   onPaymentSuccess?: () => void;
 }
 
-export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
+export function PaymentDialog({ open, onOpenChange, onPaymentSuccess }: PaymentDialogProps) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
