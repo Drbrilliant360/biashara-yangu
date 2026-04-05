@@ -9,38 +9,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ShopProvider } from "@/context/ShopContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { LanguageProvider } from "@/context/LanguageContext";
-import { useBilling } from "@/hooks/useBilling";
 
 // Pages
-import DashboardPage from "@/pages/dashboard/DashboardPage";
-import LoginPage from "@/pages/auth/LoginPage";
-import RegisterPage from "@/pages/auth/RegisterPage";
-import ShopsPage from "@/pages/shops/ShopsPage";
-import AddShopPage from "@/pages/shops/AddShopPage";
-import ProductsPage from "@/pages/products/ProductsPage";
-import AddProductPage from "@/pages/products/AddProductPage";
-import ReportsPage from "@/pages/reports/ReportsPage";
-import SettingsPage from "@/pages/settings/SettingsPage";
-import NotFound from "@/pages/NotFound";
-import ExpensesPage from "@/pages/expenses/ExpensesPage";
-import PurchasesPage from "@/pages/purchases/PurchasesPage";
-import SalesPage from "@/pages/sales/SalesPage";
-import UsersPage from "@/pages/users/UsersPage";
-import QuotationsPage from "@/pages/quotations/QuotationsPage";
-
-// Create a client
-const queryClient = new QueryClient();
-
-const BillingReminderWrapper = ({ children }: { children: React.ReactNode }) => {
-  const { PaymentReminder } = useBilling();
-  
-  return (
-    <>
-      {children}
-      <PaymentReminder />
-    </>
-  );
-};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
