@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 interface PaymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onPaymentSuccess?: () => void;
 }
 
 export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
