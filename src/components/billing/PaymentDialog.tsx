@@ -228,7 +228,7 @@ export function PaymentDialog({ open, onOpenChange, onPaymentSuccess }: PaymentD
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLoading ? "Processing..." : "Pay Now (TZS 10,000)"}
+                {isLoading ? "Processing..." : "Pay Now (TZS 5,000)"}
               </Button>
             </DialogFooter>
           </form>
