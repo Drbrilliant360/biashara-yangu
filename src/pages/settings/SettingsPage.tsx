@@ -284,11 +284,11 @@ const SettingsPage: React.FC = () => {
                   <h3 className="text-lg font-semibold">Subscription Status</h3>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                     subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' : 
-                    subscriptionStatus === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                    subscriptionStatus === 'trial' ? 'bg-blue-100 text-blue-800' :
                     'bg-red-100 text-red-800'
                   }`}>
                     {subscriptionStatus === 'active' ? 'Active' : 
-                     subscriptionStatus === 'warning' ? 'Expiring Soon' : 'Expired'}
+                     subscriptionStatus === 'trial' ? 'Free Trial' : 'Expired'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center mb-4">
