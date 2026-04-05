@@ -293,7 +293,7 @@ const SettingsPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center mb-4">
                   <span>Monthly Subscription Fee</span>
-                  <span className="font-medium">TZS 10,000</span>
+                  <span className="font-medium">TZS 5,000</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Days Remaining</span>
