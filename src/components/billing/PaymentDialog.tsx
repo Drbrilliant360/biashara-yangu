@@ -242,7 +242,7 @@ export function PaymentDialog({ open, onOpenChange, onPaymentSuccess }: PaymentD
         <DialogHeader>
           <DialogTitle>Pay Subscription</DialogTitle>
           <DialogDescription>
-            Make a payment of TZS 10,000 for your monthly subscription
+            Make a payment of TZS 5,000 for your monthly subscription
           </DialogDescription>
         </DialogHeader>
         
