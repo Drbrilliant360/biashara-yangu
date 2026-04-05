@@ -128,6 +128,27 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Subscription Status */}
+      <SubscriptionWidget
+        subscription={subscription}
+        onPayNow={() => setShowPayment(true)}
+      />
+
+      {/* Subscription Reminder Pop-up */}
+      <SubscriptionReminder
+        open={showReminder}
+        onOpenChange={setShowReminder}
+        subscription={subscription}
+        onPayNow={() => setShowPayment(true)}
+      />
+
+      {/* Payment Dialog */}
+      <PaymentDialog
+        open={showPayment}
+        onOpenChange={setShowPayment}
+        onPaymentSuccess={extendSubscription}
+      />
+
       {/* Quick stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="stats-card border-l-4 border-l-primary p-4">
