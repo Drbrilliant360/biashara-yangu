@@ -11,6 +11,24 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { LanguageProvider } from "@/context/LanguageContext";
 
 // Pages
+import DashboardPage from "@/pages/dashboard/DashboardPage";
+import LoginPage from "@/pages/auth/LoginPage";
+import RegisterPage from "@/pages/auth/RegisterPage";
+import ShopsPage from "@/pages/shops/ShopsPage";
+import AddShopPage from "@/pages/shops/AddShopPage";
+import ProductsPage from "@/pages/products/ProductsPage";
+import AddProductPage from "@/pages/products/AddProductPage";
+import ReportsPage from "@/pages/reports/ReportsPage";
+import SettingsPage from "@/pages/settings/SettingsPage";
+import NotFound from "@/pages/NotFound";
+import ExpensesPage from "@/pages/expenses/ExpensesPage";
+import PurchasesPage from "@/pages/purchases/PurchasesPage";
+import SalesPage from "@/pages/sales/SalesPage";
+import UsersPage from "@/pages/users/UsersPage";
+import QuotationsPage from "@/pages/quotations/QuotationsPage";
+
+// Create a client
+const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
