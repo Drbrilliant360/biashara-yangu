@@ -49,7 +49,7 @@ export function PaymentDialog({ open, onOpenChange, onPaymentSuccess }: PaymentD
         email,
         phone: formattedPhone,
         name,
-        amount: 10000, // TZS 10,000
+        amount: 5000, // TZS 5,000
       });
       
       if (response.status === 'PENDING' && response.orderId) {
