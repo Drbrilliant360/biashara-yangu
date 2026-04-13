@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Shop } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from './AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 type CreateShopInput = Omit<Shop, 'id' | 'owner_id' | 'created_at' | 'updated_at' | 'is_active'>;
 
@@ -35,6 +36,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (user) {
@@ -204,6 +206,7 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (shop) {
       setCurrentShop(shop);
       localStorage.setItem('biashara_current_shop', shopId);
+      queryClient.invalidateQueries();
       toast({ title: "Shop Switched", description: `Now using "${shop.name}"` });
     }
   };
