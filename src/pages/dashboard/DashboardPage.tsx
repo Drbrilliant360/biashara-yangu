@@ -133,7 +133,7 @@ const DashboardPage: React.FC = () => {
   }, 0);
 
   const grossProfit = monthlyRevenue - monthlyCOGS;
-  const monthlyProfit = grossProfit - monthlyExpenses;
+  const monthlyProfit = grossProfit - monthlyExpenses - monthlyPurchases;
 
   // Recent sales & low stock
   const recentSales = sales.slice(0, 5);
