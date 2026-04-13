@@ -239,10 +239,14 @@ const DashboardPage: React.FC = () => {
       {/* Profit Breakdown */}
       <Card className="p-5">
         <h2 className="font-semibold text-lg mb-4">Monthly Profit Breakdown</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Revenue</p>
             <p className="text-xl font-bold text-green-600">{formatCurrency(monthlyRevenue)}</p>
+          </div>
+          <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Cost of Goods</p>
+            <p className="text-xl font-bold text-amber-600">-{formatCurrency(monthlyCOGS)}</p>
           </div>
           <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-4 text-center">
             <p className="text-sm text-muted-foreground mb-1">Expenses</p>
@@ -255,12 +259,18 @@ const DashboardPage: React.FC = () => {
             </p>
           </div>
         </div>
-        {monthlyPurchases > 0 && (
-          <div className="mt-3 pt-3 border-t text-sm text-muted-foreground flex justify-between">
-            <span>Total Purchases (stock investment):</span>
-            <span className="font-medium">{formatCurrency(monthlyPurchases)}</span>
+        <div className="mt-3 pt-3 border-t text-sm text-muted-foreground space-y-1">
+          <div className="flex justify-between">
+            <span>Gross Profit (Revenue - COGS):</span>
+            <span className={`font-medium ${grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(grossProfit)}</span>
           </div>
-        )}
+          {monthlyPurchases > 0 && (
+            <div className="flex justify-between">
+              <span>Stock Purchases (investment):</span>
+              <span className="font-medium">{formatCurrency(monthlyPurchases)}</span>
+            </div>
+          )}
+        </div>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
