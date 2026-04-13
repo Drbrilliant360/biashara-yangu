@@ -56,6 +56,42 @@ const DashboardPage: React.FC = () => {
     enabled: !!shopId,
   });
 
+  // Fetch sale items with product buying prices for COGS calculation
+  const { data: monthlySaleItems = [] } = useQuery({
+    queryKey: ['dashboard-sale-items', shopId],
+    queryFn: async () => {
+      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const { data: monthSales } = await supabase
+        .from('sales')
+        .select('id')
+        .eq('shop_id', shopId!)
+        .gte('created_at', startOfMonth);
+      if (!monthSales || monthSales.length === 0) return [];
+      const saleIds = monthSales.map(s => s.id);
+      const { data: items } = await supabase
+        .from('sale_items')
+        .select('quantity, unit_price, product_id')
+        .in('sale_id', saleIds);
+      return items || [];
+    },
+    enabled: !!shopId,
+  });
+
+  // Fetch product buying prices for COGS
+  const { data: productCostMap = {} } = useQuery({
+    queryKey: ['dashboard-product-costs', shopId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('id, buying_price')
+        .eq('shop_id', shopId!);
+      const map: Record<string, number> = {};
+      (data || []).forEach(p => { map[p.id] = Number(p.buying_price); });
+      return map;
+    },
+    enabled: !!shopId,
+  });
+
   // Fetch expenses (this month)
   const { data: expenses = [] } = useQuery({
     queryKey: ['dashboard-expenses', shopId],
@@ -89,7 +125,15 @@ const DashboardPage: React.FC = () => {
   const monthlyRevenue = monthlySales.reduce((t, s) => t + Number(s.total), 0);
   const monthlyExpenses = expenses.reduce((t, e) => t + Number(e.amount), 0);
   const monthlyPurchases = purchases.reduce((t, p) => t + Number(p.total_amount), 0);
-  const monthlyProfit = monthlyRevenue - monthlyExpenses;
+
+  // COGS: sum of (buying_price × quantity) for each sold item
+  const monthlyCOGS = monthlySaleItems.reduce((total, item) => {
+    const cost = productCostMap[item.product_id] ?? 0;
+    return total + cost * item.quantity;
+  }, 0);
+
+  const grossProfit = monthlyRevenue - monthlyCOGS;
+  const monthlyProfit = grossProfit - monthlyExpenses;
 
   // Recent sales & low stock
   const recentSales = sales.slice(0, 5);
