@@ -18,6 +18,7 @@ import ShopsPage from "@/pages/shops/ShopsPage";
 import AddShopPage from "@/pages/shops/AddShopPage";
 import ProductsPage from "@/pages/products/ProductsPage";
 import AddProductPage from "@/pages/products/AddProductPage";
+import EditProductPage from "@/pages/products/EditProductPage";
 import ReportsPage from "@/pages/reports/ReportsPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import NotFound from "@/pages/NotFound";
@@ -52,6 +53,7 @@ const App = () => (
                     <Route path="shops/add" element={<AddShopPage />} />
                     <Route path="products" element={<ProductsPage />} />
                     <Route path="products/add" element={<AddProductPage />} />
+                    <Route path="products/edit/:id" element={<EditProductPage />} />
                     <Route path="reports" element={<ReportsPage />} />
                     <Route path="settings" element={<SettingsPage />} />
                     <Route path="expenses" element={<ExpensesPage />} />

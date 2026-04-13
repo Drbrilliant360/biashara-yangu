@@ -174,6 +174,9 @@ const ProductsPage: React.FC = () => {
                     {product.stock_quantity}
                   </TableCell>
                   <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => navigate(`/products/edit/${product.id}`)}>
+                      <Edit size={16} />
+                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
