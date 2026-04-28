@@ -27,6 +27,7 @@ import PurchasesPage from "@/pages/purchases/PurchasesPage";
 import SalesPage from "@/pages/sales/SalesPage";
 import UsersPage from "@/pages/users/UsersPage";
 import QuotationsPage from "@/pages/quotations/QuotationsPage";
+import MauzoAIPage from "@/pages/ai/MauzoAIPage";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -61,6 +62,7 @@ const App = () => (
                     <Route path="sales" element={<SalesPage />} />
                     <Route path="customers" element={<UsersPage />} />
                     <Route path="quotations" element={<QuotationsPage />} />
+                    <Route path="mauzo-ai" element={<MauzoAIPage />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
