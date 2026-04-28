@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Package, BarChart2, CreditCard, Settings, Users, X, Store, FileMinus, FileText, Quote } from 'lucide-react';
+import { Home, Package, BarChart2, CreditCard, Settings, Users, X, Store, FileMinus, FileText, Quote, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -19,6 +19,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) =
   
   const navItems = [
     { name: t("dashboard"), path: "/", icon: <Home size={20} /> },
+    { name: "Mauzo AI", path: "/mauzo-ai", icon: <Sparkles size={20} /> },
     { name: t("quotations"), path: "/quotations", icon: <Quote size={20} /> },
     { name: t("products"), path: "/products", icon: <Package size={20} /> },
     { name: t("sales"), path: "/sales", icon: <CreditCard size={20} /> },
