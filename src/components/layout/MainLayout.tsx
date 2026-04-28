@@ -4,6 +4,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { MobileBottomNav } from './MobileBottomNav';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export const MainLayout: React.FC = () => {
@@ -33,17 +34,23 @@ export const MainLayout: React.FC = () => {
           <Sidebar />
         </div>
       )}
-      
+
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
         <TopBar />
-        
+
         {/* Main scrollable content */}
-        <main className="flex-1 overflow-auto p-4 md:p-6">
+        <main
+          className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 pb-20 md:pb-6"
+          style={isMobile ? { paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' } : undefined}
+        >
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile bottom navigation */}
+      {isMobile && <MobileBottomNav />}
     </div>
   );
 };
