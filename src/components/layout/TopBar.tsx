@@ -26,26 +26,24 @@ export const TopBar: React.FC = () => {
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm py-2 px-4">
       <div className="flex items-center justify-between h-12">
-        {/* Left side - Mobile menu button or shop name */}
-        <div className="flex items-center">
-          {isMobile ? (
+        {/* Left side - Mobile menu button + shop name */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {isMobile && (
             <>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setMobileMenuOpen(true)}
+                className="flex-shrink-0"
               >
                 <Menu size={24} />
               </Button>
               <MobileSidebar open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
             </>
-          ) : (
-            <div className="flex items-center">
-              <span className="font-medium text-biashara-dark">
-                {currentShop?.name || t("no shop selected")}
-              </span>
-            </div>
           )}
+          <span className="font-medium text-biashara-dark truncate text-sm sm:text-base">
+            {currentShop?.name || t("no shop selected")}
+          </span>
         </div>
         
         {/* Right side - Language, Notification, and User profile */}
