@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useShop } from '@/context/ShopContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
@@ -55,11 +56,19 @@ export const MauzoAIChat: React.FC = () => {
 
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mauzo-ai`;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) {
+        toast.error('Please sign in again.');
+        setLoading(false);
+        return;
+      }
       const resp = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${accessToken}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ messages: next, shopId: currentShop.id }),
       });
