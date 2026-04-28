@@ -22,9 +22,6 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { SubscriptionWidget } from '@/components/billing/SubscriptionWidget';
 import { SubscriptionReminder } from '@/components/billing/SubscriptionReminder';
 import { PaymentDialog } from '@/components/billing/PaymentDialog';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { MauzoAIChat } from '@/components/ai/MauzoAIChat';
-import { Sparkles } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const { currentShop } = useShop();
@@ -196,16 +193,6 @@ const DashboardPage: React.FC = () => {
         onPaymentSuccess={extendSubscription}
       />
 
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="mauzo-ai" className="gap-1">
-            <Sparkles className="h-3.5 w-3.5" /> Mauzo AI
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6 mt-4">
-
       {/* Quick stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="stats-card border-l-4 border-l-primary p-4">
@@ -362,12 +349,6 @@ const DashboardPage: React.FC = () => {
           <ArrowUpRight className="h-8 w-8 mb-2" /><span>View Reports</span>
         </Button>
       </div>
-        </TabsContent>
-
-        <TabsContent value="mauzo-ai" className="mt-4">
-          <MauzoAIChat />
-        </TabsContent>
-      </Tabs>
     </div>
   );
 };
