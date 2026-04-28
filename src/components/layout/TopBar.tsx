@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Menu, Bell, User, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Menu, Bell, User, Globe, Plus, ShoppingCart, Package, FileMinus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useShop } from '@/context/ShopContext';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ export const TopBar: React.FC = () => {
   const { user, logout } = useAuth();
   const { currentShop } = useShop();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
 
