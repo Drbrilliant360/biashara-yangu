@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Menu, Bell, User, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Menu, Bell, User, Globe, Plus, ShoppingCart, Package, FileMinus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useShop } from '@/context/ShopContext';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ export const TopBar: React.FC = () => {
   const { user, logout } = useAuth();
   const { currentShop } = useShop();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
 
@@ -47,7 +49,37 @@ export const TopBar: React.FC = () => {
         </div>
         
         {/* Right side - Language, Notification, and User profile */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Mobile Quick Actions */}
+          {isMobile && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="icon"
+                  aria-label={t('quick actions') || 'Quick actions'}
+                  className="rounded-full bg-biashara-primary hover:bg-biashara-primary/90 text-white h-9 w-9"
+                >
+                  <Plus size={20} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel>{t('quick actions') || 'Quick Actions'}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => navigate('/quotations')}>
+                  <ShoppingCart size={16} className="mr-2" />
+                  {t('new sale') || 'New Sale'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => navigate('/products/add')}>
+                  <Package size={16} className="mr-2" />
+                  {t('add product') || 'Add Product'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => navigate('/expenses')}>
+                  <FileMinus size={16} className="mr-2" />
+                  {t('add expense') || 'Add Expense'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           {/* Language Switcher Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
