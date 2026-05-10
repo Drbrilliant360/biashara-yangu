@@ -28,6 +28,14 @@ import SalesPage from "@/pages/sales/SalesPage";
 import UsersPage from "@/pages/users/UsersPage";
 import QuotationsPage from "@/pages/quotations/QuotationsPage";
 import MauzoAIPage from "@/pages/ai/MauzoAIPage";
+import AdminOverviewPage from "@/pages/admin/AdminOverviewPage";
+import AdminShopsPage from "@/pages/admin/AdminShopsPage";
+import AdminUsersPage from "@/pages/admin/AdminUsersPage";
+import AdminSubscriptionsPage from "@/pages/admin/AdminSubscriptionsPage";
+import AdminRevenuePage from "@/pages/admin/AdminRevenuePage";
+import AdminProductsPage from "@/pages/admin/AdminProductsPage";
+import AdminSalesPage from "@/pages/admin/AdminSalesPage";
+import { RequireSuperAdmin } from "@/components/admin/RequireSuperAdmin";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -63,6 +71,13 @@ const App = () => (
                     <Route path="customers" element={<UsersPage />} />
                     <Route path="quotations" element={<QuotationsPage />} />
                     <Route path="mauzo-ai" element={<MauzoAIPage />} />
+                    <Route path="admin" element={<RequireSuperAdmin><AdminOverviewPage /></RequireSuperAdmin>} />
+                    <Route path="admin/shops" element={<RequireSuperAdmin><AdminShopsPage /></RequireSuperAdmin>} />
+                    <Route path="admin/users" element={<RequireSuperAdmin><AdminUsersPage /></RequireSuperAdmin>} />
+                    <Route path="admin/subscriptions" element={<RequireSuperAdmin><AdminSubscriptionsPage /></RequireSuperAdmin>} />
+                    <Route path="admin/revenue" element={<RequireSuperAdmin><AdminRevenuePage /></RequireSuperAdmin>} />
+                    <Route path="admin/products" element={<RequireSuperAdmin><AdminProductsPage /></RequireSuperAdmin>} />
+                    <Route path="admin/sales" element={<RequireSuperAdmin><AdminSalesPage /></RequireSuperAdmin>} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
