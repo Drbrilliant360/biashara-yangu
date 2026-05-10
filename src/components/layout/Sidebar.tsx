@@ -1,17 +1,19 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Package, BarChart2, CreditCard, Settings, Users, LogOut, Store, FileMinus, FileText, Quote, Sparkles } from 'lucide-react';
+import { Home, Package, BarChart2, CreditCard, Settings, Users, LogOut, Store, FileMinus, FileText, Quote, Sparkles, Shield } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useShop } from '@/context/ShopContext';
 import { cn } from '@/lib/utils';
 import { ShopSwitcher } from '@/components/shop/ShopSwitcher';
 import { useLanguage } from '@/context/LanguageContext';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export const Sidebar: React.FC = () => {
   const { logout } = useAuth();
   const { currentShop } = useShop();
   const { t } = useLanguage();
+  const { isSuperAdmin } = useUserRole();
   
   const navItems = [
     { name: t("dashboard"), path: "/", icon: <Home size={20} /> },
@@ -25,6 +27,7 @@ export const Sidebar: React.FC = () => {
     { name: t("users"), path: "/customers", icon: <Users size={20} /> },
     { name: t("shops"), path: "/shops", icon: <Store size={20} /> },
     { name: t("settings"), path: "/settings", icon: <Settings size={20} /> },
+    ...(isSuperAdmin ? [{ name: "Super Admin", path: "/admin", icon: <Shield size={20} /> }] : []),
   ];
 
   return (
