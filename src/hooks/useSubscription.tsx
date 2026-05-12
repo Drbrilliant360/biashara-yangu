@@ -12,6 +12,8 @@ export interface SubscriptionInfo {
   isExpired: boolean;
   isTrial: boolean;
   isWarning: boolean;
+  registrationFee: number;
+  registrationFeePaid: boolean;
 }
 
 export function useSubscription() {
@@ -25,6 +27,8 @@ export function useSubscription() {
     isExpired: false,
     isTrial: true,
     isWarning: false,
+    registrationFee: 5000,
+    registrationFeePaid: false,
   });
   const [loading, setLoading] = useState(true);
   const [showReminder, setShowReminder] = useState(false);
@@ -96,6 +100,8 @@ export function useSubscription() {
       isExpired,
       isTrial,
       isWarning,
+      registrationFee: Number(data.registration_fee ?? 5000),
+      registrationFeePaid: !!data.registration_fee_paid,
     });
 
     // Show reminders
