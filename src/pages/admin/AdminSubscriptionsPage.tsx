@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { SubscriptionHistoryDialog } from "@/components/admin/SubscriptionHistoryDialog";
+import { History } from "lucide-react";
 
 interface Sub {
   id: string; user_id: string; status: string; amount: number;
@@ -19,6 +21,7 @@ const AdminSubscriptionsPage: React.FC = () => {
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [historySub, setHistorySub] = useState<{ id: string; name: string } | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -39,9 +42,24 @@ const AdminSubscriptionsPage: React.FC = () => {
     load();
   };
 
-  const markPaid = (s: Sub) => {
+  const markPaid = async (s: Sub) => {
+    const receipt = window.prompt("Receipt / reference number (optional)") ?? "";
     const next = new Date(); next.setDate(next.getDate() + 30);
-    update(s.id, { status: "active", last_payment_date: new Date().toISOString(), current_period_end: next.toISOString() } as any);
+    const { error } = await supabase.from("subscriptions").update({
+      status: "active", last_payment_date: new Date().toISOString(), current_period_end: next.toISOString(),
+    } as any).eq("id", s.id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (receipt.trim()) {
+      const { data: latest } = await supabase
+        .from("subscription_events" as any)
+        .select("id").eq("subscription_id", s.id).eq("event_type", "payment")
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (latest && (latest as any).id) {
+        await supabase.from("subscription_events" as any).update({ receipt_reference: receipt.trim() }).eq("id", (latest as any).id);
+      }
+    }
+    toast({ title: "Marked as paid" });
+    load();
   };
   const extendTrial = (s: Sub, days = 30) => {
     const cur = new Date(s.trial_end || s.current_period_end);
