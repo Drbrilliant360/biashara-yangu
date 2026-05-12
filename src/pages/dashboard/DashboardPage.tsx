@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { SubscriptionWidget } from '@/components/billing/SubscriptionWidget';
+import { RegistrationFeeBanner } from '@/components/billing/RegistrationFeeBanner';
 import { SubscriptionReminder } from '@/components/billing/SubscriptionReminder';
 import { PaymentDialog } from '@/components/billing/PaymentDialog';
 
@@ -171,6 +172,9 @@ const DashboardPage: React.FC = () => {
           Today: {new Date().toLocaleDateString()}
         </div>
       </div>
+
+      {/* Registration fee notice */}
+      <RegistrationFeeBanner subscription={subscription} />
 
       {/* Subscription Status */}
       <SubscriptionWidget

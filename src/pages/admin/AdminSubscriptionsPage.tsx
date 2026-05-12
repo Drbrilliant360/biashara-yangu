@@ -14,6 +14,7 @@ interface Sub {
   id: string; user_id: string; status: string; amount: number;
   trial_start: string; trial_end: string; current_period_end: string;
   last_payment_date: string | null; created_at: string;
+  registration_fee: number; registration_fee_paid: boolean;
 }
 
 const AdminSubscriptionsPage: React.FC = () => {
@@ -67,9 +68,19 @@ const AdminSubscriptionsPage: React.FC = () => {
     update(s.id, { trial_end: cur.toISOString(), current_period_end: cur.toISOString(), status: "trial" } as any);
   };
   const cancel = (s: Sub) => update(s.id, { status: "cancelled" } as any);
+  const markFeePaid = (s: Sub) => {
+    const receipt = window.prompt("Registration fee receipt / reference (optional)") ?? "";
+    update(s.id, {
+      registration_fee_paid: true,
+      registration_fee_paid_at: new Date().toISOString(),
+      registration_fee_receipt: receipt.trim() || null,
+    } as any);
+  };
 
   const filtered = filter === "all" ? subs : subs.filter(s => s.status === filter);
   const lifetime = subs.filter(s => s.status === "active" && s.last_payment_date).reduce((a, b) => a + Number(b.amount ?? 0), 0);
+  const feeRevenue = subs.filter(s => s.registration_fee_paid).reduce((a, b) => a + Number(b.registration_fee ?? 0), 0);
+  const unpaidFees = subs.filter(s => !s.registration_fee_paid).length;
 
   return (
     <div>
@@ -93,6 +104,12 @@ const AdminSubscriptionsPage: React.FC = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+        <Card className="p-3"><div className="text-xs text-muted-foreground">Registration fees collected</div><div className="text-lg font-semibold">{feeRevenue.toLocaleString()} TZS</div></Card>
+        <Card className="p-3"><div className="text-xs text-muted-foreground">Unpaid registration fees</div><div className="text-lg font-semibold">{unpaidFees}</div></Card>
+        <Card className="p-3"><div className="text-xs text-muted-foreground">Active subscribers</div><div className="text-lg font-semibold">{subs.filter(s => s.status === "active").length}</div></Card>
+      </div>
+
       <Card className="p-0">
         <Table>
           <TableHeader>
@@ -100,6 +117,7 @@ const AdminSubscriptionsPage: React.FC = () => {
               <TableHead>User</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Amount</TableHead>
+              <TableHead>Reg. Fee</TableHead>
               <TableHead>Trial Ends</TableHead>
               <TableHead>Period Ends</TableHead>
               <TableHead>Last Payment</TableHead>
@@ -108,12 +126,17 @@ const AdminSubscriptionsPage: React.FC = () => {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-6">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center py-6">Loading…</TableCell></TableRow>
             ) : filtered.map((s) => (
               <TableRow key={s.id}>
                 <TableCell>{profiles[s.user_id] || s.user_id.slice(0, 8)}</TableCell>
                 <TableCell><Badge variant={s.status === "active" ? "default" : "outline"}>{s.status}</Badge></TableCell>
                 <TableCell>{Number(s.amount).toLocaleString()} TZS</TableCell>
+                <TableCell>
+                  {s.registration_fee_paid
+                    ? <Badge className="bg-green-600 hover:bg-green-600">Paid</Badge>
+                    : <Badge variant="outline" className="border-amber-500 text-amber-600">Unpaid</Badge>}
+                </TableCell>
                 <TableCell>{s.trial_end ? new Date(s.trial_end).toLocaleDateString() : "-"}</TableCell>
                 <TableCell>{new Date(s.current_period_end).toLocaleDateString()}</TableCell>
                 <TableCell>{s.last_payment_date ? new Date(s.last_payment_date).toLocaleDateString() : "-"}</TableCell>
@@ -121,6 +144,9 @@ const AdminSubscriptionsPage: React.FC = () => {
                   <Button size="sm" variant="outline" onClick={() => setHistorySub({ id: s.id, name: profiles[s.user_id] || s.user_id.slice(0, 8) })}>
                     <History className="w-3.5 h-3.5 mr-1" />History
                   </Button>
+                  {!s.registration_fee_paid && (
+                    <Button size="sm" variant="outline" onClick={() => markFeePaid(s)}>Mark Fee Paid</Button>
+                  )}
                   <Button size="sm" variant="outline" onClick={() => markPaid(s)}>Mark Paid</Button>
                   <Button size="sm" variant="outline" onClick={() => extendTrial(s, 30)}>+30d Trial</Button>
                   <Button size="sm" variant="ghost" className="text-destructive" onClick={() => cancel(s)}>Cancel</Button>
