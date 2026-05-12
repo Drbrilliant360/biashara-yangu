@@ -563,6 +563,62 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_events: {
+        Row: {
+          actor_id: string | null
+          amount: number | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          new_status: string | null
+          notes: string | null
+          period_end: string | null
+          previous_status: string | null
+          receipt_reference: string | null
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          amount?: number | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          new_status?: string | null
+          notes?: string | null
+          period_end?: string | null
+          previous_status?: string | null
+          receipt_reference?: string | null
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          amount?: number | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          new_status?: string | null
+          notes?: string | null
+          period_end?: string | null
+          previous_status?: string | null
+          receipt_reference?: string | null
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           amount: number
