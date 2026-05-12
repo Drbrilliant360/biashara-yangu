@@ -118,6 +118,9 @@ const AdminSubscriptionsPage: React.FC = () => {
                 <TableCell>{new Date(s.current_period_end).toLocaleDateString()}</TableCell>
                 <TableCell>{s.last_payment_date ? new Date(s.last_payment_date).toLocaleDateString() : "-"}</TableCell>
                 <TableCell className="text-right space-x-1">
+                  <Button size="sm" variant="outline" onClick={() => setHistorySub({ id: s.id, name: profiles[s.user_id] || s.user_id.slice(0, 8) })}>
+                    <History className="w-3.5 h-3.5 mr-1" />History
+                  </Button>
                   <Button size="sm" variant="outline" onClick={() => markPaid(s)}>Mark Paid</Button>
                   <Button size="sm" variant="outline" onClick={() => extendTrial(s, 30)}>+30d Trial</Button>
                   <Button size="sm" variant="ghost" className="text-destructive" onClick={() => cancel(s)}>Cancel</Button>
@@ -127,6 +130,12 @@ const AdminSubscriptionsPage: React.FC = () => {
           </TableBody>
         </Table>
       </Card>
+
+      <SubscriptionHistoryDialog
+        subscriptionId={historySub?.id ?? null}
+        userName={historySub?.name}
+        onClose={() => setHistorySub(null)}
+      />
     </div>
   );
 };
