@@ -14,6 +14,7 @@ interface Sub {
   id: string; user_id: string; status: string; amount: number;
   trial_start: string; trial_end: string; current_period_end: string;
   last_payment_date: string | null; created_at: string;
+  registration_fee: number; registration_fee_paid: boolean;
 }
 
 const AdminSubscriptionsPage: React.FC = () => {
