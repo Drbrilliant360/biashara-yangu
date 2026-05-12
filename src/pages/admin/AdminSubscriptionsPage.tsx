@@ -68,9 +68,19 @@ const AdminSubscriptionsPage: React.FC = () => {
     update(s.id, { trial_end: cur.toISOString(), current_period_end: cur.toISOString(), status: "trial" } as any);
   };
   const cancel = (s: Sub) => update(s.id, { status: "cancelled" } as any);
+  const markFeePaid = (s: Sub) => {
+    const receipt = window.prompt("Registration fee receipt / reference (optional)") ?? "";
+    update(s.id, {
+      registration_fee_paid: true,
+      registration_fee_paid_at: new Date().toISOString(),
+      registration_fee_receipt: receipt.trim() || null,
+    } as any);
+  };
 
   const filtered = filter === "all" ? subs : subs.filter(s => s.status === filter);
   const lifetime = subs.filter(s => s.status === "active" && s.last_payment_date).reduce((a, b) => a + Number(b.amount ?? 0), 0);
+  const feeRevenue = subs.filter(s => s.registration_fee_paid).reduce((a, b) => a + Number(b.registration_fee ?? 0), 0);
+  const unpaidFees = subs.filter(s => !s.registration_fee_paid).length;
 
   return (
     <div>
