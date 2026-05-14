@@ -165,11 +165,16 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="text-sm text-muted-foreground">
-          <Calendar className="inline mr-2" size={14} />
-          Today: {new Date().toLocaleDateString()}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Welcome back{currentShop?.name ? ` — ${currentShop.name}` : ''}
+          </p>
+        </div>
+        <div className="text-sm text-muted-foreground inline-flex items-center gap-1.5 self-start sm:self-auto bg-muted/60 px-3 py-1.5 rounded-full">
+          <Calendar size={14} />
+          {new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
         </div>
       </div>
 
@@ -182,7 +187,6 @@ const DashboardPage: React.FC = () => {
         onPayNow={() => setShowPayment(true)}
       />
 
-      {/* Subscription Reminder Pop-up */}
       <SubscriptionReminder
         open={showReminder}
         onOpenChange={setShowReminder}
@@ -190,7 +194,6 @@ const DashboardPage: React.FC = () => {
         onPayNow={() => setShowPayment(true)}
       />
 
-      {/* Payment Dialog */}
       <PaymentDialog
         open={showPayment}
         onOpenChange={setShowPayment}
@@ -198,46 +201,35 @@ const DashboardPage: React.FC = () => {
       />
 
       {/* Quick stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="stats-card border-l-4 border-l-primary p-4">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Today's Sales</h3>
-            <DollarSign size={18} className="text-primary" />
-          </div>
-          <div className="text-2xl font-bold">{formatCurrency(todayRevenue)}</div>
-          <div className="text-xs text-muted-foreground mt-1">{todaySales.length} transactions</div>
-        </Card>
-
-        <Card className="stats-card border-l-4 border-l-blue-500 p-4">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Monthly Revenue</h3>
-            <TrendingUp size={18} className="text-blue-500" />
-          </div>
-          <div className="text-2xl font-bold">{formatCurrency(monthlyRevenue)}</div>
-          <div className="text-xs text-muted-foreground mt-1">{monthlySales.length} sales this month</div>
-        </Card>
-
-        <Card className="stats-card border-l-4 border-l-orange-500 p-4">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Monthly Expenses</h3>
-            <TrendingDown size={18} className="text-orange-500" />
-          </div>
-          <div className="text-2xl font-bold">{formatCurrency(monthlyExpenses)}</div>
-          <div className="text-xs text-muted-foreground mt-1">{expenses.length} entries</div>
-        </Card>
-
-        <Card className={`stats-card border-l-4 p-4 ${monthlyProfit >= 0 ? 'border-l-green-500' : 'border-l-red-500'}`}>
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Monthly Profit</h3>
-            <Wallet size={18} className={monthlyProfit >= 0 ? 'text-green-500' : 'text-red-500'} />
-          </div>
-          <div className={`text-2xl font-bold ${monthlyProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {formatCurrency(monthlyProfit)}
-          </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {monthlyProfit >= 0 ? 'Profit' : 'Loss'} this month
-          </div>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {[
+          { label: "Today's Sales", value: formatCurrency(todayRevenue), sub: `${todaySales.length} transactions`, Icon: DollarSign, tone: 'bg-primary/10 text-primary', valueClass: '' },
+          { label: 'Monthly Revenue', value: formatCurrency(monthlyRevenue), sub: `${monthlySales.length} sales this month`, Icon: TrendingUp, tone: 'bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300', valueClass: '' },
+          { label: 'Monthly Expenses', value: formatCurrency(monthlyExpenses), sub: `${expenses.length} entries`, Icon: TrendingDown, tone: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300', valueClass: '' },
+          {
+            label: 'Monthly Profit',
+            value: formatCurrency(monthlyProfit),
+            sub: monthlyProfit >= 0 ? 'Profit this month' : 'Loss this month',
+            Icon: Wallet,
+            tone: monthlyProfit >= 0
+              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+              : 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300',
+            valueClass: monthlyProfit >= 0 ? 'text-emerald-600' : 'text-red-600',
+          },
+        ].map(({ label, value, sub, Icon, tone, valueClass }) => (
+          <Card key={label} className="p-4 hover:shadow-md transition-shadow border-border/70">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-muted-foreground truncate">{label}</p>
+                <p className={`text-xl sm:text-2xl font-bold mt-1 truncate ${valueClass}`}>{value}</p>
+                <p className="text-[11px] text-muted-foreground mt-1 truncate">{sub}</p>
+              </div>
+              <span className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${tone}`}>
+                <Icon size={18} />
+              </span>
+            </div>
+          </Card>
+        ))}
       </div>
 
       {/* Profit Breakdown */}
