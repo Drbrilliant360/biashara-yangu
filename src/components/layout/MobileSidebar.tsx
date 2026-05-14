@@ -1,7 +1,9 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Package, BarChart2, CreditCard, Settings, Users, X, Store, FileMinus, FileText, Quote, Sparkles, Shield } from 'lucide-react';
+import {
+  Home, Package, BarChart2, CreditCard, Settings, Users, X, Store,
+  FileMinus, FileText, Quote, Sparkles, Shield, ShoppingCart
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -14,93 +16,124 @@ interface MobileSidebarProps {
   onClose: () => void;
 }
 
+type NavItem = { name: string; path: string; icon: React.ReactNode };
+type NavGroup = { label: string; items: NavItem[] };
+
 export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) => {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const { isSuperAdmin } = useUserRole();
-  
-  const navItems = [
-    { name: t("dashboard"), path: "/", icon: <Home size={20} /> },
-    { name: "Mauzo AI", path: "/mauzo-ai", icon: <Sparkles size={20} /> },
-    { name: t("quotations"), path: "/quotations", icon: <Quote size={20} /> },
-    { name: t("products"), path: "/products", icon: <Package size={20} /> },
-    { name: t("sales"), path: "/sales", icon: <CreditCard size={20} /> },
-    { name: t("purchases"), path: "/purchases", icon: <FileText size={20} /> },
-    { name: t("expenses"), path: "/expenses", icon: <FileMinus size={20} /> },
-    { name: t("reports"), path: "/reports", icon: <BarChart2 size={20} /> },
-    { name: t("customers"), path: "/customers", icon: <Users size={20} /> },
-    { name: t("shops"), path: "/shops", icon: <Store size={20} /> },
-    { name: t("settings"), path: "/settings", icon: <Settings size={20} /> },
-    ...(isSuperAdmin ? [{ name: "Super Admin", path: "/admin", icon: <Shield size={20} /> }] : []),
+
+  const groups: NavGroup[] = [
+    {
+      label: t('overview') || 'Overview',
+      items: [
+        { name: t('dashboard'), path: '/', icon: <Home size={18} /> },
+        { name: 'Mauzo AI', path: '/mauzo-ai', icon: <Sparkles size={18} /> },
+      ],
+    },
+    {
+      label: t('sales') || 'Sales',
+      items: [
+        { name: 'POS', path: '/pos', icon: <ShoppingCart size={18} /> },
+        { name: t('sales'), path: '/sales', icon: <CreditCard size={18} /> },
+        { name: t('quotations'), path: '/quotations', icon: <Quote size={18} /> },
+      ],
+    },
+    {
+      label: t('inventory') || 'Inventory',
+      items: [
+        { name: t('products'), path: '/products', icon: <Package size={18} /> },
+        { name: t('purchases'), path: '/purchases', icon: <FileText size={18} /> },
+        { name: t('expenses'), path: '/expenses', icon: <FileMinus size={18} /> },
+      ],
+    },
+    {
+      label: t('insights') || 'Insights',
+      items: [
+        { name: t('reports'), path: '/reports', icon: <BarChart2 size={18} /> },
+      ],
+    },
+    {
+      label: t('manage') || 'Manage',
+      items: [
+        { name: t('customers'), path: '/customers', icon: <Users size={18} /> },
+        { name: t('shops'), path: '/shops', icon: <Store size={18} /> },
+        { name: t('settings'), path: '/settings', icon: <Settings size={18} /> },
+        ...(isSuperAdmin ? [{ name: 'Super Admin', path: '/admin', icon: <Shield size={18} /> }] : []),
+      ],
+    },
   ];
 
-  if (!open) {
-    return null;
-  }
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex md:hidden">
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Sidebar */}
-      <aside className="relative h-full w-72 max-w-[85vw] bg-biashara-dark text-white flex flex-col animate-in slide-in-from-left duration-200">
-        {/* Header with close button */}
+      <aside className="relative h-full w-72 max-w-[85vw] bg-sidebar text-sidebar-foreground flex flex-col animate-in slide-in-from-left duration-200">
         <div className="flex items-center justify-between p-4 flex-shrink-0">
-          <h1 className="text-xl font-bold">Biashara Yangu</h1>
+          <h1 className="text-lg font-bold tracking-tight text-white">Biashara Yangu</h1>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10">
             <X size={20} />
           </Button>
         </div>
 
-        {/* User info */}
-        <div className="px-4 mb-4 flex-shrink-0">
-          <p className="text-sm font-medium truncate">{user?.name}</p>
-          <p className="text-xs text-gray-400">{user?.role}</p>
+        <div className="px-4 mb-3 flex-shrink-0">
+          <p className="text-sm font-medium truncate text-white">{user?.name}</p>
+          <p className="text-xs text-sidebar-foreground/60">{user?.role}</p>
         </div>
 
-        {/* Shop switcher */}
-        <div className="px-4 mb-4 flex-shrink-0">
+        <div className="px-3 mb-4 flex-shrink-0">
           <ShopSwitcher />
         </div>
 
-        {/* Navigation - scrollable */}
-        <nav className="flex-1 overflow-y-auto">
-          <ul className="space-y-1 px-2 pb-2">
-            {navItems.map((item) => (
-              <li key={item.name}>
-                <NavLink
-                  to={item.path}
-                  end={item.path === '/'}
-                  onClick={onClose}
-                  className={({ isActive }) => cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors hover:bg-biashara-primary/10",
-                    isActive ? "bg-biashara-primary text-white" : "text-gray-300"
-                  )}
-                >
-                  {item.icon}
-                  <span>{item.name}</span>
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+        <nav className="flex-1 overflow-y-auto px-2 pb-3 space-y-4">
+          {groups.map((group) => (
+            <div key={group.label}>
+              <div className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45">
+                {group.label}
+              </div>
+              <ul className="space-y-0.5">
+                {group.items.map((item) => (
+                  <li key={item.path}>
+                    <NavLink
+                      to={item.path}
+                      end={item.path === '/'}
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors',
+                          isActive
+                            ? 'bg-sidebar-primary/15 text-white border-l-2 border-sidebar-primary pl-[10px]'
+                            : 'text-sidebar-foreground/75 hover:bg-white/5 hover:text-white'
+                        )
+                      }
+                    >
+                      {item.icon}
+                      <span>{item.name}</span>
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </nav>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-3 border-t border-sidebar-border/60">
           <Button
             variant="ghost"
-            className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10"
+            className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-destructive/15"
             onClick={() => {
               logout();
               onClose();
             }}
           >
-            {t("logout")}
+            {t('logout')}
           </Button>
         </div>
       </aside>
