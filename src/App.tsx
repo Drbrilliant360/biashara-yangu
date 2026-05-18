@@ -9,6 +9,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ShopProvider } from "@/context/ShopContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { LanguageProvider } from "@/context/LanguageContext";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // Pages
 import DashboardPage from "@/pages/dashboard/DashboardPage";
@@ -48,6 +49,7 @@ const App = () => (
           <AuthProvider>
             <ShopProvider>
               <>
+                <ScrollToTop />
                 <Toaster />
                 <Sonner />
                 <Routes>
