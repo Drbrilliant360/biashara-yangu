@@ -64,12 +64,12 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				biashara: {
-					primary: '#3b6fa0',
-					secondary: '#1e3a5f',
-					accent: '#3b6fa0',
-					neutral: '#e8edf3',
+					primary: '#0000FF',
+					secondary: '#1a1f8a',
+					accent: '#0000FF',
+					neutral: '#e8ecff',
 					"neutral-dark": '#64748B',
-					dark: '#0f1b3d',
+					dark: '#0a0e3d',
 					background: '#f6f8fb',
 					success: '#10B981',
 					warning: '#F59E0B',
