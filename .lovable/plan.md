@@ -1,98 +1,66 @@
-## Super Admin Panel for Biashara Yangu
+## Goal
 
-Build a complete super-admin area to manage the entire platform: users, shops, subscriptions, revenue, and platform-wide CRUD.
+1. Make sure each user only sees their own shop(s) — no cross-tenant leakage.
+2. Fix the error you see on the published/Vercel URL when navigating back and forth.
 
-### 1. Role & Access Control (Database)
-Add a proper roles system (separate `user_roles` table — never on profiles, to prevent privilege escalation).
+---
 
-- Create enum `app_role` with values: `super_admin`, `admin`, `user`.
-- Create table `user_roles (id, user_id, role, created_at)` with unique `(user_id, role)`.
-- Security-definer function `has_role(_user_id, _role)` to safely check roles inside RLS.
-- Security-definer function `is_super_admin()` shortcut.
-- RLS on `user_roles`: users can read their own roles; only super_admins can insert/update/delete roles.
-- Add super_admin override policies on existing tables (`shops`, `profiles`, `subscriptions`, `sales`, `expenses`, `purchases`, `products`, `quotations`) so super admins can read/update/delete everything.
-- Seed: provide a one-time SQL the user runs to grant their own account `super_admin` (we'll show them how after migration).
+## 1. Shop isolation audit & hardening
 
-### 2. Frontend — Auth Guard
-- `useUserRole()` hook → reads `user_roles` for current user.
-- `<RequireSuperAdmin>` wrapper redirects non-admins to `/`.
+Current RLS on `shops`:
 
-### 3. Super Admin Layout & Routes
-New section under `/admin` with its own sidebar (kept inside `MainLayout` for consistency, but only visible to super admins). Routes:
+- `Users can view shops they own or work at` → `(owner_id = auth.uid()) OR user_has_shop_access(id)`
+- `Super admins full access shops select` → `is_super_admin()`
 
-- `/admin` — Overview dashboard
-- `/admin/shops` — All shops (CRUD)
-- `/admin/users` — All users (view, change role, deactivate)
-- `/admin/subscriptions` — All subscriptions (extend trial, mark paid, cancel)
-- `/admin/revenue` — Platform revenue analytics
-- `/admin/products` — All products across shops (read + delete)
-- `/admin/sales` — All sales across shops (read)
+In theory a normal user can only see a shop if they are the owner, are listed in `shop_users` for it, or are a super_admin. If you're seeing other people's shops as a normal user, the most likely causes are:
 
-### 4. Overview Dashboard (`/admin`)
-KPI cards + charts:
-- Total shops (active / inactive)
-- Total users
-- Active subscribers vs. trial vs. expired
-- Total platform revenue (sum of paid subscription amounts)
-- MRR estimate (active subs × 5,000 TZS)
-- Total sales volume across all shops (TZS)
-- Total platform-wide profit (sum of (selling − buying) × qty across all sale_items, joined with products)
-- Charts: subscriptions over time, new shops per month, revenue per month (recharts).
+- Your test account has a `super_admin` role in `user_roles` (so RLS lets them see everything).
+- Some shop has a stray `shop_users` row linking your account to it.
 
-### 5. Shops Management (`/admin/shops`)
-Table with search + filter (active/inactive). Per row:
-- View details (owner, location, phone, currency, created_at, # products, # sales, total revenue)
-- Edit (name, location, phone, currency, is_active)
-- Delete (with confirm dialog — cascades handled by app logic + warning)
-- Toggle active
+What I'll do:
 
-### 6. Users Management (`/admin/users`)
-Table of all profiles joined with auth metadata + roles + subscription status:
-- Search by name/phone
-- Change role (user / admin / super_admin)
-- View shops they own
-- Soft-disable (toggle subscription status to `cancelled`)
+- Run a read-only check on `user_roles` and `shop_users` to confirm which case it is.
+- Tighten the SELECT policy on `shops` so it's split clearly: one policy for owners, one for explicit `shop_users` members, one for super_admins. No `OR` ambiguity.
+- Add the same explicit owner-only model to the shop switcher query: `select('*').eq('owner_id', user.id)` as a defense-in-depth filter in `ShopContext.loadShops` (so even if RLS ever loosens, the client only requests its own shops).
+- Verify dependent tables (`products`, `sales`, `purchases`, `expenses`, `quotations`, `sale_items`, `purchase_items`, `quotation_items`) all gate on `user_has_shop_access(shop_id)` — they already do, but I'll re-confirm after the shop policy changes still resolve correctly.
 
-### 7. Subscriptions (`/admin/subscriptions`)
-Table of all subscriptions:
-- Filter by status (trial / active / expired / cancelled)
-- Extend trial by N days
-- Manually mark as paid (sets `status='active'`, `last_payment_date=now()`, `current_period_end=now()+30d`)
-- Cancel
-- Stats footer: total revenue, active count, churn
+If you want me to also stop staff (shop_users) from seeing the owner's *other* shops they aren't assigned to, that's already the case — `user_has_shop_access(id)` checks per-shop membership.
 
-### 8. Revenue Analytics (`/admin/revenue`)
-- Monthly recurring revenue chart (last 12 months)
-- Total lifetime revenue
-- Conversion rate (trial → active)
-- Top-paying shops/owners table
-- Export CSV button
+## 2. Published-site error (Vercel)
 
-### 9. Bilingual Support
-All admin labels in English + Swahili (extend `LanguageContext` translations: "Super Admin", "All Shops", "Subscribers", "Platform Revenue", etc.).
+You mentioned the live URL shows a "Vercel error" when you go back/forward. Two things are almost certainly going on:
 
-### 10. Navigation
-Add a "Super Admin" link in `Sidebar.tsx` and `MobileSidebar.tsx`, only rendered when `useUserRole()` returns `super_admin`.
+a) **SPA 404 on direct/refresh navigation.** Vercel doesn't know to fall back to `index.html` for client routes like `/customers` unless you tell it to. When the browser back/forward hits a path that Vercel treats as a static request, it returns its built-in 404 page. Fix: add `vercel.json` at the project root:
 
-### Technical Notes
-- All admin queries bypass shop scoping by using new RLS policies guarded by `has_role(auth.uid(), 'super_admin')`.
-- Use react-query for caching.
-- All tables paginated (page size 25) with shadcn `Table` + simple pagination controls.
-- Reuse existing UI tokens (semantic colors, no hardcoded hex).
-- Charts use existing recharts setup (same as `ReportsPage`).
-- After migration, I'll tell the user the exact SQL snippet to run via the data tool to grant themselves `super_admin`.
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
 
-### Files to Create
-- `supabase/migrations/*` — roles + super_admin policies
-- `src/hooks/useUserRole.ts`
-- `src/components/admin/RequireSuperAdmin.tsx`
-- `src/pages/admin/AdminOverviewPage.tsx`
-- `src/pages/admin/AdminShopsPage.tsx`
-- `src/pages/admin/AdminUsersPage.tsx`
-- `src/pages/admin/AdminSubscriptionsPage.tsx`
-- `src/pages/admin/AdminRevenuePage.tsx`
-- `src/pages/admin/AdminProductsPage.tsx`
-- `src/pages/admin/AdminSalesPage.tsx`
-- Edit `src/App.tsx`, `src/components/layout/Sidebar.tsx`, `src/components/layout/MobileSidebar.tsx`, `src/context/LanguageContext.tsx`
+b) **Missing environment variables on Vercel.** The app needs `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` set in the Vercel project's Environment Variables, then redeployed. Without them, the Supabase client crashes on first auth call and React Router can throw a runtime error on navigation.
 
-Approve to proceed — I'll start with the database migration, then build the UI.
+Note: if you publish via **Lovable's own publish button** (`*.lovable.app`), SPA routing is handled automatically and you don't need `vercel.json`. The `vercel.json` only matters for your Vercel deployment.
+
+## 3. Back/forward UX polish
+
+Add a small `ScrollToTop` component mounted inside `<BrowserRouter>` so each route change resets scroll. This won't fix a true error, but it removes the "feels broken when I navigate back" perception that often gets reported alongside SPA-fallback issues.
+
+---
+
+## Files I'll touch
+
+- `supabase/migrations/<new>.sql` — split shops SELECT policy into owner / member / super_admin.
+- `src/context/ShopContext.tsx` — add `.eq('owner_id', user.id)` filter to `loadShops` as defense-in-depth.
+- `src/components/ScrollToTop.tsx` — new tiny component.
+- `src/App.tsx` — mount `<ScrollToTop />` inside `<BrowserRouter>`.
+- `vercel.json` — new file at project root for SPA fallback.
+
+## What I will NOT change
+
+- Auth flow, registration, billing, RegistrationFeeBanner, sidebar/branding/colors — all stay as is.
+- Lovable publish flow — still works exactly the same.
+
+## Open question for you
+
+For the Vercel error specifically: can you confirm whether the "live URL" you mean is `https://biashara-smart-pos-system.lovable.app` (Lovable's hosting) or a separate `*.vercel.app` URL you deployed yourself? If it's the Lovable one, the `vercel.json` step is unnecessary and the error is something else — I'll need a screenshot or the exact error text to keep going on that part.
