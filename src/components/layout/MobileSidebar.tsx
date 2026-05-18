@@ -35,7 +35,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) =
     {
       label: t('sales') || 'Sales',
       items: [
-        { name: 'POS', path: '/pos', icon: <ShoppingCart size={18} /> },
+        
         { name: t('sales'), path: '/sales', icon: <CreditCard size={18} /> },
         { name: t('quotations'), path: '/quotations', icon: <Quote size={18} /> },
       ],
