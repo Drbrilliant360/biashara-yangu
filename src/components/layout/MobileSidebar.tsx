@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Home, Package, BarChart2, CreditCard, Settings, Users, X, Store,
-  FileMinus, FileText, Quote, Sparkles, Shield, ShoppingCart
+  FileMinus, FileText, Quote, Sparkles, Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) =
     {
       label: t('sales') || 'Sales',
       items: [
-        { name: 'POS', path: '/pos', icon: <ShoppingCart size={18} /> },
+        
         { name: t('sales'), path: '/sales', icon: <CreditCard size={18} /> },
         { name: t('quotations'), path: '/quotations', icon: <Quote size={18} /> },
       ],

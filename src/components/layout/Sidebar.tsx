@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Home, Package, BarChart2, CreditCard, Settings, Users, LogOut, Store,
-  FileMinus, FileText, Quote, Sparkles, Shield, ShoppingCart
+  FileMinus, FileText, Quote, Sparkles, Shield
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -29,7 +29,7 @@ export const Sidebar: React.FC = () => {
     {
       label: t('sales') || 'Sales',
       items: [
-        { name: 'POS', path: '/pos', icon: <ShoppingCart size={18} /> },
+        
         { name: t('sales'), path: '/sales', icon: <CreditCard size={18} /> },
         { name: t('quotations'), path: '/quotations', icon: <Quote size={18} /> },
       ],
