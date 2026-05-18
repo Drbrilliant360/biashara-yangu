@@ -50,10 +50,14 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loadShops = async () => {
     try {
+      if (!user) { setShops([]); setCurrentShop(null); setLoading(false); return; }
       const { data, error } = await supabase
         .from('shops')
         .select('*')
+        .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
+
+
 
       if (error) throw error;
 
