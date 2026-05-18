@@ -77,7 +77,10 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) =
 
       <aside className="relative h-full w-72 max-w-[85vw] bg-sidebar text-sidebar-foreground flex flex-col animate-in slide-in-from-left duration-200">
         <div className="flex items-center justify-between p-4 flex-shrink-0">
-          <h1 className="text-lg font-bold tracking-tight text-white">Biashara Yangu</h1>
+          <div className="flex items-center gap-2">
+            <img src="/favicon.png" alt="Biashara Yangu logo" className="w-9 h-9 rounded-md bg-white object-contain p-1" />
+            <h1 className="text-lg font-bold tracking-tight text-white">Biashara Yangu</h1>
+          </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10">
             <X size={20} />
           </Button>

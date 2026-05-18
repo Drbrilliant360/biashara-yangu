@@ -61,10 +61,13 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside className="h-full bg-sidebar text-sidebar-foreground flex flex-col">
-      <div className="p-4 pb-3">
-        <h1 className="text-lg font-bold tracking-tight text-white">Biashara Yangu</h1>
-        <div className="text-[11px] text-sidebar-foreground/60 mt-0.5">
-          {t('business management system')}
+      <div className="p-4 pb-3 flex items-center gap-3">
+        <img src="/favicon.png" alt="Biashara Yangu logo" className="w-10 h-10 rounded-md bg-white object-contain p-1" />
+        <div>
+          <h1 className="text-lg font-bold tracking-tight text-white leading-tight">Biashara Yangu</h1>
+          <div className="text-[11px] text-sidebar-foreground/60">
+            {t('business management system')}
+          </div>
         </div>
       </div>
 
