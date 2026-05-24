@@ -705,6 +705,7 @@ export type Database = {
       }
       is_super_admin: { Args: never; Returns: boolean }
       user_has_shop_access: { Args: { shop_id: string }; Returns: boolean }
+      user_is_shop_staff: { Args: { _shop_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "user"
