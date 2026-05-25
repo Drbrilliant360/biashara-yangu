@@ -178,8 +178,6 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Registration fee notice */}
-      <RegistrationFeeBanner subscription={subscription} />
 
       {/* Subscription Status */}
       <SubscriptionWidget
