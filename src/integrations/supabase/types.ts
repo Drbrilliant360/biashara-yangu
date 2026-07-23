@@ -626,6 +626,7 @@ export type Database = {
           current_period_end: string
           id: string
           last_payment_date: string | null
+          last_payment_reference: string | null
           registration_fee: number
           registration_fee_paid: boolean
           registration_fee_paid_at: string | null
@@ -642,6 +643,7 @@ export type Database = {
           current_period_end?: string
           id?: string
           last_payment_date?: string | null
+          last_payment_reference?: string | null
           registration_fee?: number
           registration_fee_paid?: boolean
           registration_fee_paid_at?: string | null
@@ -658,6 +660,7 @@ export type Database = {
           current_period_end?: string
           id?: string
           last_payment_date?: string | null
+          last_payment_reference?: string | null
           registration_fee?: number
           registration_fee_paid?: boolean
           registration_fee_paid_at?: string | null
