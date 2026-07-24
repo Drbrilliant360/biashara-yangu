@@ -56,6 +56,7 @@ Deno.serve(async (req) => {
         details: { amount: Number(amount), currency: "TZS" },
         phone_number: phoneNumber,
         customer: { firstname, lastname, email },
+        webhook_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/snippe-check-payment`,
         metadata: { user_id: user.id, purpose: "subscription" },
       }),
     });
