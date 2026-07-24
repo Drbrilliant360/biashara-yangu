@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Mail, Eye, EyeOff, Lock } from 'lucide-react';
+import { Mail, Eye, EyeOff, Lock, X } from 'lucide-react';
+import loginHero from '@/assets/login-hero.png';
+import logo from '@/assets/logo.png';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,71 +16,77 @@ const LoginPage: React.FC = () => {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  if (isAuthenticated) {
-    return <Navigate to="/" />;
-  }
+  if (isAuthenticated) return <Navigate to="/" />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password) return;
-
     setIsLoading(true);
     const success = await login(email, password);
     setIsLoading(false);
-
-    if (success) {
-      navigate('/');
-    }
+    if (success) navigate('/');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-biashara-background">
-      <div className="w-full max-w-md p-4">
-        <Card className="border-2 border-biashara-primary/10 shadow-lg">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-3xl font-bold text-biashara-primary">
-              Biashara Yangu
-            </CardTitle>
-            <CardDescription>
-              Log in to access your business
-            </CardDescription>
-          </CardHeader>
+    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+      <div className="w-full max-w-6xl bg-card rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2 relative">
+        {/* Left: Form */}
+        <div className="p-8 md:p-12 flex flex-col bg-gradient-to-br from-background to-muted/50">
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border">
+              <img src={logo} alt="Biashara Yangu" className="h-6 w-6 object-contain" />
+              <span className="text-sm font-medium">Biashara Yangu</span>
+            </div>
+          </div>
 
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit}>
-              <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-2.5 top-2.5 h-5 w-5 text-muted-foreground" />
-                    <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" required />
-                  </div>
+          <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-semibold mb-2">Welcome back</h1>
+              <p className="text-sm text-muted-foreground">Log in to manage your business</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-11 h-12 rounded-full bg-background border-border" required />
                 </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-2.5 top-2.5 h-5 w-5 text-muted-foreground" />
-                    <Input id="password" type={showPassword ? "text" : "password"} placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10" required />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2.5 text-gray-500 focus:outline-none" tabIndex={-1}>
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <Button type="submit" disabled={isLoading || !email || !password}>
-                  {isLoading ? 'Logging in...' : 'Login'}
-                </Button>
               </div>
-            </form>
-          </CardContent>
 
-          <CardFooter className="flex justify-center">
-            <Button type="button" variant="link" onClick={() => navigate('/register')}>
-              Don't have an account? Register
-            </Button>
-          </CardFooter>
-        </Card>
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-xs text-muted-foreground">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-11 pr-11 h-12 rounded-full bg-background border-border" required />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1}>
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button type="submit" disabled={isLoading || !email || !password} className="w-full h-12 rounded-full bg-primary text-primary-foreground font-medium">
+                {isLoading ? 'Logging in...' : 'Submit'}
+              </Button>
+            </form>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-muted-foreground mt-8">
+            <span>
+              Don't have an account?{' '}
+              <button onClick={() => navigate('/register')} className="text-primary underline font-medium">Sign up</button>
+            </span>
+            <span className="underline cursor-pointer">Terms & Conditions</span>
+          </div>
+        </div>
+
+        {/* Right: Image */}
+        <div className="relative hidden md:block">
+          <img src={loginHero} alt="Marketplace" className="absolute inset-0 w-full h-full object-cover" />
+          <button className="absolute top-6 right-6 h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow-md" aria-label="Close">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
