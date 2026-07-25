@@ -116,7 +116,7 @@ const RegisterPage: React.FC = () => {
             </span>
             <span className="underline cursor-pointer">Terms & Conditions</span>
           </div>
-    </main>
+        </div>
 
         {/* Right: Image */}
         <div className="relative hidden md:block">
@@ -126,7 +126,7 @@ const RegisterPage: React.FC = () => {
           </button>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
