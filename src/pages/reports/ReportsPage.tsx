@@ -175,24 +175,24 @@ const ReportsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">{t("reports")}</h1>
-          <p className="text-muted-foreground">{t("business analytics and insights")}</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold truncate">{t("reports")}</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">{t("business analytics and insights")}</p>
         </div>
-        
-        <div className="flex flex-col sm:flex-row gap-2">
+
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <DateRangePicker value={dateRange} onChange={setDateRange} />
-          <div className="flex gap-2">
+          <div className="flex gap-2 ml-auto sm:ml-0">
             <Button variant="outline" size="sm" onClick={exportToPDF}>
-              <FileText className="w-4 h-4 mr-2" />
-              PDF
+              <FileText className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">PDF</span>
             </Button>
             <Button variant="outline" size="sm" onClick={exportToExcel}>
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Excel
+              <FileSpreadsheet className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Excel</span>
             </Button>
           </div>
         </div>

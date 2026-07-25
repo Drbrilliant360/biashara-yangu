@@ -105,8 +105,8 @@ export const TopBar: React.FC = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          {/* Notification bell */}
-          <Button variant="ghost" size="icon" aria-label={t('view notifications') || 'View notifications'}>
+          {/* Notification bell — hidden on very small screens to reduce clutter */}
+          <Button variant="ghost" size="icon" aria-label={t('view notifications') || 'View notifications'} className="hidden sm:inline-flex">
             <Bell size={20} />
           </Button>
           
