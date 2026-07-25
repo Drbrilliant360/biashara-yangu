@@ -1,0 +1,11 @@
+# Biashara Yangu
+
+> Biashara Yangu is a multi-shop business management platform for small retailers — track stock, sales, expenses, and profitability across shops in English and Swahili.
+
+Biashara Yangu helps shop owners manage inventory, record sales, generate quotations, track expenses, and view business insights across one or more shops. It includes an AI assistant (Mauzo AI) that answers business questions from a shop's own data.
+
+## Pages
+
+- [Home](/): Sign in to access your business dashboard.
+- [Sign up](/register): Create an account and start managing your shops.
+- [Sign in](/login): Log in to your Biashara Yangu account.

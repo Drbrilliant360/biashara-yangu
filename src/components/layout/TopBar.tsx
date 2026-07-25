@@ -36,6 +36,7 @@ export const TopBar: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setMobileMenuOpen(true)}
+                aria-label={t('open menu') || 'Open menu'}
                 className="flex-shrink-0"
               >
                 <Menu size={24} />
@@ -105,13 +106,13 @@ export const TopBar: React.FC = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           {/* Notification bell */}
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label={t('view notifications') || 'View notifications'}>
             <Bell size={20} />
           </Button>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button variant="ghost" size="icon" aria-label={t('account menu') || 'Account menu'} className="rounded-full">
                 <User size={20} />
               </Button>
             </DropdownMenuTrigger>
