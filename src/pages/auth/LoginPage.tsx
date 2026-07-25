@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Mail, Eye, EyeOff, Lock, X } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import loginHero from '@/assets/login-hero.png';
 import logo from '@/assets/logo.png';
 
@@ -28,7 +29,14 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+    <main className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+      <Helmet>
+        <title>Sign in — Biashara Yangu</title>
+        <meta name="description" content="Sign in to Biashara Yangu to manage stock, sales, and insights across your shops." />
+        <link rel="canonical" href="https://biashara-yangu.lovable.app/login" />
+        <meta property="og:title" content="Sign in — Biashara Yangu" />
+        <meta property="og:url" content="https://biashara-yangu.lovable.app/login" />
+      </Helmet>
       <div className="w-full max-w-6xl bg-card rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2 relative">
         {/* Left: Form */}
         <div className="p-8 md:p-12 flex flex-col bg-gradient-to-br from-background to-muted/50">
@@ -41,7 +49,7 @@ const LoginPage: React.FC = () => {
 
           <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-semibold mb-2">Welcome back</h1>
+              <h1 className="text-3xl font-semibold mb-2">Sign in to Biashara Yangu</h1>
               <p className="text-sm text-muted-foreground">Log in to manage your business</p>
             </div>
 
@@ -59,7 +67,7 @@ const LoginPage: React.FC = () => {
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-11 pr-11 h-12 rounded-full bg-background border-border" required />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1}>
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
