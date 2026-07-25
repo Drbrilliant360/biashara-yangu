@@ -68,15 +68,15 @@ export const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
 
   return (
     <Card className={`border-l-4 ${config.borderColor} ${config.bgColor} p-4`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3 flex-1">
-          <div className="mt-0.5">{config.icon}</div>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <div className="mt-0.5 shrink-0">{config.icon}</div>
           <div className="flex-1 min-w-0">
-            <h3 className={`font-semibold text-lg ${config.textColor}`}>{config.title}</h3>
-            <p className="text-sm text-muted-foreground">{config.subtitle}</p>
+            <h3 className={`font-semibold text-base sm:text-lg ${config.textColor}`}>{config.title}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">{config.subtitle}</p>
 
             <div className="mt-3">
-              <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <div className="flex flex-wrap justify-between gap-x-2 text-xs text-muted-foreground mb-1">
                 <span>{isExpired ? 'Expired' : `${daysRemaining} of 30 days`}</span>
                 {currentPeriodEnd && !isExpired && (
                   <span>Expires: {currentPeriodEnd.toLocaleDateString()}</span>
@@ -92,7 +92,7 @@ export const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
             size="sm"
             variant={isExpired ? 'destructive' : 'default'}
             onClick={onPayNow}
-            className="shrink-0"
+            className="shrink-0 w-full sm:w-auto"
           >
             {isExpired ? 'Renew Now' : 'Pay TZS 5,000'}
           </Button>

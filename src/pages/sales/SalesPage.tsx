@@ -172,15 +172,15 @@ const SalesPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ReceiptText className="w-7 h-7 text-primary" />
-          {t("sales")}
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 min-w-0">
+          <ReceiptText className="w-6 h-6 sm:w-7 sm:h-7 text-primary shrink-0" />
+          <span className="truncate">{t("sales")}</span>
         </h1>
-        <Button onClick={() => setAddingSale(s => !s)} variant="default">
-          <FilePlus className="w-4 h-4 mr-1" />
-          Add Sale
+        <Button onClick={() => setAddingSale(s => !s)} variant="default" className="shrink-0">
+          <FilePlus className="w-4 h-4 sm:mr-1" />
+          <span className="hidden sm:inline">Add Sale</span>
         </Button>
       </div>
 
@@ -220,9 +220,9 @@ const SalesPage: React.FC = () => {
         </Card>
       )}
 
-      <div className="flex mb-4 items-center gap-2">
-        <Input placeholder="Search by product or receipt..." className="max-w-sm" value={search} onChange={e => setSearch(e.target.value)} />
-        <Search size={18} className="text-muted-foreground" />
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Input placeholder="Search by product or receipt..." className="pl-9 max-w-sm" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       <div className="space-y-4">
