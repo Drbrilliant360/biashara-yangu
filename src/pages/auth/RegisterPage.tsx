@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Mail, User, Lock, Eye, EyeOff, X } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import registerHero from '@/assets/register-hero.png';
 import logo from '@/assets/logo.png';
 
@@ -36,7 +37,14 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+    <main className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+      <Helmet>
+        <title>Create account — Biashara Yangu</title>
+        <meta name="description" content="Sign up for Biashara Yangu and start managing stock, sales, and insights across your shops." />
+        <link rel="canonical" href="https://biashara-yangu.lovable.app/register" />
+        <meta property="og:title" content="Create account — Biashara Yangu" />
+        <meta property="og:url" content="https://biashara-yangu.lovable.app/register" />
+      </Helmet>
       <div className="w-full max-w-6xl bg-card rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2 relative">
         {/* Left: Form */}
         <div className="p-8 md:p-12 flex flex-col bg-gradient-to-br from-background to-muted/50">
