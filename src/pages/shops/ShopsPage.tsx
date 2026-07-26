@@ -35,7 +35,7 @@ const ShopsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Your Shops</h1>
+        <h1 className="text-2xl font-bold">Your Shops Directory</h1>
         <Button 
           onClick={() => navigate('/shops/add')} 
           className="flex items-center gap-2"

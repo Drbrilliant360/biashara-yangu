@@ -167,7 +167,7 @@ const DashboardPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Business Dashboard Overview</h1>
           <p className="text-sm text-muted-foreground">
             Welcome back{currentShop?.name ? ` — ${currentShop.name}` : ''}
           </p>

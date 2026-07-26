@@ -64,7 +64,7 @@ const UsersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">User Management</h1>
+        <h1 className="text-2xl font-bold">Shop User Management</h1>
         <Button onClick={() => setShowNewUserForm(!showNewUserForm)}>
           <UserPlus className="w-4 h-4 mr-2" /> Add User
         </Button>

@@ -25,7 +25,7 @@ const MauzoAIPage: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Sparkles className="h-6 w-6 text-biashara-primary" />
-        <h1 className="text-2xl font-bold">Mauzo AI</h1>
+        <h1 className="text-2xl font-bold">Mauzo AI — Business Assistant</h1>
       </div>
       <p className="text-sm text-muted-foreground">
         Your AI business assistant. Ask anything about your shop's stock, sales, top products and profits.

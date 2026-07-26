@@ -39,7 +39,7 @@ const AdminProductsPage: React.FC = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-1">Super Admin</h1>
+      <h1 className="text-2xl font-bold mb-1">Super Admin — Products Catalog</h1>
       <p className="text-sm text-muted-foreground mb-4">All products across all shops</p>
       <AdminNav />
 

@@ -170,7 +170,7 @@ const ExpensesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Expenses</h1>
+        <h1 className="text-2xl font-bold">Business Expenses Tracker</h1>
         <Button onClick={() => setIsAddExpenseOpen(true)}><Plus size={18} className="mr-1" /> Add Expense</Button>
       </div>
 
