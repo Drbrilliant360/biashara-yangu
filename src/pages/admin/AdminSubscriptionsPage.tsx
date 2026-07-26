@@ -84,7 +84,7 @@ const AdminSubscriptionsPage: React.FC = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-1">Super Admin</h1>
+      <h1 className="text-2xl font-bold mb-1">Super Admin — Subscriptions</h1>
       <p className="text-sm text-muted-foreground mb-4">Subscriptions & billing</p>
       <AdminNav />
 

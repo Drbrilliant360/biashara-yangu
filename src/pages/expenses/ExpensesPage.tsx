@@ -12,6 +12,7 @@ import { useShop } from '@/context/ShopContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Expense, TimeRange } from '@/types';
+import { PageHead } from '@/components/seo/PageHead';
 
 const expenseCategories = ['utilities', 'rent', 'salaries', 'transportation', 'supplies', 'marketing', 'maintenance', 'other'];
 
@@ -169,8 +170,9 @@ const ExpensesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageHead title="Expenses" description="Track business expenses by category and monitor spending to protect your profit margin." path="/expenses" />
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Expenses</h1>
+        <h1 className="text-2xl font-bold">Business Expenses Tracker</h1>
         <Button onClick={() => setIsAddExpenseOpen(true)}><Plus size={18} className="mr-1" /> Add Expense</Button>
       </div>
 

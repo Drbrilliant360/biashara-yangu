@@ -112,7 +112,7 @@ const AdminOverviewPage: React.FC = () => {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Super Admin</h1>
+        <h1 className="text-2xl font-bold">Super Admin — Platform Overview</h1>
         <p className="text-sm text-muted-foreground">Platform-wide management for Biashara Yangu</p>
       </div>
       <AdminNav />

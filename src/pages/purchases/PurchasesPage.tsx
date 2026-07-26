@@ -13,6 +13,7 @@ import { useShop } from '@/context/ShopContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, TimeRange } from '@/types';
+import { PageHead } from '@/components/seo/PageHead';
 
 interface PurchaseLineItem {
   product_id: string;
@@ -234,8 +235,9 @@ const PurchasesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageHead title="Purchases" description="Record purchases from suppliers and restock inventory with automatic cost tracking." path="/purchases" />
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Purchases & Stock</h1>
+        <h1 className="text-2xl font-bold">Purchases & Stock Restocking</h1>
         <Button onClick={() => setIsAddPurchaseOpen(true)}><Plus size={18} className="mr-1" /> Record Purchase</Button>
       </div>
 

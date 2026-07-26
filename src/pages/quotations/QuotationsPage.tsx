@@ -10,6 +10,7 @@ import { exportToExcel, exportToPDF, exportToWord } from '@/utils/exportUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { Quotation, QuotationItem } from '@/types';
 import CreateQuotationDialog from '@/components/quotations/CreateQuotationDialog';
+import { PageHead } from '@/components/seo/PageHead';
 
 interface QuotationWithItems extends Quotation {
   quotation_items: QuotationItem[];
@@ -262,6 +263,7 @@ const QuotationsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 md:space-y-6 p-4 md:p-6">
+      <PageHead title="Quotations" description="Create, share and export professional multi-product quotations for your customers." path="/quotations" />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Quotations</h1>
