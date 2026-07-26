@@ -23,6 +23,7 @@ import { SubscriptionWidget } from '@/components/billing/SubscriptionWidget';
 
 import { SubscriptionReminder } from '@/components/billing/SubscriptionReminder';
 import { PaymentDialog } from '@/components/billing/PaymentDialog';
+import { PageHead } from '@/components/seo/PageHead';
 
 const DashboardPage: React.FC = () => {
   const { currentShop } = useShop();
@@ -165,6 +166,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageHead title="Dashboard" description="Overview of your shop's revenue, sales, expenses and monthly net profit at a glance." path="/" />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Business Dashboard Overview</h1>

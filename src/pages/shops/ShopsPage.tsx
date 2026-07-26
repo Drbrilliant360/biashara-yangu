@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, Store } from 'lucide-react';
+import { PageHead } from '@/components/seo/PageHead';
 import { useShop } from '@/context/ShopContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +35,7 @@ const ShopsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageHead title="Your Shops" description="View, add and manage all of the shops connected to your Biashara Yangu account." path="/shops" />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Your Shops Directory</h1>
         <Button 

@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { ReceiptText, FilePlus, Search, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PageHead } from '@/components/seo/PageHead';
 
 interface SaleWithItems {
   id: string;
@@ -173,6 +174,7 @@ const SalesPage: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
+      <PageHead title="Sales" description="Record new sales, review recent transactions and print or share receipts for customers." path="/sales" />
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 min-w-0">
           <ReceiptText className="w-6 h-6 sm:w-7 sm:h-7 text-primary shrink-0" />

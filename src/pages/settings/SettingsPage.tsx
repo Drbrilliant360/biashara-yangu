@@ -13,6 +13,7 @@ import { Settings, Moon, Sun, Globe, UserCircle, Wallet, CreditCard } from 'luci
 import { useLanguage } from "@/context/LanguageContext";
 import { PaymentDialog } from '@/components/billing/PaymentDialog';
 import { useSubscription } from '@/hooks/useSubscription';
+import { PageHead } from '@/components/seo/PageHead';
 
 interface UIUser {
   phone?: string;
@@ -63,6 +64,7 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div className="container max-w-5xl px-4 py-6">
+      <PageHead title="Settings" description="Update your profile, language, billing and preferences for your Biashara Yangu account." path="/settings" />
       <div className="mb-8 flex items-center">
         <Settings className="h-6 w-6 mr-2" />
         <h1 className="text-3xl font-bold tracking-tight">{t("settings")}</h1>

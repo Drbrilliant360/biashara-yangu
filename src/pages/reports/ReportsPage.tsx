@@ -14,6 +14,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
+import { PageHead } from '@/components/seo/PageHead';
 
 const ReportsPage: React.FC = () => {
   const { currentShop } = useShop();
@@ -176,6 +177,7 @@ const ReportsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageHead title="Reports" description="Business reports with revenue, profit trends and exports to PDF or Excel for any date range." path="/reports" />
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="min-w-0">

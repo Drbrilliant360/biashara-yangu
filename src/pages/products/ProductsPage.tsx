@@ -17,6 +17,7 @@ import { Product } from '@/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { PageHead } from '@/components/seo/PageHead';
 
 const ProductsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -115,6 +116,7 @@ const ProductsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageHead title="Products" description="Manage your product catalog: track stock levels, prices, categories and barcodes across your shops." path="/products" />
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl sm:text-2xl font-bold truncate">{t('products')}</h1>
         <Button onClick={() => navigate('/products/add')} className="shrink-0">

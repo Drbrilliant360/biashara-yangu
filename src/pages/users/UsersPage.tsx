@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, UserPlus, Shield } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { PageHead } from '@/components/seo/PageHead';
 
 interface ShopUserRow {
   id: string;
@@ -63,6 +64,7 @@ const UsersPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <PageHead title="Shop Users" description="Add team members and manage staff access to your shop in Biashara Yangu." path="/customers" />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Shop User Management</h1>
         <Button onClick={() => setShowNewUserForm(!showNewUserForm)}>

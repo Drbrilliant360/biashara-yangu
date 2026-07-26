@@ -4,6 +4,7 @@ import { MauzoAIChat } from '@/components/ai/MauzoAIChat';
 import { useShop } from '@/context/ShopContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { PageHead } from '@/components/seo/PageHead';
 
 const MauzoAIPage: React.FC = () => {
   const { currentShop } = useShop();
@@ -23,6 +24,7 @@ const MauzoAIPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      <PageHead title="Mauzo AI" description="Ask an AI assistant business questions about your shop's stock, sales and top products." path="/mauzo-ai" />
       <div className="flex items-center gap-2">
         <Sparkles className="h-6 w-6 text-biashara-primary" />
         <h1 className="text-2xl font-bold">Mauzo AI — Business Assistant</h1>
