@@ -37,6 +37,7 @@ import AdminRevenuePage from "@/pages/admin/AdminRevenuePage";
 import AdminProductsPage from "@/pages/admin/AdminProductsPage";
 import AdminSalesPage from "@/pages/admin/AdminSalesPage";
 import { RequireSuperAdmin } from "@/components/admin/RequireSuperAdmin";
+import InvoiceGeneratorPage from "@/pages/invoice/InvoiceGeneratorPage";
 
 // Create a client
 const queryClient = new QueryClient();
