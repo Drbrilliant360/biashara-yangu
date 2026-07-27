@@ -57,6 +57,7 @@ const App = () => (
                   {/* Auth Routes */}
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/invoice-generator" element={<InvoiceGeneratorPage />} />
                   
                   {/* Protected Routes */}
                   <Route path="/" element={<MainLayout />}>
