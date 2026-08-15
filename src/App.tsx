@@ -38,6 +38,7 @@ import AdminProductsPage from "@/pages/admin/AdminProductsPage";
 import AdminSalesPage from "@/pages/admin/AdminSalesPage";
 import { RequireSuperAdmin } from "@/components/admin/RequireSuperAdmin";
 import InvoiceGeneratorPage from "@/pages/invoice/InvoiceGeneratorPage";
+import TermsPage from "@/pages/legal/TermsPage";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/invoice-generator" element={<InvoiceGeneratorPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
                   
                   {/* Protected Routes */}
                   <Route path="/" element={<MainLayout />}>
