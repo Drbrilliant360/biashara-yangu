@@ -58,6 +58,7 @@ const App = () => (
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/invoice-generator" element={<InvoiceGeneratorPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
                   
                   {/* Protected Routes */}
                   <Route path="/" element={<MainLayout />}>

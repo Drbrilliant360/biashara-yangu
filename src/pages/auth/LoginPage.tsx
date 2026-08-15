@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -84,7 +84,7 @@ const LoginPage: React.FC = () => {
               Don't have an account?{' '}
               <button onClick={() => navigate('/register')} className="text-primary underline font-medium">Sign up</button>
             </span>
-            <span className="underline cursor-pointer">Terms & Conditions</span>
+            <Link to="/terms" className="underline hover:text-primary">Terms & Conditions</Link>
           </div>
         </div>
 
