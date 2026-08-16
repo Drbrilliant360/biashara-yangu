@@ -6,7 +6,7 @@ interface PageHeadProps {
   path: string;
 }
 
-const SITE = 'https://biashara-yangu.lovable.app';
+const SITE = 'https://www.biashara-yangu.co.tz';
 
 export function PageHead({ title, description, path }: PageHeadProps) {
   const url = `${SITE}${path}`;

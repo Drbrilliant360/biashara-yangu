@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://biashara-yangu.lovable.app/</loc>
+    <loc>https://www.biashara-yangu.co.tz/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://biashara-yangu.lovable.app/login</loc>
+    <loc>https://www.biashara-yangu.co.tz/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://biashara-yangu.lovable.app/register</loc>
+    <loc>https://www.biashara-yangu.co.tz/register</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://biashara-yangu.lovable.app/shops</loc>
+    <loc>https://www.biashara-yangu.co.tz/shops</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://biashara-yangu.lovable.app/shops/add</loc>
+    <loc>https://www.biashara-yangu.co.tz/shops/add</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://biashara-yangu.lovable.app/products</loc>
+    <loc>https://www.biashara-yangu.co.tz/products</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://biashara-yangu.lovable.app/products/add</loc>
+    <loc>https://www.biashara-yangu.co.tz/products/add</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://biashara-yangu.lovable.app/terms</loc>
+    <loc>https://www.biashara-yangu.co.tz/terms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
