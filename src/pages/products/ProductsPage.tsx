@@ -1,7 +1,6 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, ArrowUpDown, Trash2, Edit } from 'lucide-react';
+import { Plus, Search, ArrowUpDown, Trash2, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -18,66 +17,87 @@ import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PageHead } from '@/components/seo/PageHead';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+
+const PAGE_SIZE = 25;
+
+// Only the columns the table actually renders — avoids over-fetching.
+const PRODUCT_COLUMNS =
+  'id, name, category, barcode, buying_price, selling_price, stock_quantity, min_stock_level, unit';
 
 const ProductsPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentShop } = useShop();
   const { t } = useLanguage();
-  const [products, setProducts] = useState<Product[]>([]);
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortColumn, setSortColumn] = useState<keyof Product>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
 
+  const shopId = currentShop?.id;
+
+  // Debounce search so typing doesn't fire a request per keystroke
   useEffect(() => {
-    if (currentShop) {
-      loadProducts();
-    }
-  }, [currentShop]);
+    const id = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 350);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
 
-  const loadProducts = async () => {
-    if (!currentShop) return;
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('shop_id', currentShop.id)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false });
+  // Reset to first page whenever the query shape changes
+  useEffect(() => {
+    setPage(0);
+  }, [debouncedSearch, sortColumn, sortDirection, shopId]);
 
-    if (error) {
-      console.error('Error loading products:', error);
-      toast.error('Failed to load products');
-    }
-    if (data) {
-      setProducts(data as Product[]);
-    }
-    setLoading(false);
-  };
+  const { data, isFetching } = useQuery({
+    queryKey: ['products', shopId, page, debouncedSearch, sortColumn, sortDirection],
+    enabled: !!shopId,
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const from = page * PAGE_SIZE;
+      let query = supabase
+        .from('products')
+        .select(PRODUCT_COLUMNS, { count: 'exact' })
+        .eq('shop_id', shopId!)
+        .eq('is_active', true)
+        .order(sortColumn as string, { ascending: sortDirection === 'asc' })
+        .range(from, from + PAGE_SIZE - 1);
+
+      if (debouncedSearch) {
+        const term = `%${debouncedSearch}%`;
+        query = query.or(`name.ilike.${term},category.ilike.${term},barcode.ilike.${term}`);
+      }
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      return { rows: (data || []) as unknown as Product[], count: count ?? 0 };
+    },
+  });
+
+  const products = data?.rows ?? [];
+  const total = data?.count ?? 0;
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const handleDelete = async (productId: string, productName: string) => {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', productId);
+    const { error } = await supabase.from('products').delete().eq('id', productId);
 
     if (error) {
       console.error('Error deleting product:', error);
-      toast.error(error.message || 'Failed to delete product');
+      toast.error(error.message || 'Failed to load products');
       return;
     }
 
-    setProducts(prev => prev.filter(p => p.id !== productId));
+    queryClient.invalidateQueries({ queryKey: ['products', shopId] });
     toast.success(`"${productName}" deleted successfully`);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currentShop?.currency || 'KES',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const currency = currentShop?.currency || 'KES';
+  const formatter = useMemo(
+    () => new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0 }),
+    [currency]
+  );
+  const formatCurrency = (amount: number) => formatter.format(Number(amount) || 0);
 
   const handleSort = (column: keyof Product) => {
     if (sortColumn === column) {
@@ -87,23 +107,6 @@ const ProductsPage: React.FC = () => {
       setSortDirection('asc');
     }
   };
-
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (product.barcode && product.barcode.includes(searchTerm))
-  );
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const aVal = a[sortColumn];
-    const bVal = b[sortColumn];
-    if (aVal == null) return 1;
-    if (bVal == null) return -1;
-    const comparison = typeof aVal === 'string'
-      ? aVal.localeCompare(bVal as string)
-      : (aVal as number) - (bVal as number);
-    return sortDirection === 'asc' ? comparison : -comparison;
-  });
 
   if (!currentShop) {
     return (
@@ -157,16 +160,16 @@ const ProductsPage: React.FC = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {isFetching && products.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
               </TableRow>
-            ) : sortedProducts.length === 0 ? (
+            ) : products.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No products found</TableCell>
               </TableRow>
             ) : (
-              sortedProducts.map(product => (
+              products.map(product => (
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">
                     <div className="min-w-0">
@@ -217,6 +220,23 @@ const ProductsPage: React.FC = () => {
           </TableBody>
         </Table>
       </div>
+
+      {total > 0 && (
+        <div className="flex items-center justify-between gap-2 text-sm">
+          <span className="text-muted-foreground">
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))}>
+              <ChevronLeft size={16} /> <span className="hidden sm:inline">Prev</span>
+            </Button>
+            <span className="text-muted-foreground">{page + 1} / {pageCount}</span>
+            <Button variant="outline" size="sm" disabled={page + 1 >= pageCount} onClick={() => setPage(p => p + 1)}>
+              <span className="hidden sm:inline">Next</span> <ChevronRight size={16} />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
