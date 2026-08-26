@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Store, Users, CreditCard, TrendingUp, Package, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, Store, Users, CreditCard, TrendingUp, Package, ShoppingCart, LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
