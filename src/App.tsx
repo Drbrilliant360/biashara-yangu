@@ -79,6 +79,7 @@ const App = () => (
                     <Route path="customers" element={<UsersPage />} />
                     <Route path="quotations" element={<QuotationsPage />} />
                     <Route path="mauzo-ai" element={<MauzoAIPage />} />
+                    <Route path="help" element={<HelpPage />} />
                     <Route path="admin" element={<RequireSuperAdmin><AdminOverviewPage /></RequireSuperAdmin>} />
                     <Route path="admin/shops" element={<RequireSuperAdmin><AdminShopsPage /></RequireSuperAdmin>} />
                     <Route path="admin/users" element={<RequireSuperAdmin><AdminUsersPage /></RequireSuperAdmin>} />
