@@ -36,6 +36,8 @@ import AdminSubscriptionsPage from "@/pages/admin/AdminSubscriptionsPage";
 import AdminRevenuePage from "@/pages/admin/AdminRevenuePage";
 import AdminProductsPage from "@/pages/admin/AdminProductsPage";
 import AdminSalesPage from "@/pages/admin/AdminSalesPage";
+import AdminSupportPage from "@/pages/admin/AdminSupportPage";
+import HelpPage from "@/pages/support/HelpPage";
 import { RequireSuperAdmin } from "@/components/admin/RequireSuperAdmin";
 import InvoiceGeneratorPage from "@/pages/invoice/InvoiceGeneratorPage";
 import TermsPage from "@/pages/legal/TermsPage";
