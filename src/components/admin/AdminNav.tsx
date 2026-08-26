@@ -11,6 +11,7 @@ const items = [
   { to: "/admin/revenue", label: "Revenue", icon: TrendingUp },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/sales", label: "Sales", icon: ShoppingCart },
+  { to: "/admin/support", label: "Queries", icon: LifeBuoy },
 ];
 
 export const AdminNav: React.FC = () => (
