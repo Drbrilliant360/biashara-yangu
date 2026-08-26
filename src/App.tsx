@@ -36,6 +36,8 @@ import AdminSubscriptionsPage from "@/pages/admin/AdminSubscriptionsPage";
 import AdminRevenuePage from "@/pages/admin/AdminRevenuePage";
 import AdminProductsPage from "@/pages/admin/AdminProductsPage";
 import AdminSalesPage from "@/pages/admin/AdminSalesPage";
+import AdminSupportPage from "@/pages/admin/AdminSupportPage";
+import HelpPage from "@/pages/support/HelpPage";
 import { RequireSuperAdmin } from "@/components/admin/RequireSuperAdmin";
 import InvoiceGeneratorPage from "@/pages/invoice/InvoiceGeneratorPage";
 import TermsPage from "@/pages/legal/TermsPage";
@@ -77,6 +79,7 @@ const App = () => (
                     <Route path="customers" element={<UsersPage />} />
                     <Route path="quotations" element={<QuotationsPage />} />
                     <Route path="mauzo-ai" element={<MauzoAIPage />} />
+                    <Route path="help" element={<HelpPage />} />
                     <Route path="admin" element={<RequireSuperAdmin><AdminOverviewPage /></RequireSuperAdmin>} />
                     <Route path="admin/shops" element={<RequireSuperAdmin><AdminShopsPage /></RequireSuperAdmin>} />
                     <Route path="admin/users" element={<RequireSuperAdmin><AdminUsersPage /></RequireSuperAdmin>} />
@@ -84,6 +87,7 @@ const App = () => (
                     <Route path="admin/revenue" element={<RequireSuperAdmin><AdminRevenuePage /></RequireSuperAdmin>} />
                     <Route path="admin/products" element={<RequireSuperAdmin><AdminProductsPage /></RequireSuperAdmin>} />
                     <Route path="admin/sales" element={<RequireSuperAdmin><AdminSalesPage /></RequireSuperAdmin>} />
+                    <Route path="admin/support" element={<RequireSuperAdmin><AdminSupportPage /></RequireSuperAdmin>} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />

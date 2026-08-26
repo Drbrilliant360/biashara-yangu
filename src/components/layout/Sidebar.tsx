@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Home, Package, BarChart2, CreditCard, Settings, Users, LogOut, Store,
-  FileMinus, FileText, Quote, Sparkles, Shield
+  FileMinus, FileText, Quote, Sparkles, Shield, Receipt, LifeBuoy
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
