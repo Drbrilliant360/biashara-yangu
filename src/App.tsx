@@ -87,6 +87,7 @@ const App = () => (
                     <Route path="admin/revenue" element={<RequireSuperAdmin><AdminRevenuePage /></RequireSuperAdmin>} />
                     <Route path="admin/products" element={<RequireSuperAdmin><AdminProductsPage /></RequireSuperAdmin>} />
                     <Route path="admin/sales" element={<RequireSuperAdmin><AdminSalesPage /></RequireSuperAdmin>} />
+                    <Route path="admin/support" element={<RequireSuperAdmin><AdminSupportPage /></RequireSuperAdmin>} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
