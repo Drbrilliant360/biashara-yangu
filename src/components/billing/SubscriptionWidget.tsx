@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Crown, AlertTriangle, XCircle, Clock } from 'lucide-react';
+import { canPayInApp } from '@/lib/platform';
 import type { SubscriptionInfo } from '@/hooks/useSubscription';
 
 interface SubscriptionWidgetProps {
@@ -24,7 +25,7 @@ export const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
       return {
         icon: <XCircle className="h-6 w-6 text-destructive" />,
         title: 'Subscription Expired',
-        subtitle: 'Your access has expired. Pay now to continue.',
+        subtitle: canPayInApp() ? 'Your access has expired. Pay now to continue.' : 'Your access period has ended.',
         borderColor: 'border-l-destructive',
         bgColor: 'bg-destructive/5',
         progressColor: 'bg-destructive',
@@ -87,7 +88,7 @@ export const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
           </div>
         </div>
 
-        {(isExpired || isWarning || isTrial) && (
+        {canPayInApp() && (isExpired || isWarning || isTrial) && (
           <Button
             size="sm"
             variant={isExpired ? 'destructive' : 'default'}

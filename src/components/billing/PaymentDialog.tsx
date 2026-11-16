@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { canPayInApp } from '@/lib/platform';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface PaymentDialogProps {
@@ -14,7 +15,13 @@ interface PaymentDialogProps {
   onPaymentSuccess?: () => void;
 }
 
-export function PaymentDialog({ open, onOpenChange, onPaymentSuccess }: PaymentDialogProps) {
+export function PaymentDialog(props: PaymentDialogProps) {
+  // Apple 3.1.1: no external payment flows inside the iOS app.
+  if (!canPayInApp()) return null;
+  return <PaymentDialogInner {...props} />;
+}
+
+function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDialogProps) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [firstName, setFirstName] = useState('');

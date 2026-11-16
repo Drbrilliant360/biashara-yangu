@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,36 +11,41 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { LanguageProvider } from "@/context/LanguageContext";
 import ScrollToTop from "@/components/ScrollToTop";
 
-// Pages
-import DashboardPage from "@/pages/dashboard/DashboardPage";
-import LoginPage from "@/pages/auth/LoginPage";
-import RegisterPage from "@/pages/auth/RegisterPage";
-import ShopsPage from "@/pages/shops/ShopsPage";
-import AddShopPage from "@/pages/shops/AddShopPage";
-import ProductsPage from "@/pages/products/ProductsPage";
-import AddProductPage from "@/pages/products/AddProductPage";
-import EditProductPage from "@/pages/products/EditProductPage";
-import ReportsPage from "@/pages/reports/ReportsPage";
-import SettingsPage from "@/pages/settings/SettingsPage";
-import NotFound from "@/pages/NotFound";
-import ExpensesPage from "@/pages/expenses/ExpensesPage";
-import PurchasesPage from "@/pages/purchases/PurchasesPage";
-import SalesPage from "@/pages/sales/SalesPage";
-import UsersPage from "@/pages/users/UsersPage";
-import QuotationsPage from "@/pages/quotations/QuotationsPage";
-import MauzoAIPage from "@/pages/ai/MauzoAIPage";
-import AdminOverviewPage from "@/pages/admin/AdminOverviewPage";
-import AdminShopsPage from "@/pages/admin/AdminShopsPage";
-import AdminUsersPage from "@/pages/admin/AdminUsersPage";
-import AdminSubscriptionsPage from "@/pages/admin/AdminSubscriptionsPage";
-import AdminRevenuePage from "@/pages/admin/AdminRevenuePage";
-import AdminProductsPage from "@/pages/admin/AdminProductsPage";
-import AdminSalesPage from "@/pages/admin/AdminSalesPage";
-import AdminSupportPage from "@/pages/admin/AdminSupportPage";
-import HelpPage from "@/pages/support/HelpPage";
+// Pages (lazy-loaded so the first screen on mobile downloads far less JavaScript)
+const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage"));
+const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
+const ShopsPage = lazy(() => import("@/pages/shops/ShopsPage"));
+const AddShopPage = lazy(() => import("@/pages/shops/AddShopPage"));
+const ProductsPage = lazy(() => import("@/pages/products/ProductsPage"));
+const AddProductPage = lazy(() => import("@/pages/products/AddProductPage"));
+const EditProductPage = lazy(() => import("@/pages/products/EditProductPage"));
+const ReportsPage = lazy(() => import("@/pages/reports/ReportsPage"));
+const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const ExpensesPage = lazy(() => import("@/pages/expenses/ExpensesPage"));
+const PurchasesPage = lazy(() => import("@/pages/purchases/PurchasesPage"));
+const SalesPage = lazy(() => import("@/pages/sales/SalesPage"));
+const UsersPage = lazy(() => import("@/pages/users/UsersPage"));
+const QuotationsPage = lazy(() => import("@/pages/quotations/QuotationsPage"));
+const MauzoAIPage = lazy(() => import("@/pages/ai/MauzoAIPage"));
+const AdminOverviewPage = lazy(() => import("@/pages/admin/AdminOverviewPage"));
+const AdminShopsPage = lazy(() => import("@/pages/admin/AdminShopsPage"));
+const AdminUsersPage = lazy(() => import("@/pages/admin/AdminUsersPage"));
+const AdminSubscriptionsPage = lazy(() => import("@/pages/admin/AdminSubscriptionsPage"));
+const AdminRevenuePage = lazy(() => import("@/pages/admin/AdminRevenuePage"));
+const AdminProductsPage = lazy(() => import("@/pages/admin/AdminProductsPage"));
+const AdminSalesPage = lazy(() => import("@/pages/admin/AdminSalesPage"));
+const AdminSupportPage = lazy(() => import("@/pages/admin/AdminSupportPage"));
+const HelpPage = lazy(() => import("@/pages/support/HelpPage"));
 import { RequireSuperAdmin } from "@/components/admin/RequireSuperAdmin";
-import InvoiceGeneratorPage from "@/pages/invoice/InvoiceGeneratorPage";
-import TermsPage from "@/pages/legal/TermsPage";
+const InvoiceGeneratorPage = lazy(() => import("@/pages/invoice/InvoiceGeneratorPage"));
+const TermsPage = lazy(() => import("@/pages/legal/TermsPage"));
+const PrivacyPage = lazy(() => import("@/pages/legal/PrivacyPage"));
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-screen text-muted-foreground">Loading...</div>
+);
 
 // Create a client
 const queryClient = new QueryClient();
@@ -56,12 +61,14 @@ const App = () => (
                 <ScrollToTop />
                 <Toaster />
                 <Sonner />
+                <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Auth Routes */}
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/invoice-generator" element={<InvoiceGeneratorPage />} />
                   <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/privacy" element={<PrivacyPage />} />
                   
                   {/* Protected Routes */}
                   <Route path="/" element={<MainLayout />}>
@@ -92,6 +99,7 @@ const App = () => (
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                </Suspense>
               </>
             </ShopProvider>
           </AuthProvider>

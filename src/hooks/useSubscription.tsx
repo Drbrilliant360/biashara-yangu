@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from './use-toast';
 
 export interface SubscriptionInfo {
   status: 'trial' | 'active' | 'expired';
@@ -18,7 +17,6 @@ export interface SubscriptionInfo {
 
 export function useSubscription() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [subscription, setSubscription] = useState<SubscriptionInfo>({
     status: 'trial',
     daysRemaining: 30,
@@ -112,53 +110,6 @@ export function useSubscription() {
     }
   };
 
-  const extendSubscription = async () => {
-    if (!user) return false;
-    try {
-      const now = new Date();
-      const { data: current } = await supabase
-        .from('subscriptions')
-        .select('current_period_end')
-        .eq('user_id', user.id)
-        .single();
-
-      // Extend from current end date or from now, whichever is later
-      const baseDate = current?.current_period_end
-        ? new Date(Math.max(new Date(current.current_period_end).getTime(), now.getTime()))
-        : now;
-
-      const newEnd = new Date(baseDate);
-      newEnd.setDate(newEnd.getDate() + 30);
-
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({
-          status: 'active',
-          current_period_end: newEnd.toISOString(),
-          last_payment_date: now.toISOString(),
-        })
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Subscription Renewed! 🎉",
-        description: `Your subscription is now active until ${newEnd.toLocaleDateString()}.`,
-      });
-
-      await fetchSubscription();
-      return true;
-    } catch (err) {
-      console.error('Error extending subscription:', err);
-      toast({
-        title: "Error",
-        description: "Failed to update subscription. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-
   useEffect(() => {
     fetchSubscription();
   }, [fetchSubscription]);
@@ -178,7 +129,6 @@ export function useSubscription() {
     setShowReminder,
     showPayment,
     setShowPayment,
-    extendSubscription,
     refetch: fetchSubscription,
   };
 }

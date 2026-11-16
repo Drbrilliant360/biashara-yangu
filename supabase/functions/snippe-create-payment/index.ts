@@ -6,6 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Price is decided on the server. Never trust an amount sent by the client.
+const SUBSCRIPTION_AMOUNT_TZS = 5000;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -30,8 +33,8 @@ Deno.serve(async (req) => {
     const user = userData.user;
 
     const body = await req.json();
-    const { phone, firstname, lastname, email, amount } = body;
-    if (!phone || !firstname || !lastname || !email || !amount) {
+    const { phone, firstname, lastname, email } = body;
+    if (!phone || !firstname || !lastname || !email) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -53,10 +56,9 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         payment_type: "mobile",
-        details: { amount: Number(amount), currency: "TZS" },
+        details: { amount: SUBSCRIPTION_AMOUNT_TZS, currency: "TZS" },
         phone_number: phoneNumber,
         customer: { firstname, lastname, email },
-        webhook_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/snippe-check-payment`,
         metadata: { user_id: user.id, purpose: "subscription" },
       }),
     });

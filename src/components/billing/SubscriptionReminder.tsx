@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, XCircle, Clock, Crown, CreditCard } from 'lucide-react';
+import { canPayInApp } from '@/lib/platform';
 import type { SubscriptionInfo } from '@/hooks/useSubscription';
 
 interface SubscriptionReminderProps {
@@ -32,7 +33,7 @@ export const SubscriptionReminder: React.FC<SubscriptionReminderProps> = ({
         icon: <XCircle className="h-12 w-12 text-destructive" />,
         title: 'Your Subscription Has Expired',
         description:
-          'Your access to Biashara Yangu has expired. Please renew your subscription to continue managing your business.',
+          canPayInApp() ? 'Your access to Biashara Yangu has expired. Please renew your subscription to continue managing your business.' : 'Your access period for Biashara Yangu has ended.',
         bgClass: 'bg-destructive/10',
         canDismiss: false,
       };
@@ -42,7 +43,7 @@ export const SubscriptionReminder: React.FC<SubscriptionReminderProps> = ({
         icon: <Clock className="h-12 w-12 text-orange-500" />,
         title: `Free Trial Ending in ${daysRemaining} Day${daysRemaining !== 1 ? 's' : ''}!`,
         description:
-          'Your free trial is almost over. Subscribe now to keep using all features without interruption.',
+          canPayInApp() ? 'Your free trial is almost over. Subscribe now to keep using all features without interruption.' : 'Your free trial is almost over.',
         bgClass: 'bg-orange-100 dark:bg-orange-950/30',
         canDismiss: true,
       };
@@ -52,7 +53,7 @@ export const SubscriptionReminder: React.FC<SubscriptionReminderProps> = ({
         icon: <AlertTriangle className="h-12 w-12 text-orange-500" />,
         title: `Subscription Expiring in ${daysRemaining} Day${daysRemaining !== 1 ? 's' : ''}!`,
         description:
-          'Your subscription is about to expire. Renew now to avoid any interruption to your business operations.',
+          canPayInApp() ? 'Your subscription is about to expire. Renew now to avoid any interruption to your business operations.' : 'Your subscription is about to expire.',
         bgClass: 'bg-orange-100 dark:bg-orange-950/30',
         canDismiss: true,
       };
@@ -83,10 +84,12 @@ export const SubscriptionReminder: React.FC<SubscriptionReminderProps> = ({
             {content.icon}
           </div>
 
-          <div className="text-center space-y-1">
-            <p className="text-sm text-muted-foreground">Monthly Subscription</p>
-            <p className="text-3xl font-bold">TZS 5,000</p>
-          </div>
+          {canPayInApp() && (
+            <div className="text-center space-y-1">
+              <p className="text-sm text-muted-foreground">Monthly Subscription</p>
+              <p className="text-3xl font-bold">TZS 5,000</p>
+            </div>
+          )}
 
           {daysRemaining > 0 && !isExpired && (
             <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-2">
@@ -108,6 +111,7 @@ export const SubscriptionReminder: React.FC<SubscriptionReminderProps> = ({
               {isWarning ? 'Remind Later' : 'Maybe Later'}
             </Button>
           )}
+          {canPayInApp() ? (
           <Button
             className="flex-1 gap-2"
             variant={isExpired ? 'destructive' : 'default'}
@@ -119,6 +123,11 @@ export const SubscriptionReminder: React.FC<SubscriptionReminderProps> = ({
             <CreditCard className="h-4 w-4" />
             {isExpired ? 'Renew Now' : 'Pay Now'}
           </Button>
+          ) : (
+            !content.canDismiss && (
+              <Button className="flex-1" variant="outline" onClick={() => onOpenChange(false)}>OK</Button>
+            )
+          )}
         </div>
       </DialogContent>
     </Dialog>

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FileText, FilePlus, RefreshCw, Plus, Trash2, FileEdit, Printer } from 'lucide-react';
+import { escapeHtml, saveBlob } from '@/lib/saveFile';
+import { isNative } from '@/lib/platform';
 import { exportToExcel, exportToPDF, exportToWord } from '@/utils/exportUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { Quotation, QuotationItem } from '@/types';
@@ -80,7 +82,7 @@ const QuotationsPage: React.FC = () => {
   }, [currentShop]);
   
   // Handle exporting data in different formats
-  const handleExport = (format: 'excel' | 'pdf' | 'word', quotation?: QuotationWithItems) => {
+  const handleExport = async (format: 'excel' | 'pdf' | 'word', quotation?: QuotationWithItems) => {
     const dataToExport = quotation ? [quotation] : quotations;
     
     if (dataToExport.length === 0) {
@@ -117,13 +119,13 @@ const QuotationsPage: React.FC = () => {
     try {
       switch (format) {
         case 'excel':
-          exportToExcel(exportData, fileName, shopName);
+          await exportToExcel(exportData, fileName, shopName);
           break;
         case 'pdf':
-          exportToPDF(exportData, fileName, shopName, reportTitle);
+          await exportToPDF(exportData, fileName, shopName, reportTitle);
           break;
         case 'word':
-          exportToWord(exportData, fileName, shopName, reportTitle);
+          await exportToWord(exportData, fileName, shopName, reportTitle);
           break;
       }
       
@@ -177,15 +179,13 @@ const QuotationsPage: React.FC = () => {
   };
 
   // Function to print a single quotation
-  const handlePrintQuotation = (quotation: QuotationWithItems) => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
+  const handlePrintQuotation = async (quotation: QuotationWithItems) => {
+    const e = escapeHtml;
     const printContent = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Quotation - ${quotation.customer_name}</title>
+          <title>Quotation - ${e(quotation.customer_name)}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .header { display: flex; justify-content: space-between; margin-bottom: 30px; }
@@ -205,16 +205,16 @@ const QuotationsPage: React.FC = () => {
         <body>
           <div class="header">
             <div class="company-info">
-              <h2>${currentShop?.name || 'Your Business Name'}</h2>
-              <p>${currentShop?.location || 'Business Address'}</p>
-              <p>Tel: ${currentShop?.phone || 'Phone Number'}</p>
-              <p>Email: ${currentShop?.email || 'Email Address'}</p>
+              <h2>${e(currentShop?.name || 'Your Business Name')}</h2>
+              <p>${e(currentShop?.location || 'Business Address')}</p>
+              <p>Tel: ${e(currentShop?.phone || 'Phone Number')}</p>
+              <p>Email: ${e(currentShop?.email || 'Email Address')}</p>
             </div>
             <div class="client-info">
-              <h3>${quotation.customer_name}</h3>
-              <p>${quotation.customer_phone || ''}</p>
-              <p>${quotation.customer_email || ''}</p>
-              <p>Quotation #: ${quotation.quotation_number}</p>
+              <h3>${e(quotation.customer_name)}</h3>
+              <p>${e(quotation.customer_phone)}</p>
+              <p>${e(quotation.customer_email)}</p>
+              <p>Quotation #: ${e(quotation.quotation_number)}</p>
               <p>Date: ${new Date(quotation.created_at).toLocaleDateString()}</p>
             </div>
           </div>
@@ -234,7 +234,7 @@ const QuotationsPage: React.FC = () => {
               ${quotation.quotation_items.map((item, index) => `
                 <tr>
                   <td>${index + 1}</td>
-                  <td>${item.product_name}</td>
+                  <td>${e(item.product_name)}</td>
                   <td>${item.quantity}</td>
                   <td>${formatCurrency(item.unit_price)}</td>
                   <td>${formatCurrency(item.discount)}</td>
@@ -254,6 +254,14 @@ const QuotationsPage: React.FC = () => {
       </html>
     `;
 
+    if (isNative()) {
+      // WebViews cannot open print windows: share the quotation as an HTML file instead.
+      await saveBlob(new Blob([printContent], { type: 'text/html' }), `Quotation-${quotation.quotation_number}.html`);
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
     printWindow.document.write(printContent);
     printWindow.document.close();
     printWindow.focus();

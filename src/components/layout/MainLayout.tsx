@@ -27,7 +27,7 @@ export const MainLayout: React.FC = () => {
   
   // Main application layout
   return (
-    <div className="flex h-screen bg-biashara-background overflow-hidden">
+    <div className="flex h-[calc(100dvh-env(safe-area-inset-top))] bg-biashara-background overflow-hidden">
       {/* Sidebar - hidden on mobile, shown on desktop */}
       {!isMobile && (
         <div className="w-64 flex-shrink-0">

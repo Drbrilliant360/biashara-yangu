@@ -34,7 +34,7 @@ const DashboardPage: React.FC = () => {
     setShowReminder,
     showPayment,
     setShowPayment,
-    extendSubscription,
+    refetch,
   } = useSubscription();
   const shopId = currentShop?.id;
 
@@ -197,7 +197,7 @@ const DashboardPage: React.FC = () => {
       <PaymentDialog
         open={showPayment}
         onOpenChange={setShowPayment}
-        onPaymentSuccess={extendSubscription}
+        onPaymentSuccess={refetch}
       />
 
       {/* Quick stats */}

@@ -2,7 +2,7 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import { saveBlob, escapeHtml } from '@/lib/saveFile';
 import { Shop } from '@/types';
 
 // Add type declaration for jsPDF with autoTable
@@ -21,17 +21,16 @@ const getCurrentDateTime = () => {
 };
 
 // Function to export data to Excel
-export const exportToExcel = (data: ExportableData, fileName: string, shopName: string) => {
+export const exportToExcel = async (data: ExportableData, fileName: string, shopName: string) => {
   // Create worksheet
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  
-  // Add header with business name and date
-  XLSX.utils.sheet_add_aoa(worksheet, [
+  // 3-row business header first, then the data table starting at A4 (so nothing is overwritten)
+  const worksheet = XLSX.utils.aoa_to_sheet([
     [`Business: ${shopName}`],
     [`Date: ${getCurrentDateTime()}`],
-    [] // Empty row
-  ], { origin: 'A1' });
-  
+    [],
+  ]);
+  XLSX.utils.sheet_add_json(worksheet, data, { origin: 'A4' });
+
   // Adjust column widths
   const columnWidths = data.reduce((widths, row) => {
     Object.keys(row).forEach(key => {
@@ -50,11 +49,11 @@ export const exportToExcel = (data: ExportableData, fileName: string, shopName: 
   // Generate Excel file and save
   const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
   const excelData = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  saveAs(excelData, `${fileName}.xlsx`);
+  await saveBlob(excelData, `${fileName}.xlsx`);
 };
 
 // Function to export data to PDF
-export const exportToPDF = (data: ExportableData, fileName: string, shopName: string, title: string) => {
+export const exportToPDF = async (data: ExportableData, fileName: string, shopName: string, title: string) => {
   // Create new PDF document
   const doc = new jsPDF();
   
@@ -80,11 +79,11 @@ export const exportToPDF = (data: ExportableData, fileName: string, shopName: st
   });
   
   // Save the PDF
-  doc.save(`${fileName}.pdf`);
+  await saveBlob(doc.output('blob'), `${fileName}.pdf`);
 };
 
 // Function to export data to Word (DOCX)
-export const exportToWord = (data: ExportableData, fileName: string, shopName: string, title: string) => {
+export const exportToWord = async (data: ExportableData, fileName: string, shopName: string, title: string) => {
   // Create HTML content for Word document
   let htmlContent = `
     <html>
@@ -98,8 +97,8 @@ export const exportToWord = (data: ExportableData, fileName: string, shopName: s
         </style>
       </head>
       <body>
-        <h1>${shopName}</h1>
-        <h2>${title}</h2>
+        <h1>${escapeHtml(shopName)}</h1>
+        <h2>${escapeHtml(title)}</h2>
         <p>Date: ${getCurrentDateTime()}</p>
         <table>
           <thead>
@@ -109,7 +108,7 @@ export const exportToWord = (data: ExportableData, fileName: string, shopName: s
   // Add table headers
   const headers = Object.keys(data[0] || {});
   headers.forEach(header => {
-    htmlContent += `<th>${header}</th>`;
+    htmlContent += `<th>${escapeHtml(header)}</th>`;
   });
   
   htmlContent += '</tr></thead><tbody>';
@@ -118,7 +117,7 @@ export const exportToWord = (data: ExportableData, fileName: string, shopName: s
   data.forEach(row => {
     htmlContent += '<tr>';
     Object.values(row).forEach(value => {
-      htmlContent += `<td>${value}</td>`;
+      htmlContent += `<td>${escapeHtml(value)}</td>`;
     });
     htmlContent += '</tr>';
   });
@@ -127,7 +126,7 @@ export const exportToWord = (data: ExportableData, fileName: string, shopName: s
   
   // Convert to Blob
   const blob = new Blob([htmlContent], { type: 'application/msword' });
-  saveAs(blob, `${fileName}.doc`);
+  await saveBlob(blob, `${fileName}.doc`);
 };
 
 // Format data for export based on report type
@@ -164,7 +163,7 @@ export const formatDataForExport = (
         Quantity: item.quantity,
         Rate: formatCurrency(item.rate || 0),
         Amount: formatCurrency(item.amount || 0),
-        'VAT %': `${item.vatPercentage}%` || '0%',
+        'VAT %': `${item.vatPercentage ?? 0}%`,
         'VAT Amount': formatCurrency(item.vatAmount || 0),
         'Total Amount': formatCurrency(item.totalAmount || 0)
       }));

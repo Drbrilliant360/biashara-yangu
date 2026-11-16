@@ -22,3 +22,22 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Mobile wrappers: build output and dependencies are regenerated
+mobile-*/node_modules
+mobile-*/www
+mobile-android/android/app/src/main/assets/public
+mobile-android/android/app/src/main/assets/capacitor.*.json
+mobile-android/android/.gradle
+mobile-android/android/build
+mobile-android/android/app/build
+mobile-android/android/local.properties
+mobile-android/android/capacitor-cordova-android-plugins
+mobile-ios/ios/App/App/public
+mobile-ios/ios/App/Pods
+mobile-ios/ios/App/build
+mobile-ios/ios/DerivedData
+mobile-ios/ios/capacitor-cordova-ios-plugins
+*.jks
+*.keystore
+vite.config.ts.timestamp-*

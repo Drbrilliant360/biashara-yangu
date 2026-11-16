@@ -10,6 +10,7 @@ import { Plus, Trash2, Download, ArrowLeft } from "lucide-react";
 import { PageHead } from "@/components/seo/PageHead";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { saveBlob } from '@/lib/saveFile';
 import { toast } from "sonner";
 
 type Item = { description: string; quantity: number; price: number };
@@ -57,7 +58,7 @@ export default function InvoiceGeneratorPage() {
     return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
   };
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
     if (!fromName || !toName) {
       toast.error("Please fill in your business and customer name");
       return;
@@ -159,8 +160,7 @@ export default function InvoiceGeneratorPage() {
     });
 
     // --- Totals ---
-    // @ts-ignore
-    const finalY = (doc as any).lastAutoTable.finalY + 20;
+    const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
     const totalsX = pageW - 40;
     const labelX = totalsX - 160;
     doc.setFontSize(10);
@@ -203,10 +203,10 @@ export default function InvoiceGeneratorPage() {
     const pageH = doc.internal.pageSize.getHeight();
     doc.setFontSize(8);
     doc.setTextColor(160, 160, 160);
-    doc.text("Generated with Biashara Yangu · biashara-yangu.lovable.app", pageW / 2, pageH - 20, { align: "center" });
+    doc.text("Generated with Biashara Yangu · biashara-yangu.co.tz", pageW / 2, pageH - 20, { align: "center" });
 
-    doc.save(`${invoiceNumber}.pdf`);
-    toast.success("Invoice downloaded");
+    await saveBlob(doc.output("blob"), `${invoiceNumber}.pdf`);
+    toast.success("Invoice ready");
   };
 
   return (

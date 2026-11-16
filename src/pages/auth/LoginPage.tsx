@@ -33,9 +33,9 @@ const LoginPage: React.FC = () => {
       <Helmet>
         <title>Sign in — Biashara Yangu</title>
         <meta name="description" content="Sign in to Biashara Yangu to manage stock, sales, and insights across your shops." />
-        <link rel="canonical" href="https://biashara-yangu.lovable.app/login" />
+        <link rel="canonical" href="https://www.biashara-yangu.co.tz/login" />
         <meta property="og:title" content="Sign in — Biashara Yangu" />
-        <meta property="og:url" content="https://biashara-yangu.lovable.app/login" />
+        <meta property="og:url" content="https://www.biashara-yangu.co.tz/login" />
       </Helmet>
       <div className="w-full max-w-6xl bg-card rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2 relative">
         {/* Left: Form */}
@@ -84,7 +84,10 @@ const LoginPage: React.FC = () => {
               Don't have an account?{' '}
               <button onClick={() => navigate('/register')} className="text-primary underline font-medium">Sign up</button>
             </span>
-            <Link to="/terms" className="underline hover:text-primary">Terms & Conditions</Link>
+            <span className="flex gap-3">
+              <Link to="/terms" className="underline hover:text-primary">Terms</Link>
+              <Link to="/privacy" className="underline hover:text-primary">Privacy</Link>
+            </span>
           </div>
         </div>
 

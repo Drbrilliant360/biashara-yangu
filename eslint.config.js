@@ -5,7 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "mobile-android/**", "mobile-ios/**"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -24,6 +24,11 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-unused-vars": "off",
+      // Supabase rows are loosely typed across the app; surface as warnings, not build blockers.
+      "@typescript-eslint/no-explicit-any": "warn",
+      // shadcn/ui and auto-generated files trigger these
+      "@typescript-eslint/no-empty-object-type": "off",
+      "prefer-const": "warn",
     },
   }
 );

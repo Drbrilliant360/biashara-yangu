@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const SUBSCRIPTION_AMOUNT_TZS = 5000;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -60,6 +62,13 @@ Deno.serve(async (req) => {
         });
       }
 
+      const paidAmount = Number(typeof payment.amount === "object" ? payment.amount?.value : payment.amount);
+      if (payment?.metadata?.purpose !== "subscription" || !(paidAmount >= SUBSCRIPTION_AMOUNT_TZS)) {
+        return new Response(JSON.stringify({ error: "Payment does not match subscription price" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       // Idempotency: check if we already processed this reference
       const { data: existing } = await supabase
         .from("subscriptions")
@@ -67,14 +76,14 @@ Deno.serve(async (req) => {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (existing && (existing as any).last_payment_reference !== reference) {
+      if (existing && existing.last_payment_reference !== reference) {
         const now = new Date();
         const currentEnd = existing.current_period_end ? new Date(existing.current_period_end) : now;
         const base = currentEnd.getTime() > now.getTime() ? currentEnd : now;
         const newEnd = new Date(base);
         newEnd.setDate(newEnd.getDate() + 30);
 
-        const amountVal = typeof payment.amount === "object" ? payment.amount.value : payment.amount;
+        const amountVal = paidAmount;
 
         await supabase
           .from("subscriptions")

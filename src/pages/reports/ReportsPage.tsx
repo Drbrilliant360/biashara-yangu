@@ -14,6 +14,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
+import { saveBlob } from '@/lib/saveFile';
 import { PageHead } from '@/components/seo/PageHead';
 
 const ReportsPage: React.FC = () => {
@@ -53,7 +54,7 @@ const ReportsPage: React.FC = () => {
 
   const dateLabel = `${dateRange?.from?.toLocaleDateString() || ''} - ${dateRange?.to?.toLocaleDateString() || ''}`;
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     const doc = new jsPDF();
     const shopName = currentShop?.name || 'Shop';
 
@@ -107,11 +108,11 @@ const ReportsPage: React.FC = () => {
       });
     }
 
-    doc.save(`${shopName}_report_${new Date().toISOString().split('T')[0]}.pdf`);
-    toast.success('PDF report downloaded');
+    await saveBlob(doc.output('blob'), `${shopName}_report_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('PDF report ready');
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const wb = XLSX.utils.book_new();
 
     // Summary sheet
@@ -163,8 +164,12 @@ const ReportsPage: React.FC = () => {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prodData), 'Products');
 
     const shopName = currentShop?.name || 'Shop';
-    XLSX.writeFile(wb, `${shopName}_report_${new Date().toISOString().split('T')[0]}.xlsx`);
-    toast.success('Excel report downloaded');
+    const xlsxBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    await saveBlob(
+      new Blob([xlsxBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+      `${shopName}_report_${new Date().toISOString().split('T')[0]}.xlsx`
+    );
+    toast.success('Excel report ready');
   };
 
   if (isLoading) {

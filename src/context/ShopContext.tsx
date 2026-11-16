@@ -51,13 +51,23 @@ export const ShopProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadShops = async () => {
     try {
       if (!user) { setShops([]); setCurrentShop(null); setLoading(false); return; }
+      // Shops the user owns, plus shops where they were added as active staff.
+      // (RLS still enforces access; this keeps super admins from listing every shop.)
+      const { data: memberships } = await supabase
+        .from('shop_users')
+        .select('shop_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+      const staffShopIds = (memberships || []).map(m => m.shop_id);
+      const filter = staffShopIds.length > 0
+        ? `owner_id.eq.${user.id},id.in.(${staffShopIds.join(',')})`
+        : `owner_id.eq.${user.id}`;
+
       const { data, error } = await supabase
         .from('shops')
         .select('*')
-        .eq('owner_id', user.id)
+        .or(filter)
         .order('created_at', { ascending: false });
-
-
 
       if (error) throw error;
 

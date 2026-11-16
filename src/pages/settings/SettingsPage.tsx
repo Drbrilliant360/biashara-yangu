@@ -11,6 +11,9 @@ import { useAuth } from '@/context/AuthContext';
 import { useShop } from '@/context/ShopContext';
 import { Settings, Moon, Sun, Globe, UserCircle, Wallet, CreditCard } from 'lucide-react';
 import { useLanguage } from "@/context/LanguageContext";
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { canPayInApp } from '@/lib/platform';
 import { PaymentDialog } from '@/components/billing/PaymentDialog';
 import { useSubscription } from '@/hooks/useSubscription';
 import { PageHead } from '@/components/seo/PageHead';
@@ -27,10 +30,11 @@ interface UIShop {
 
 const SettingsPage: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { currentShop } = useShop();
   const { language, setLanguage, t } = useLanguage();
-  const { subscription, showPayment, setShowPayment, extendSubscription } = useSubscription();
+  const { subscription, showPayment, setShowPayment, refetch } = useSubscription();
   const daysRemaining = subscription.daysRemaining;
   const subscriptionStatus = subscription.status;
 
@@ -40,6 +44,30 @@ const SettingsPage: React.FC = () => {
   const [notifications, setNotifications] = useState(true);
   const [lowStockAlert, setLowStockAlert] = useState(true);
   const [lowStockThreshold, setLowStockThreshold] = useState("10");
+
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  // Apple 5.1.1(v): users must be able to delete their account from inside the app.
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE') return;
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        body: { confirm: 'DELETE' },
+      });
+      if (error || data?.error) throw new Error(error?.message || data?.error);
+      localStorage.removeItem('biashara_current_shop');
+      toast({ title: "Account deleted", description: "Your account and data have been permanently deleted." });
+      await supabase.auth.signOut();
+      navigate('/login');
+    } catch (err) {
+      console.error('Delete account error:', err);
+      toast({ title: "Error", description: "Could not delete your account. Please try again or contact support.", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleSaveGeneral = () => {
     toast({
@@ -223,6 +251,37 @@ const SettingsPage: React.FC = () => {
               <Button>Update Profile</Button>
             </CardContent>
           </Card>
+
+          <Card className="border-destructive/40">
+            <CardHeader>
+              <CardTitle className="text-destructive">Delete account</CardTitle>
+              <CardDescription>
+                Permanently delete your account and all shops, products, sales and other data you own. This cannot be undone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="delete-confirm">Type DELETE to confirm</Label>
+                <Input
+                  id="delete-confirm"
+                  value={deleteConfirm}
+                  onChange={(e) => setDeleteConfirm(e.target.value)}
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                />
+              </div>
+              <Button
+                variant="destructive"
+                disabled={deleteConfirm !== 'DELETE' || deleting}
+                onClick={handleDeleteAccount}
+              >
+                {deleting ? 'Deleting...' : 'Delete my account'}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                <Link to="/privacy" className="underline">Privacy Policy</Link> · <Link to="/terms" className="underline">Terms</Link>
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="business" className="space-y-4">
@@ -311,31 +370,20 @@ const SettingsPage: React.FC = () => {
                   <Label>Payment Method</Label>
                   <div className="flex items-center space-x-2 p-3 border rounded-md">
                     <CreditCard className="h-5 w-5 text-muted-foreground" />
-                    <span>Mobile Payment via PalmPesa</span>
+                    <span>Mobile money (Airtel Money, M-Pesa, Mixx by Yas, Halotel)</span>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Recipient Information</Label>
-                  <div className="p-3 border rounded-md space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Name:</span>
-                      <span>Bryan Kachocho</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Phone:</span>
-                      <span>0710698702</span>
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              <Button 
-                className="w-full" 
-                onClick={() => setShowPayment(true)}
-              >
-                Pay Now
-              </Button>
+              {canPayInApp() && (
+                <Button 
+                  className="w-full" 
+                  onClick={() => setShowPayment(true)}
+                >
+                  Pay Now
+                </Button>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -344,7 +392,7 @@ const SettingsPage: React.FC = () => {
       <PaymentDialog 
         open={showPayment}
         onOpenChange={setShowPayment}
-        onPaymentSuccess={extendSubscription}
+        onPaymentSuccess={refetch}
       />
     </div>
   );

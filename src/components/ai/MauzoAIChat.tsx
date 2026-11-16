@@ -27,6 +27,14 @@ export const MauzoAIChat: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Apple 5.1.1/5.1.2: tell users what is sent to the third-party AI and get consent first.
+  const [consented, setConsented] = useState<boolean>(() => {
+    try { return localStorage.getItem('mauzo_ai_consent') === '1'; } catch { return false; }
+  });
+  const giveConsent = () => {
+    try { localStorage.setItem('mauzo_ai_consent', '1'); } catch { /* storage unavailable */ }
+    setConsented(true);
+  };
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -125,6 +133,26 @@ export const MauzoAIChat: React.FC = () => {
       setLoading(false);
     }
   };
+
+  if (!consented) {
+    return (
+      <Card className="p-6 space-y-4 max-w-xl">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-biashara-primary" />
+          <h3 className="font-semibold">Before you use Mauzo AI</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          When you send a message, your question and a summary of this month's data for the selected shop
+          (product names, stock levels, sales, expense and purchase totals) are sent to a third-party AI
+          provider to generate the answer. Nothing is sent until you send a message, and your data is not used for advertising.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          See our <a href="/privacy" className="underline">Privacy Policy</a>. AI answers may be inaccurate — check important figures.
+        </p>
+        <Button onClick={giveConsent}>I agree, continue</Button>
+      </Card>
+    );
+  }
 
   return (
     <Card className="flex flex-col h-[calc(100vh-220px)] min-h-[500px]">
