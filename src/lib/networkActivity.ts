@@ -5,6 +5,8 @@
  */
 type Listener = (inFlight: number) => void;
 
+export const REQUEST_TIMEOUT_MS = 30_000;
+
 let inFlight = 0;
 const listeners = new Set<Listener>();
 let installed = false;
@@ -29,9 +31,23 @@ export function installNetworkActivity(): void {
     inFlight += 1;
     emit();
     const finish = () => { inFlight = Math.max(0, inFlight - 1); emit(); };
-    return original(input, init).then(
-      (res) => { finish(); return res; },
-      (err) => { finish(); throw err; },
+
+    // Timeout: a hung connection must not leave the UI spinning forever.
+    // Covers connecting + waiting for headers only (cleared when the response starts), so streaming
+    // answers such as Mauzo AI are not cut off. The caller's own AbortSignal still works.
+    const ctrl = new AbortController();
+    const callerSignal = init?.signal ?? (input instanceof Request ? input.signal : undefined);
+    if (callerSignal) {
+      if (callerSignal.aborted) ctrl.abort(); else callerSignal.addEventListener('abort', () => ctrl.abort(), { once: true });
+    }
+    const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+    return original(input, { ...init, signal: ctrl.signal }).then(
+      (res) => { clearTimeout(timer); finish(); return res; },
+      (err) => {
+        clearTimeout(timer); finish();
+        if (ctrl.signal.aborted && !callerSignal?.aborted) throw new Error('Request timed out. Failed to fetch');
+        throw err;
+      },
     );
   };
 }

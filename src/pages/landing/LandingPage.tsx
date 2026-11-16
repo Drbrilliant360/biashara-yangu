@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { PageHead } from '@/components/seo/PageHead';
 
+const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A1AE6] focus-visible:ring-offset-2';
+const press = 'cursor-pointer transition duration-200 ease-out motion-reduce:transition-none hover:-translate-y-0.5 active:translate-y-0';
+
 const display = { fontFamily: "'Outfit', 'Inter', system-ui, sans-serif" } as const;
 
 const features = [
@@ -19,6 +22,15 @@ const features = [
   { icon: Sparkles, title: 'Mauzo AI assistant', body: 'Ask questions about your shop and get answers from your own numbers.' },
   { icon: Globe, title: 'English and Kiswahili', body: 'Use the whole app in the language you and your team are most comfortable with.' },
   { icon: FileDown, title: 'Free invoice generator', body: 'Create a clean PDF invoice in seconds, even without an account.' },
+];
+
+const spans = ['lg:col-span-2', '', '', '', '', 'lg:col-span-2', 'lg:col-span-2', '', ''];
+
+const proof = [
+  { icon: Globe, label: 'English and Kiswahili' },
+  { icon: Wallet, label: 'Pay with mobile money' },
+  { icon: Store, label: 'Web and Android' },
+  { icon: Check, label: '30-day free trial' },
 ];
 
 const stats = [
@@ -83,7 +95,8 @@ const LandingPage: React.FC = () => (
     </Helmet>
 
     {/* NAV */}
-    <header className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-6 py-5">
+    <div className="sticky top-0 z-40 border-b border-white/60 bg-[#F4F6FB]/75 backdrop-blur-xl supports-[backdrop-filter]:bg-[#F4F6FB]/60">
+    <header className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-6 py-3.5">
       <Link to="/" aria-label="Biashara Yangu home" className="flex items-center gap-2.5">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1A1AE6]">
           <Package className="h-[22px] w-[22px] text-white" aria-hidden="true" />
@@ -91,36 +104,40 @@ const LandingPage: React.FC = () => (
         <Wordmark className="text-[22px]" />
       </Link>
       <nav aria-label="Main" className="flex flex-wrap items-center gap-x-7 gap-y-2 text-[15px] font-medium text-[#3A4062]">
-        <a className="hover:text-[#1A1AE6]" href="#features">Features</a>
-        <a className="hover:text-[#1A1AE6]" href="#how">How it works</a>
-        <a className="hover:text-[#1A1AE6]" href="#pricing">Pricing</a>
-        <Link className="hover:text-[#1A1AE6]" to="/invoice-generator">Free invoice tool</Link>
+        <a className={`cursor-pointer transition-colors duration-200 hover:text-[#1A1AE6] ${focusRing} rounded`} href="#features">Features</a>
+        <a className={`cursor-pointer transition-colors duration-200 hover:text-[#1A1AE6] ${focusRing} rounded`} href="#how">How it works</a>
+        <a className={`cursor-pointer transition-colors duration-200 hover:text-[#1A1AE6] ${focusRing} rounded`} href="#pricing">Pricing</a>
+        <Link className={`cursor-pointer transition-colors duration-200 hover:text-[#1A1AE6] ${focusRing} rounded`} to="/invoice-generator">Free invoice tool</Link>
       </nav>
       <div className="flex flex-wrap items-center gap-3">
         <Link to="/login" className="flex min-h-[44px] items-center px-2 text-[15px] font-semibold hover:text-[#1A1AE6]">Sign in</Link>
-        <Link to="/register" className="flex min-h-[44px] items-center rounded-xl bg-[#1A1AE6] px-[22px] text-[15px] font-semibold text-white transition hover:-translate-y-px">
+        <Link to="/register" className={`flex min-h-[44px] items-center rounded-xl bg-[#1A1AE6] px-[22px] text-[15px] font-semibold text-white ${press} ${focusRing}`}>
           Start free trial
         </Link>
       </div>
     </header>
+    </div>
 
     {/* HERO */}
-    <section className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-12 px-6 pb-[72px] pt-12">
+    <div className="relative overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute -top-32 left-1/2 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(26,26,230,0.18),transparent)] blur-2xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute right-[-120px] top-40 h-[360px] w-[360px] rounded-full bg-[radial-gradient(closest-side,rgba(125,224,168,0.30),transparent)] blur-2xl" />
+    <section className="relative mx-auto flex max-w-[1200px] flex-wrap items-center gap-12 px-6 pb-[72px] pt-12">
       <div className="min-w-0 flex-[1_1_460px]">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#DDE2F0] bg-white px-3.5 py-1.5 text-[13px] font-semibold text-[#3A4062]">
           <span className="h-2 w-2 rounded-full bg-[#1A1AE6]" /> Manage. Track. Grow.
         </div>
         <h1 className="mt-5 text-[clamp(38px,5.4vw,66px)] font-bold leading-[1.04] tracking-[-0.025em]" style={display}>
-          Run every shop from one simple app.
+          Run every shop from one <span className="bg-gradient-to-r from-[#1A1AE6] to-[#6A5CFF] bg-clip-text text-transparent">simple app.</span>
         </h1>
         <p className="mt-5 max-w-[540px] text-[clamp(17px,1.6vw,20px)] text-[#3A4062]">
           Track stock, record sales, send quotations and see your real profit. Works in English and Kiswahili, on your phone or computer.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link to="/register" className="flex min-h-[56px] items-center gap-2.5 rounded-[14px] bg-[#1A1AE6] px-7 text-[17px] font-semibold text-white shadow-[0_10px_24px_rgba(26,26,230,0.28)] transition hover:-translate-y-px">
+          <Link to="/register" className={`flex min-h-[56px] items-center gap-2.5 rounded-[14px] bg-[#1A1AE6] px-7 text-[17px] font-semibold text-white shadow-[0_10px_24px_rgba(26,26,230,0.28)] ${press} ${focusRing}`}>
             Start your free trial <ArrowRight className="h-5 w-5" aria-hidden="true" />
           </Link>
-          <Link to="/login" className="flex min-h-[56px] items-center rounded-[14px] border border-[#DDE2F0] bg-white px-7 text-[17px] font-semibold transition hover:-translate-y-px">
+          <Link to="/login" className={`flex min-h-[56px] items-center rounded-[14px] border border-[#DDE2F0] bg-white px-7 text-[17px] font-semibold ${press} ${focusRing}`}>
             Sign in
           </Link>
         </div>
@@ -128,7 +145,7 @@ const LandingPage: React.FC = () => (
       </div>
 
       <div className="min-w-0 flex-[1_1_460px]" aria-hidden="true">
-        <div className="rounded-3xl border border-[#DDE2F0] bg-white p-6 shadow-[0_24px_60px_rgba(11,11,59,0.12)]">
+        <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-[0_24px_60px_rgba(11,11,59,0.14)] ring-1 ring-[#DDE2F0] backdrop-blur-xl">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-[13px] font-medium text-[#4A5170]">Dashboard</div>
@@ -160,27 +177,40 @@ const LandingPage: React.FC = () => (
       </div>
     </section>
 
+    {/* SOCIAL PROOF / TRUST STRIP (facts about the product, no invented numbers) */}
+    <ul className="relative mx-auto flex max-w-[1200px] flex-wrap justify-center gap-x-8 gap-y-3 px-6 pb-14 text-sm font-medium text-[#3A4062]">
+      {proof.map(({ icon: Icon, label }) => (
+        <li key={label} className="flex items-center gap-2 rounded-full border border-white/70 bg-white/60 px-4 py-2 shadow-sm backdrop-blur">
+          <Icon className="h-4 w-4 text-[#1A1AE6]" aria-hidden="true" /> {label}
+        </li>
+      ))}
+    </ul>
+    </div>
+
     {/* FEATURES */}
     <section id="features" className="mx-auto max-w-[1200px] px-6 pb-20 pt-6">
       <div className="max-w-[640px]">
         <Eyebrow>Everything in one place</Eyebrow>
         <H2>The tools a growing shop actually needs</H2>
       </div>
-      <div className="mt-10 grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-5">
-        {features.map(({ icon: Icon, title, body }) => (
-          <div key={title} className="rounded-[20px] border border-[#DDE2F0] bg-white p-7 transition hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(11,11,59,0.10)]">
-            <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#E8E8FC]">
-              <Icon className="h-6 w-6 text-[#1A1AE6]" aria-hidden="true" />
+      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {features.map(({ icon: Icon, title, body }, i) => (
+          <div
+            key={title}
+            className={`group relative overflow-hidden rounded-[24px] border border-[#DDE2F0] p-7 transition duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(11,11,59,0.10)] ${spans[i]} ${i % 3 === 0 ? 'bg-gradient-to-br from-white to-[#ECEBFF]' : 'bg-white'}`}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#E8E8FC] transition-colors duration-200 group-hover:bg-[#1A1AE6]">
+              <Icon className="h-6 w-6 text-[#1A1AE6] transition-colors duration-200 group-hover:text-white" aria-hidden="true" />
             </div>
             <h3 className="mt-5 text-xl font-semibold" style={display}>{title}</h3>
-            <p className="mt-2 text-[15px] text-[#3A4062]">{body}</p>
+            <p className="mt-2 max-w-[44ch] text-[15px] text-[#3A4062]">{body}</p>
           </div>
         ))}
       </div>
     </section>
 
     {/* MAUZO AI */}
-    <section className="bg-[#0B0B3B] text-white">
+    <section className="bg-[radial-gradient(ellipse_at_top_right,#2A2A8F_0%,#0B0B3B_55%)] text-white">
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-12 px-6 py-20">
         <div className="min-w-0 flex-[1_1_440px]">
           <div className="inline-flex items-center gap-2"><Sparkles className="h-[18px] w-[18px] text-[#B9BBFF]" aria-hidden="true" /><Eyebrow light>Mauzo AI</Eyebrow></div>
@@ -190,7 +220,7 @@ const LandingPage: React.FC = () => (
           </p>
           <div className="mt-7 flex flex-wrap gap-2.5">
             {questions.map((q) => (
-              <span key={q} className="rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-medium">{q}</span>
+              <span key={q} className="rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-medium backdrop-blur">{q}</span>
             ))}
           </div>
         </div>
@@ -223,7 +253,7 @@ const LandingPage: React.FC = () => (
       </div>
       <div className="mt-10 grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-5">
         {steps.map((s) => (
-          <div key={s.n} className="rounded-[20px] border border-[#DDE2F0] bg-white p-7">
+          <div key={s.n} className="rounded-[24px] border border-[#DDE2F0] bg-white p-7 transition duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(11,11,59,0.08)]">
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1A1AE6] text-xl font-bold text-white" style={display}>{s.n}</div>
             <h3 className="mt-5 text-[22px] font-semibold" style={display}>{s.title}</h3>
             <p className="mt-2 text-[15px] text-[#3A4062]">{s.body}</p>
@@ -254,7 +284,7 @@ const LandingPage: React.FC = () => (
               </li>
             ))}
           </ul>
-          <Link to="/register" className="mt-7 flex min-h-[56px] items-center justify-center rounded-[14px] bg-white text-[17px] font-semibold text-[#0B0B3B] transition hover:-translate-y-px">
+          <Link to="/register" className={`mt-7 flex min-h-[56px] items-center justify-center rounded-[14px] bg-white text-[17px] font-semibold text-[#0B0B3B] ${press} ${focusRing}`}>
             Start your free trial
           </Link>
         </div>
@@ -264,7 +294,7 @@ const LandingPage: React.FC = () => (
           <h3 className="mt-2 text-[22px] font-semibold" style={display}>Invoice generator</h3>
           <p className="mt-2 text-[15px] text-[#3A4062]">Make a branded PDF invoice in seconds. Pick a template, add your items and download. No sign-up required.</p>
           <div className="flex-1" />
-          <Link to="/invoice-generator" className="mt-7 flex min-h-[56px] items-center justify-center rounded-[14px] border-2 border-[#1A1AE6] text-[17px] font-semibold text-[#1A1AE6] transition hover:-translate-y-px">
+          <Link to="/invoice-generator" className={`mt-7 flex min-h-[56px] items-center justify-center rounded-[14px] border-2 border-[#1A1AE6] text-[17px] font-semibold text-[#1A1AE6] ${press} ${focusRing}`}>
             Create an invoice
           </Link>
         </div>
@@ -273,10 +303,10 @@ const LandingPage: React.FC = () => (
 
     {/* FINAL CTA */}
     <section className="mx-auto max-w-[1200px] px-6 pb-[88px]">
-      <div className="rounded-[28px] bg-[#1A1AE6] p-[clamp(32px,6vw,72px)] text-center text-white">
+      <div className="rounded-[32px] bg-gradient-to-br from-[#1A1AE6] via-[#2B2BF0] to-[#5B4DFF] shadow-[0_24px_60px_rgba(26,26,230,0.30)] p-[clamp(32px,6vw,72px)] text-center text-white">
         <h2 className="text-[clamp(30px,4vw,48px)] font-bold leading-[1.1] tracking-tight" style={display}>Know your stock. Know your profit.</h2>
         <p className="mx-auto mt-4 max-w-[520px] text-lg text-[#E6E6FF]">Set up your first shop in minutes and see where your business stands today.</p>
-        <Link to="/register" className="mt-8 inline-flex min-h-[56px] items-center rounded-[14px] bg-white px-8 text-[17px] font-semibold text-[#1A1AE6] transition hover:-translate-y-px">
+        <Link to="/register" className={`mt-8 inline-flex min-h-[56px] items-center rounded-[14px] bg-white px-8 text-[17px] font-semibold text-[#1A1AE6] ${press} ${focusRing}`}>
           Start your free trial
         </Link>
       </div>
@@ -287,10 +317,10 @@ const LandingPage: React.FC = () => (
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-8 gap-y-4 px-6 py-8 text-sm text-[#4A5170]">
         <Wordmark className="text-lg text-[#0B0B3B]" />
         <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2 font-medium">
-          <Link className="hover:text-[#1A1AE6]" to="/terms">Terms</Link>
-          <Link className="hover:text-[#1A1AE6]" to="/privacy">Privacy</Link>
-          <Link className="hover:text-[#1A1AE6]" to="/login">Sign in</Link>
-          <Link className="hover:text-[#1A1AE6]" to="/register">Create account</Link>
+          <Link className={`cursor-pointer transition-colors duration-200 hover:text-[#1A1AE6] ${focusRing} rounded`} to="/terms">Terms</Link>
+          <Link className={`cursor-pointer transition-colors duration-200 hover:text-[#1A1AE6] ${focusRing} rounded`} to="/privacy">Privacy</Link>
+          <Link className={`cursor-pointer transition-colors duration-200 hover:text-[#1A1AE6] ${focusRing} rounded`} to="/login">Sign in</Link>
+          <Link className={`cursor-pointer transition-colors duration-200 hover:text-[#1A1AE6] ${focusRing} rounded`} to="/register">Create account</Link>
         </nav>
         <span>© 2026 Biashara Yangu</span>
       </div>
