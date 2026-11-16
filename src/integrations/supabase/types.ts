@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          id: number
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          shop_id: string | null
+          table_name: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: number
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          shop_id?: string | null
+          table_name?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: number
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          shop_id?: string | null
+          table_name?: string | null
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           amount: number
@@ -761,7 +800,53 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_purchase: {
+        Args: {
+          p_items: Json
+          p_notes?: string
+          p_payment_method?: string
+          p_payment_status?: string
+          p_shop_id: string
+          p_supplier_name?: string
+          p_supplier_phone?: string
+        }
+        Returns: string
+      }
+      create_quotation: {
+        Args: {
+          p_customer_email?: string
+          p_customer_name: string
+          p_customer_phone?: string
+          p_discount?: number
+          p_items: Json
+          p_notes?: string
+          p_quotation_number: string
+          p_shop_id: string
+          p_subtotal?: number
+          p_tax?: number
+          p_total?: number
+          p_valid_until?: string
+        }
+        Returns: string
+      }
+      create_sale: {
+        Args: {
+          p_customer_name?: string
+          p_customer_phone?: string
+          p_discount?: number
+          p_items: Json
+          p_notes?: string
+          p_payment_method?: string
+          p_payment_status?: string
+          p_shop_id: string
+          p_tax?: number
+        }
+        Returns: string
+      }
+      log_audit_event: {
+        Args: { p_action: string; p_details?: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "user"
