@@ -142,7 +142,7 @@ const AdminSupportPage: React.FC = () => {
           </CardTitle>
           <CardDescription>Search and filter incoming queries.</CardDescription>
           <div className="flex flex-col sm:flex-row gap-2 pt-2">
-            <Input
+            <Input aria-label="Search subject, message, name, email..."
               placeholder="Search subject, message, name, email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -213,7 +213,7 @@ const AdminSupportPage: React.FC = () => {
                   )}
 
                   <div className="space-y-2">
-                    <Textarea
+                    <Textarea aria-label="Write a reply to this user..."
                       rows={3}
                       placeholder="Write a reply to this user..."
                       value={replies[t.id] || ''}

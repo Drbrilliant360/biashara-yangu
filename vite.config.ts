@@ -37,10 +37,11 @@ export default defineConfig(({ mode }) => {
       // Mobile-friendly: split heavy vendor libs so first paint loads far less JS.
       rollupOptions: {
         output: {
-          manualChunks: {
-            react: ["react", "react-dom", "react-router-dom"],
-            supabase: ["@supabase/supabase-js"],
-            charts: ["recharts"],
+          // Only core libraries are pinned; heavy ones (charts, pdf, excel) stay with
+          // the lazy pages that use them so the first screen never downloads them.
+          manualChunks(id: string) {
+            if (/node_modules\/(react|react-dom|react-router|react-router-dom|scheduler)\//.test(id)) return "react";
+            if (id.includes("node_modules/@supabase/")) return "supabase";
           },
         },
       },

@@ -60,7 +60,7 @@ const AdminUsersPage: React.FC = () => {
 
       <div className="mb-4 relative max-w-sm">
         <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-        <Input placeholder="Search by name, phone, id…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+        <Input aria-label="Search by name, phone, id…" placeholder="Search by name, phone, id…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
       </div>
 
       <Card className="p-0">

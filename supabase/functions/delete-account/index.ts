@@ -4,20 +4,16 @@
 // Deploy:  supabase functions deploy delete-account
 // The function uses the service-role key (provided automatically by Supabase).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+import { corsFor } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsFor(req);
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
@@ -38,6 +34,14 @@ Deno.serve(async (req) => {
     // Confirmation must be explicit so a stray request can never delete an account.
     const body = await req.json().catch(() => ({}));
     if (body?.confirm !== "DELETE") return json({ error: "Confirmation required" }, 400);
+
+    // Audit trail first (ids only, no personal data), so a record exists even if a later step fails.
+    await admin.from("audit_log").insert({
+      actor_id: userId,
+      action: "account_deleted",
+      table_name: "auth.users",
+      record_id: userId,
+    });
 
     // Remove shops owned by this user (child rows cascade), staff memberships and subscription.
     const { error: shopsErr } = await admin.from("shops").delete().eq("owner_id", userId);

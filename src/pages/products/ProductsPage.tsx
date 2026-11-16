@@ -132,7 +132,7 @@ const ProductsPage: React.FC = () => {
 
       <div className="relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input
+        <Input aria-label="Search products..."
           placeholder="Search products..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}

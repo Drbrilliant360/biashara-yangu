@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Store, Users, CreditCard, TrendingUp, Package, ShoppingCart, LifeBuoy } from "lucide-react";
+import { LayoutDashboard, Store, Users, CreditCard, TrendingUp, Package, ShoppingCart, LifeBuoy, ScrollText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -12,6 +12,7 @@ const items = [
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/sales", label: "Sales", icon: ShoppingCart },
   { to: "/admin/support", label: "Queries", icon: LifeBuoy },
+  { to: "/admin/audit", label: "Audit log", icon: ScrollText },
 ];
 
 export const AdminNav: React.FC = () => (

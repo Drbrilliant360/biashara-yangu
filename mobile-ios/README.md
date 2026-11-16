@@ -1,10 +1,10 @@
 # Biashara Yangu — iOS app (Folder 2, App Store compliant build)
 
 Capacitor wrapper that packages the web app (`../src`) as a native iOS app.
-App id: `tz.co.biasharayangu.app` · iOS 13+ · **No in-app payments** (see below).
+App id: `tz.co.biasharayangu.app` · iOS 14+ · **No in-app payments** (see below).
 
 ## Requirements (on a Mac)
-Xcode 15+ (Capacitor 6), CocoaPods (`sudo gem install cocoapods` or `brew install cocoapods`), Node 20+,
+Xcode 16+ (Capacitor 7), CocoaPods (`sudo gem install cocoapods` or `brew install cocoapods`), Node 20+,
 an Apple Developer account.
 
 > This project was generated on a machine without full Xcode, so `pod install` has **not** been run

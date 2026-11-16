@@ -1,16 +1,28 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsFor } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsFor(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, shopId } = await req.json();
-    if (!shopId) throw new Error("shopId required");
+    const body = await req.json().catch(() => null);
+    const shopId = body?.shopId;
+    const rawMessages = body?.messages;
+    const invalid = (message: string) =>
+      new Response(JSON.stringify({ error: message }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    if (typeof shopId !== "string" || !/^[0-9a-f-]{36}$/i.test(shopId)) return invalid("A valid shop is required");
+    // Limit size and shape of the conversation (cost control + prompt-injection surface)
+    if (!Array.isArray(rawMessages) || rawMessages.length === 0 || rawMessages.length > 20) {
+      return invalid("Send between 1 and 20 messages");
+    }
+    const messages = rawMessages.map((m: { role?: string; content?: unknown }) => ({
+      role: m?.role === "assistant" ? "assistant" : "user",
+      content: String(m?.content ?? "").slice(0, 2000),
+    }));
 
     const authHeader = req.headers.get("Authorization") ?? "";
     if (!authHeader.startsWith("Bearer ")) {
@@ -167,7 +179,7 @@ ${JSON.stringify(context)}`;
     });
   } catch (e) {
     console.error("mauzo-ai error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "The assistant is unavailable right now. Please try again." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

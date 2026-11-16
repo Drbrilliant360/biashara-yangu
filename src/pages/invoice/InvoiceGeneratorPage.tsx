@@ -243,7 +243,7 @@ export default function InvoiceGeneratorPage() {
               <div>
                 <Label>Template</Label>
                 <Select value={template} onValueChange={(v) => setTemplate(v as Template)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger aria-label="Template"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="modern">Modern</SelectItem>
                     <SelectItem value="classic">Classic</SelectItem>
@@ -253,12 +253,12 @@ export default function InvoiceGeneratorPage() {
               </div>
               <div>
                 <Label>Brand color</Label>
-                <Input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="h-10 p-1" />
+                <Input aria-label="Brand color" type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="h-10 p-1" />
               </div>
               <div>
                 <Label>Currency</Label>
                 <Select value={currency} onValueChange={setCurrency}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger aria-label="Currency"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {currencies.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
@@ -270,9 +270,9 @@ export default function InvoiceGeneratorPage() {
           <Card>
             <CardHeader><CardTitle className="text-base">Invoice details</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div><Label>Invoice #</Label><Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} /></div>
-              <div><Label>Issue date</Label><Input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} /></div>
-              <div><Label>Due date</Label><Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
+              <div><Label>Invoice #</Label><Input aria-label="Invoice #" value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} /></div>
+              <div><Label>Issue date</Label><Input aria-label="Issue date" type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} /></div>
+              <div><Label>Due date</Label><Input aria-label="Due date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
             </CardContent>
           </Card>
 
@@ -280,19 +280,19 @@ export default function InvoiceGeneratorPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">From (your business)</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <Input placeholder="Business name" value={fromName} onChange={(e) => setFromName(e.target.value)} />
-                <Input placeholder="Email" value={fromEmail} onChange={(e) => setFromEmail(e.target.value)} />
-                <Input placeholder="Phone" value={fromPhone} onChange={(e) => setFromPhone(e.target.value)} />
-                <Textarea placeholder="Address" value={fromAddress} onChange={(e) => setFromAddress(e.target.value)} rows={2} />
+                <Input aria-label="Business name" placeholder="Business name" value={fromName} onChange={(e) => setFromName(e.target.value)} />
+                <Input aria-label="Email" placeholder="Email" value={fromEmail} onChange={(e) => setFromEmail(e.target.value)} />
+                <Input aria-label="Phone" placeholder="Phone" value={fromPhone} onChange={(e) => setFromPhone(e.target.value)} />
+                <Textarea aria-label="Address" placeholder="Address" value={fromAddress} onChange={(e) => setFromAddress(e.target.value)} rows={2} />
               </CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle className="text-base">Bill to (customer)</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <Input placeholder="Customer name" value={toName} onChange={(e) => setToName(e.target.value)} />
-                <Input placeholder="Email" value={toEmail} onChange={(e) => setToEmail(e.target.value)} />
-                <Input placeholder="Phone" value={toPhone} onChange={(e) => setToPhone(e.target.value)} />
-                <Textarea placeholder="Address" value={toAddress} onChange={(e) => setToAddress(e.target.value)} rows={2} />
+                <Input aria-label="Customer name" placeholder="Customer name" value={toName} onChange={(e) => setToName(e.target.value)} />
+                <Input aria-label="Email" placeholder="Email" value={toEmail} onChange={(e) => setToEmail(e.target.value)} />
+                <Input aria-label="Phone" placeholder="Phone" value={toPhone} onChange={(e) => setToPhone(e.target.value)} />
+                <Textarea aria-label="Address" placeholder="Address" value={toAddress} onChange={(e) => setToAddress(e.target.value)} rows={2} />
               </CardContent>
             </Card>
           </div>
@@ -305,10 +305,10 @@ export default function InvoiceGeneratorPage() {
             <CardContent className="space-y-3">
               {items.map((item, idx) => (
                 <div key={idx} className="grid grid-cols-12 gap-2 items-center">
-                  <Input className="col-span-12 sm:col-span-6" placeholder="Description" value={item.description} onChange={(e) => updateItem(idx, { description: e.target.value })} />
-                  <Input className="col-span-4 sm:col-span-2" type="number" min={0} placeholder="Qty" value={item.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} />
-                  <Input className="col-span-6 sm:col-span-3" type="number" min={0} step="0.01" placeholder="Price" value={item.price} onChange={(e) => updateItem(idx, { price: Number(e.target.value) })} />
-                  <Button variant="ghost" size="icon" className="col-span-2 sm:col-span-1" onClick={() => removeItem(idx)} disabled={items.length === 1}>
+                  <Input aria-label="Description" className="col-span-12 sm:col-span-6" placeholder="Description" value={item.description} onChange={(e) => updateItem(idx, { description: e.target.value })} />
+                  <Input aria-label="Qty" className="col-span-4 sm:col-span-2" type="number" min={0} placeholder="Qty" value={item.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) })} />
+                  <Input aria-label="Price" className="col-span-6 sm:col-span-3" type="number" min={0} step="0.01" placeholder="Price" value={item.price} onChange={(e) => updateItem(idx, { price: Number(e.target.value) })} />
+                  <Button variant="ghost" size="icon" aria-label="Remove item" className="col-span-2 sm:col-span-1" onClick={() => removeItem(idx)} disabled={items.length === 1}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -319,9 +319,9 @@ export default function InvoiceGeneratorPage() {
           <Card>
             <CardHeader><CardTitle className="text-base">Totals & notes</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><Label>Discount ({currency})</Label><Input type="number" min={0} value={discount} onChange={(e) => setDiscount(Number(e.target.value))} /></div>
-              <div><Label>Tax rate (%)</Label><Input type="number" min={0} value={taxRate} onChange={(e) => setTaxRate(Number(e.target.value))} /></div>
-              <div className="sm:col-span-2"><Label>Notes</Label><Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
+              <div><Label>Discount ({currency})</Label><Input aria-label="Discount" type="number" min={0} value={discount} onChange={(e) => setDiscount(Number(e.target.value))} /></div>
+              <div><Label>Tax rate (%)</Label><Input aria-label="Tax rate (%)" type="number" min={0} value={taxRate} onChange={(e) => setTaxRate(Number(e.target.value))} /></div>
+              <div className="sm:col-span-2"><Label>Notes</Label><Textarea aria-label="Notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
             </CardContent>
           </Card>
         </div>

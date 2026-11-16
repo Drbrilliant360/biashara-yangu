@@ -69,7 +69,7 @@ const AdminShopsPage: React.FC = () => {
 
       <div className="mb-4 relative max-w-sm">
         <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-        <Input placeholder="Search shops…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+        <Input aria-label="Search shops…" placeholder="Search shops…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
       </div>
 
       <Card className="p-0">
@@ -99,8 +99,8 @@ const AdminShopsPage: React.FC = () => {
                 <TableCell><Switch checked={s.is_active} onCheckedChange={() => toggleActive(s)} /></TableCell>
                 <TableCell>{new Date(s.created_at).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right space-x-1">
-                  <Button size="icon" variant="ghost" onClick={() => setEditing(s)}><Pencil className="w-4 h-4" /></Button>
-                  <Button size="icon" variant="ghost" onClick={() => setDeleting(s)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                  <Button size="icon" variant="ghost" aria-label={`Edit shop ${s.name}`} onClick={() => setEditing(s)}><Pencil className="w-4 h-4" /></Button>
+                  <Button size="icon" variant="ghost" aria-label={`Delete shop ${s.name}`} onClick={() => setDeleting(s)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -113,11 +113,11 @@ const AdminShopsPage: React.FC = () => {
           <DialogHeader><DialogTitle>Edit Shop</DialogTitle></DialogHeader>
           {editing && (
             <div className="space-y-3">
-              <div><Label>Name</Label><Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></div>
-              <div><Label>Location</Label><Input value={editing.location ?? ""} onChange={(e) => setEditing({ ...editing, location: e.target.value })} /></div>
-              <div><Label>Phone</Label><Input value={editing.phone ?? ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} /></div>
-              <div><Label>Email</Label><Input value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></div>
-              <div><Label>Currency</Label><Input value={editing.currency} onChange={(e) => setEditing({ ...editing, currency: e.target.value })} /></div>
+              <div><Label>Name</Label><Input aria-label="Name" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></div>
+              <div><Label>Location</Label><Input aria-label="Location" value={editing.location ?? ""} onChange={(e) => setEditing({ ...editing, location: e.target.value })} /></div>
+              <div><Label>Phone</Label><Input aria-label="Phone" value={editing.phone ?? ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} /></div>
+              <div><Label>Email</Label><Input aria-label="Email" value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></div>
+              <div><Label>Currency</Label><Input aria-label="Currency" value={editing.currency} onChange={(e) => setEditing({ ...editing, currency: e.target.value })} /></div>
               <div className="flex items-center gap-2"><Switch checked={editing.is_active} onCheckedChange={(v) => setEditing({ ...editing, is_active: v })} /><Label>Active</Label></div>
             </div>
           )}

@@ -94,7 +94,7 @@ const RegisterPage: React.FC = () => {
                 <Label htmlFor="password" className="text-xs text-muted-foreground">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 6 characters" autoComplete="new-password" {...invalidProps('password', errors.password)} className={`pl-11 pr-11 h-12 rounded-full bg-background border-border ${errors.password ? 'border-destructive' : ''}`} />
+                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="8+ characters, letters and a number" autoComplete="new-password" {...invalidProps('password', errors.password)} className={`pl-11 pr-11 h-12 rounded-full bg-background border-border ${errors.password ? 'border-destructive' : ''}`} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>

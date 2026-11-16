@@ -98,6 +98,7 @@ const ShopsPage: React.FC = () => {
                   <Button 
                     variant="ghost" 
                     size="icon"
+                    aria-label={`Edit shop ${shop.name}`}
                     onClick={() => navigate(`/shops/edit/${shop.id}`)}
                   >
                     <Edit size={16} />
@@ -105,7 +106,7 @@ const ShopsPage: React.FC = () => {
                   
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600">
+                      <Button variant="ghost" size="icon" aria-label={`Delete shop ${shop.name}`} className="text-red-500 hover:text-red-600">
                         <Trash2 size={16} />
                       </Button>
                     </AlertDialogTrigger>

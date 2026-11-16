@@ -33,7 +33,8 @@ const CardTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-  <h3
+  // h2 (not h3): pages have one h1, and card titles are its direct sub-sections
+  <h2
     ref={ref}
     className={cn(
       "text-2xl font-semibold leading-none tracking-tight",

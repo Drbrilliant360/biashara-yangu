@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
 import { friendlyError } from '@/lib/errors';
+import { callRpc } from '@/lib/rpc';
 import { PageHead } from '@/components/seo/PageHead';
 
 interface SaleWithItems {
@@ -107,39 +108,14 @@ const SalesPage: React.FC = () => {
     const lineTotal = unitPrice * quantity;
 
     try {
-      // Create sale
-      const { data: saleData, error: saleError } = await supabase
-        .from('sales')
-        .insert({
-          shop_id: currentShop.id,
-          user_id: user.id,
-          subtotal: lineTotal,
-          discount: 0,
-          tax: 0,
-          total: lineTotal,
-          payment_method: paymentMethod,
-          payment_status: 'paid',
-          receipt_number: `REC-${Date.now()}`,
-        })
-        .select()
-        .single();
-
+      // One atomic call: sale + items + stock update succeed or fail together
+      const { error: saleError } = await callRpc('create_sale', {
+        p_shop_id: currentShop.id,
+        p_items: [{ product_id: product.id, quantity, unit_price: unitPrice }],
+        p_payment_method: paymentMethod,
+        p_payment_status: 'paid',
+      });
       if (saleError) throw saleError;
-
-      // Create sale item (stock is updated by trigger)
-      const { error: itemError } = await supabase
-        .from('sale_items')
-        .insert({
-          sale_id: saleData.id,
-          product_id: product.id,
-          product_name: product.name,
-          quantity,
-          unit_price: unitPrice,
-          discount: 0,
-          total: lineTotal,
-        });
-
-      if (itemError) throw itemError;
 
       toast({ title: "Sale recorded successfully!" });
 
@@ -226,7 +202,7 @@ const SalesPage: React.FC = () => {
 
       <div className="relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Search by product or receipt..." className="pl-9 max-w-sm" value={search} onChange={e => setSearch(e.target.value)} />
+        <Input aria-label="Search by product or receipt..." placeholder="Search by product or receipt..." className="pl-9 max-w-sm" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       <div className="space-y-4">

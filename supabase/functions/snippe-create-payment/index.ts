@@ -1,15 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { corsFor } from "../_shared/cors.ts";
 
 // Price is decided on the server. Never trust an amount sent by the client.
 const SUBSCRIPTION_AMOUNT_TZS = 5000;
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsFor(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -32,18 +28,28 @@ Deno.serve(async (req) => {
     }
     const user = userData.user;
 
-    const body = await req.json();
-    const { phone, firstname, lastname, email } = body;
-    if (!phone || !firstname || !lastname || !email) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+    const bad = (message: string) =>
+      new Response(JSON.stringify({ error: message }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== "object") return bad("Invalid request");
+    const { phone, firstname, lastname, email } = body as Record<string, unknown>;
+    if (!phone || !firstname || !lastname || !email) return bad("Missing required fields");
+
+    // Server-side validation (never trust the browser)
+    const nameOk = (v: unknown) => typeof v === "string" && v.trim().length >= 1 && v.length <= 60 && ![...v].some((c) => c.charCodeAt(0) < 32) && !/[<>]/.test(v);
+    if (!nameOk(firstname) || !nameOk(lastname)) return bad("Enter a valid first and last name");
+    if (typeof email !== "string" || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return bad("Enter a valid email address");
     }
 
     // Normalize phone: 0XXXXXXXXX -> 255XXXXXXXXX
-    let phoneNumber = String(phone).replace(/\s+/g, "");
+    let phoneNumber = String(phone).replace(/[\s-]+/g, "");
     if (phoneNumber.startsWith("+")) phoneNumber = phoneNumber.substring(1);
     if (phoneNumber.startsWith("0")) phoneNumber = "255" + phoneNumber.substring(1);
+    if (!/^255[67][0-9]{8}$/.test(phoneNumber)) return bad("Enter a valid Tanzanian mobile money number");
 
     const idemKey = `sub-${user.id.substring(0, 8)}-${Date.now()}`.substring(0, 30);
 
@@ -84,7 +90,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("Error:", e);
-    return new Response(JSON.stringify({ error: String(e) }), {
+    return new Response(JSON.stringify({ error: "Could not start the payment. Please try again." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

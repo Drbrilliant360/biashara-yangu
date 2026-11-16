@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { friendlyError } from '@/lib/errors';
+import { logAuditEvent } from '@/lib/rpc';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface AppUser {
@@ -83,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       if (data.user) {
         setUser(mapSupabaseUser(data.user));
+        logAuditEvent('login');
         toast({
           title: "Login Successful",
           description: `Welcome back!`,
@@ -156,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    logAuditEvent('logout');
     supabase.auth.signOut();
     setUser(null);
     toast({

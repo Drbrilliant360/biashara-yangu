@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/types';
 import { friendlyError } from '@/lib/errors';
+import { callRpc } from '@/lib/rpc';
 import { useShop } from '@/context/ShopContext';
 
 interface CreateQuotationDialogProps {
@@ -173,48 +174,29 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
 
       const totals = calculateQuotationTotals();
 
-      // Create quotation
-      const { data: quotation, error: quotationError } = await supabase
-        .from('quotations')
-        .insert({
-          user_id: user.id,
-          shop_id: currentShop.id,
-          customer_name: quotationData.customer_name,
-          customer_phone: quotationData.customer_phone || null,
-          customer_email: quotationData.customer_email || null,
-          quotation_number: quotationData.quotation_number,
-          valid_until: quotationData.valid_until || null,
-          notes: quotationData.notes || null,
-          subtotal: totals.subtotal,
-          discount: totals.discount,
-          tax: totals.tax,
-          total: totals.total,
-          status: 'pending',
-        })
-        .select()
-        .single();
-
-      if (quotationError) throw quotationError;
-
-      // Create quotation items
-      const quotationItems = items.map(item => {
-        const { total } = calculateItemTotals(item);
-        return {
-          quotation_id: quotation.id,
+      // One atomic call: quotation + all items are saved together or not at all
+      const { error: quotationError } = await callRpc('create_quotation', {
+        p_shop_id: currentShop.id,
+        p_quotation_number: quotationData.quotation_number,
+        p_customer_name: quotationData.customer_name,
+        p_customer_phone: quotationData.customer_phone || null,
+        p_customer_email: quotationData.customer_email || null,
+        p_valid_until: quotationData.valid_until || null,
+        p_notes: quotationData.notes || null,
+        p_subtotal: totals.subtotal,
+        p_discount: totals.discount,
+        p_tax: totals.tax,
+        p_total: totals.total,
+        p_items: items.map(item => ({
           product_id: item.product_id || null,
           product_name: item.product_name,
           quantity: item.quantity,
           unit_price: item.unit_price,
           discount: item.discount,
-          total,
-        };
+          total: calculateItemTotals(item).total,
+        })),
       });
-
-      const { error: itemsError } = await supabase
-        .from('quotation_items')
-        .insert(quotationItems);
-
-      if (itemsError) throw itemsError;
+      if (quotationError) throw quotationError;
 
       toast({
         title: "Success",
@@ -382,7 +364,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <Input
+                              <Input aria-label="Product name"
                                 placeholder="Product name"
                                 value={item.product_name}
                                 onChange={(e) => updateItem(index, 'product_name', e.target.value)}
@@ -430,6 +412,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
                               type="button"
                               variant="ghost"
                               size="icon"
+                              aria-label="Remove item"
                               onClick={() => removeItem(index)}
                               disabled={items.length === 1}
                               className="h-6 w-6"

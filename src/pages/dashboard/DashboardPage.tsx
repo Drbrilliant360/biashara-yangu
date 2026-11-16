@@ -49,11 +49,23 @@ const DashboardPage: React.FC = () => {
     enabled: !!shopId,
   });
 
-  // Fetch all sales
+  // This month's sales only (the dashboard shows today / this month), so the query stays
+  // small and never hits the server's 1000-row cap as the shop grows.
   const { data: sales = [], isLoading: salesLoading } = useQuery({
     queryKey: ['dashboard-sales', shopId],
     queryFn: async () => {
-      const { data } = await supabase.from('sales').select('*').eq('shop_id', shopId!).order('created_at', { ascending: false });
+      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const { data } = await supabase.from('sales').select('*').eq('shop_id', shopId!).gte('created_at', startOfMonth).order('created_at', { ascending: false });
+      return data || [];
+    },
+    enabled: !!shopId,
+  });
+
+  // Latest 5 sales regardless of month
+  const { data: recentSalesData = [] } = useQuery({
+    queryKey: ['dashboard-recent-sales', shopId],
+    queryFn: async () => {
+      const { data } = await supabase.from('sales').select('*').eq('shop_id', shopId!).order('created_at', { ascending: false }).limit(5);
       return data || [];
     },
     enabled: !!shopId,
@@ -64,17 +76,13 @@ const DashboardPage: React.FC = () => {
     queryKey: ['dashboard-sale-items', shopId],
     queryFn: async () => {
       const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-      const { data: monthSales } = await supabase
-        .from('sales')
-        .select('id')
-        .eq('shop_id', shopId!)
-        .gte('created_at', startOfMonth);
-      if (!monthSales || monthSales.length === 0) return [];
-      const saleIds = monthSales.map(s => s.id);
+      // One joined query (a long .in(...) list of ids breaks URL length limits on busy shops)
       const { data: items } = await supabase
         .from('sale_items')
-        .select('quantity, unit_price, product_id')
-        .in('sale_id', saleIds);
+        .select('quantity, unit_price, product_id, sales!inner(shop_id, created_at)')
+        .eq('sales.shop_id', shopId!)
+        .gte('sales.created_at', startOfMonth)
+        .limit(5000);
       return items || [];
     },
     enabled: !!shopId,
@@ -139,7 +147,7 @@ const DashboardPage: React.FC = () => {
   const monthlyProfit = grossProfit - monthlyExpenses - monthlyPurchases;
 
   // Recent sales & low stock
-  const recentSales = sales.slice(0, 5);
+  const recentSales = recentSalesData;
   const lowStockProducts = products
     .filter(p => p.stock_quantity < p.min_stock_level)
     .sort((a, b) => a.stock_quantity - b.stock_quantity)

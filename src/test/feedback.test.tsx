@@ -177,7 +177,9 @@ describe('6: form validation', () => {
   it('register: name, email and password length', () => {
     const r = validate(registerSchema, { name: 'A', email: 'bad', password: '123' });
     expect(Object.keys(r.errors).sort()).toEqual(['email', 'name', 'password']);
-    expect(validate(registerSchema, { name: 'Amina Juma', email: 'amina@example.com', password: '123456' }).ok).toBe(true);
+    expect(validate(registerSchema, { name: 'Amina Juma', email: 'a@b.co', password: 'abcdefgh' }).errors.password).toMatch(/number/i);
+    expect(validate(registerSchema, { name: 'Amina Juma', email: 'a@b.co', password: '12345678' }).errors.password).toMatch(/letter/i);
+    expect(validate(registerSchema, { name: 'Amina Juma', email: 'amina@example.com', password: 'duka2026' }).ok).toBe(true);
   });
 
   it('shop: requires a name, optional email/phone must be valid when present', () => {

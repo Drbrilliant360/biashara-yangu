@@ -53,7 +53,8 @@ const QuotationsPage: React.FC = () => {
           quotation_items (*)
         `)
         .eq('shop_id', currentShop.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (error) throw error;
       

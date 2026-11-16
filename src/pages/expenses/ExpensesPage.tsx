@@ -48,9 +48,14 @@ const ExpensesPage: React.FC = () => {
       .from('expenses')
       .select('*')
       .eq('shop_id', currentShop.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(500);
 
-    if (!error && data) setExpenses(data as Expense[]);
+    if (error) {
+      toast({ title: "Could not load expenses", description: friendlyError(error, "Check your connection and try again."), variant: "destructive" });
+    } else if (data) {
+      setExpenses(data as Expense[]);
+    }
     setLoading(false);
   };
 
@@ -183,7 +188,7 @@ const ExpensesPage: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Search size={18} className="text-muted-foreground" />
-            <Input placeholder="Search expenses..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm" />
+            <Input aria-label="Search expenses..." placeholder="Search expenses..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm" />
           </div>
           <div className="flex flex-wrap gap-2 w-full md:w-auto">
             <Select value={timeRange} onValueChange={(v: TimeRange) => setTimeRange(v)}>
@@ -234,8 +239,8 @@ const ExpensesPage: React.FC = () => {
                   <TableCell className="text-right font-medium">{formatCurrency(expense.amount)}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button size="icon" variant="ghost" onClick={() => handleEditExpense(expense)}><Edit size={16} /></Button>
-                      <Button size="icon" variant="ghost" onClick={() => deleteExpense(expense.id)} className="text-destructive hover:text-destructive"><Trash2 size={16} /></Button>
+                      <Button size="icon" variant="ghost" aria-label="Edit expense" onClick={() => handleEditExpense(expense)}><Edit size={16} /></Button>
+                      <Button size="icon" variant="ghost" aria-label="Delete expense" onClick={() => deleteExpense(expense.id)} className="text-destructive hover:text-destructive"><Trash2 size={16} /></Button>
                     </div>
                   </TableCell>
                 </TableRow>

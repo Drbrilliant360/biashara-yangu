@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Product, TimeRange } from '@/types';
 import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
 import { friendlyError } from '@/lib/errors';
+import { callRpc } from '@/lib/rpc';
 import { PageHead } from '@/components/seo/PageHead';
 
 interface PurchaseLineItem {
@@ -76,7 +77,7 @@ const PurchasesPage: React.FC = () => {
 
     const [productsRes, purchasesRes] = await Promise.all([
       supabase.from('products').select('*').eq('shop_id', currentShop.id).eq('is_active', true),
-      supabase.from('purchases').select('*').eq('shop_id', currentShop.id).order('created_at', { ascending: false }),
+      supabase.from('purchases').select('*').eq('shop_id', currentShop.id).order('created_at', { ascending: false }).limit(500),
     ]);
 
     if (productsRes.data) setProducts(productsRes.data as Product[]);
@@ -157,36 +158,21 @@ const PurchasesPage: React.FC = () => {
     const total = purchaseItems.reduce((sum, item) => sum + item.total, 0);
 
     try {
-      const { data: purchaseData, error: purchaseError } = await supabase
-        .from('purchases')
-        .insert({
-          shop_id: currentShop.id,
-          user_id: user.id,
-          supplier_name: supplierName || null,
-          supplier_phone: supplierPhone || null,
-          total_amount: total,
-          payment_method: paymentMethod,
-          payment_status: paymentStatus,
-          notes: notes || null,
-          purchase_date: new Date().toISOString().split('T')[0],
-        })
-        .select()
-        .single();
-
+      // One atomic call: purchase + items + stock update succeed or fail together
+      const { error: purchaseError } = await callRpc('create_purchase', {
+        p_shop_id: currentShop.id,
+        p_items: purchaseItems.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+        })),
+        p_supplier_name: supplierName || null,
+        p_supplier_phone: supplierPhone || null,
+        p_payment_method: paymentMethod,
+        p_payment_status: paymentStatus,
+        p_notes: notes || null,
+      });
       if (purchaseError) throw purchaseError;
-
-      // Insert purchase items (triggers update stock)
-      const items = purchaseItems.map(item => ({
-        purchase_id: purchaseData.id,
-        product_id: item.product_id,
-        product_name: item.product_name,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total: item.total,
-      }));
-
-      const { error: itemsError } = await supabase.from('purchase_items').insert(items);
-      if (itemsError) throw itemsError;
 
       // Reset form
       setPurchaseItems([]); setSupplierName(''); setSupplierPhone('');
@@ -247,7 +233,7 @@ const PurchasesPage: React.FC = () => {
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="flex items-center gap-2 w-full md:w-auto">
             <Search size={18} className="text-muted-foreground" />
-            <Input placeholder="Search purchases..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm" />
+            <Input aria-label="Search purchases..." placeholder="Search purchases..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm" />
           </div>
           <Select value={timeRange} onValueChange={(v: TimeRange) => setTimeRange(v)}>
             <SelectTrigger className="w-[140px]"><Filter size={16} className="mr-2" /><SelectValue /></SelectTrigger>
@@ -300,7 +286,7 @@ const PurchasesPage: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-right font-medium">{formatCurrency(purchase.total_amount)}</TableCell>
                   <TableCell>
-                    <Button size="icon" variant="ghost" onClick={() => { setCurrentPurchase(purchase); setIsViewPurchaseOpen(true); }}>
+                    <Button size="icon" variant="ghost" aria-label="View purchase details" onClick={() => { setCurrentPurchase(purchase); setIsViewPurchaseOpen(true); }}>
                       <Receipt size={16} />
                     </Button>
                   </TableCell>
@@ -340,9 +326,9 @@ const PurchasesPage: React.FC = () => {
                   <option value="">Select product</option>
                   {products.map(p => (<option key={p.id} value={p.id}>{p.name}</option>))}
                 </select>
-                <Input type="number" placeholder="Qty" value={currentItemQuantity} onChange={e => setCurrentItemQuantity(e.target.value)} />
+                <Input aria-label="Qty" type="number" placeholder="Qty" value={currentItemQuantity} onChange={e => setCurrentItemQuantity(e.target.value)} />
                 <div className="flex gap-1">
-                  <Input type="number" placeholder="Unit cost" value={currentItemUnitCost} onChange={e => setCurrentItemUnitCost(e.target.value)} />
+                  <Input aria-label="Unit cost" type="number" placeholder="Unit cost" value={currentItemUnitCost} onChange={e => setCurrentItemUnitCost(e.target.value)} />
                   <Button size="sm" onClick={handleAddItem}><Plus size={14} /></Button>
                 </div>
               </div>
@@ -357,7 +343,7 @@ const PurchasesPage: React.FC = () => {
                         <TableCell>{item.quantity}</TableCell>
                         <TableCell>{formatCurrency(item.unit_price)}</TableCell>
                         <TableCell>{formatCurrency(item.total)}</TableCell>
-                        <TableCell><Button size="icon" variant="ghost" onClick={() => removeItem(idx)}><Trash2 size={14} /></Button></TableCell>
+                        <TableCell><Button size="icon" variant="ghost" aria-label="Remove item" onClick={() => removeItem(idx)}><Trash2 size={14} /></Button></TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

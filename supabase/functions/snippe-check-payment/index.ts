@@ -1,14 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { corsFor } from "../_shared/cors.ts";
 
 const SUBSCRIPTION_AMOUNT_TZS = 5000;
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsFor(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -31,14 +27,15 @@ Deno.serve(async (req) => {
     }
     const user = userData.user;
 
-    const { reference } = await req.json();
-    if (!reference) {
-      return new Response(JSON.stringify({ error: "Missing reference" }), {
+    const { reference } = await req.json().catch(() => ({}));
+    // Reference goes into a URL: allow only safe characters (prevents path injection)
+    if (typeof reference !== "string" || !/^[A-Za-z0-9_-]{6,80}$/.test(reference)) {
+      return new Response(JSON.stringify({ error: "Missing or invalid reference" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const snippeRes = await fetch(`https://api.snippe.sh/v1/payments/${reference}`, {
+    const snippeRes = await fetch(`https://api.snippe.sh/v1/payments/${encodeURIComponent(reference)}`, {
       headers: { "Authorization": `Bearer ${Deno.env.get("SNIPPE_API_KEY")}` },
     });
     const snippeData = await snippeRes.json();
@@ -85,6 +82,8 @@ Deno.serve(async (req) => {
 
         const amountVal = paidAmount;
 
+        // Compare-and-set: only the first request for this reference can apply the renewal,
+        // so two simultaneous polls can never extend the subscription twice.
         await supabase
           .from("subscriptions")
           .update({
@@ -94,7 +93,20 @@ Deno.serve(async (req) => {
             last_payment_reference: reference,
             amount: amountVal,
           })
-          .eq("user_id", user.id);
+          .eq("user_id", user.id)
+          .or(`last_payment_reference.is.null,last_payment_reference.neq.${reference}`);
+      } else if (!existing) {
+        const now = new Date();
+        const newEnd = new Date(now);
+        newEnd.setDate(newEnd.getDate() + 30);
+        await supabase.from("subscriptions").insert({
+          user_id: user.id,
+          status: "active",
+          current_period_end: newEnd.toISOString(),
+          last_payment_date: now.toISOString(),
+          last_payment_reference: reference,
+          amount: paidAmount,
+        });
       }
     }
 
@@ -103,7 +115,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("Error:", e);
-    return new Response(JSON.stringify({ error: String(e) }), {
+    return new Response(JSON.stringify({ error: "Could not check the payment. Please try again." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

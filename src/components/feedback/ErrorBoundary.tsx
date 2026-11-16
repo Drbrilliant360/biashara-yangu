@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { reportClientError } from '@/lib/reportError';
 import { Button } from '@/components/ui/button';
 
 interface State { hasError: boolean }
@@ -14,6 +15,7 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
 
   componentDidCatch(error: unknown) {
     console.error('Unhandled UI error:', error);
+    reportClientError(error, 'react-boundary');
   }
 
   render() {

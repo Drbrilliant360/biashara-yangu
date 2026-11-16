@@ -21,7 +21,10 @@ export function validate<S extends z.ZodTypeAny>(
 }
 
 const email = z.string().trim().min(1, 'Enter your email address.').email('Enter a valid email, like name@example.com.');
-const password = z.string().min(6, 'Password must be at least 6 characters.');
+const password = z.string()
+  .min(8, 'Password must be at least 8 characters.')
+  .regex(/[A-Za-z]/, 'Password must include at least one letter.')
+  .regex(/[0-9]/, 'Password must include at least one number.');
 const phoneOptional = z.string().trim().refine((v) => v === '' || /^\+?[0-9\s-]{9,15}$/.test(v), 'Enter a valid phone number, like 0712 345 678.');
 
 export const loginSchema = z.object({

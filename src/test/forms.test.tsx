@@ -46,8 +46,8 @@ describe('Register form', () => {
     wrap(<RegisterPage />);
     fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Amina Juma' } });
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'amina@example.com' } });
-    fireEvent.change(screen.getByLabelText('Password'), { target: { value: '123456' } });
-    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: '654321' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'duka2026' } });
+    fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'duka2027' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
     expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument();
     expect(register).not.toHaveBeenCalled();

@@ -49,7 +49,7 @@ const AdminProductsPage: React.FC = () => {
 
       <div className="mb-4 relative max-w-sm">
         <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
-        <Input placeholder="Search products…" value={q} onChange={e => setQ(e.target.value)} className="pl-9" />
+        <Input aria-label="Search products…" placeholder="Search products…" value={q} onChange={e => setQ(e.target.value)} className="pl-9" />
       </div>
 
       <Card className="p-0">
@@ -70,7 +70,7 @@ const AdminProductsPage: React.FC = () => {
                   <TableCell>{Number(p.selling_price).toLocaleString()}</TableCell>
                   <TableCell>{p.stock_quantity}</TableCell>
                   <TableCell className="text-right">
-                    <Button size="icon" variant="ghost" onClick={() => del(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                    <Button size="icon" variant="ghost" aria-label={`Delete product ${p.name}`} onClick={() => del(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                   </TableCell>
                 </TableRow>
               ))}

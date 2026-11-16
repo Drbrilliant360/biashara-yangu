@@ -44,6 +44,7 @@ const AdminRevenuePage = lazy(() => import("@/pages/admin/AdminRevenuePage"));
 const AdminProductsPage = lazy(() => import("@/pages/admin/AdminProductsPage"));
 const AdminSalesPage = lazy(() => import("@/pages/admin/AdminSalesPage"));
 const AdminSupportPage = lazy(() => import("@/pages/admin/AdminSupportPage"));
+const AdminAuditPage = lazy(() => import("@/pages/admin/AdminAuditPage"));
 const HelpPage = lazy(() => import("@/pages/support/HelpPage"));
 import { RequireSuperAdmin } from "@/components/admin/RequireSuperAdmin";
 const InvoiceGeneratorPage = lazy(() => import("@/pages/invoice/InvoiceGeneratorPage"));
@@ -113,6 +114,7 @@ const App = () => (
                     <Route path="admin/products" element={<RequireSuperAdmin><AdminProductsPage /></RequireSuperAdmin>} />
                     <Route path="admin/sales" element={<RequireSuperAdmin><AdminSalesPage /></RequireSuperAdmin>} />
                     <Route path="admin/support" element={<RequireSuperAdmin><AdminSupportPage /></RequireSuperAdmin>} />
+                    <Route path="admin/audit" element={<RequireSuperAdmin><AdminAuditPage /></RequireSuperAdmin>} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />

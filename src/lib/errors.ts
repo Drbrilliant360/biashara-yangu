@@ -19,7 +19,7 @@ export function friendlyError(err: unknown, fallback = 'Something went wrong. Pl
   if (msg.includes('invalid login credentials')) return 'Wrong email or password. Check them and try again.';
   if (msg.includes('email not confirmed')) return 'Please confirm your email first. Check your inbox for the link.';
   if (msg.includes('user already registered')) return 'An account with this email already exists. Try signing in instead.';
-  if (msg.includes('password should be') || msg.includes('weak password')) return 'Password is too weak. Use at least 6 characters.';
+  if (msg.includes('password should be') || msg.includes('weak password')) return 'Password is too weak. Use at least 8 characters with letters and a number.';
   if (msg.includes('rate limit') || e.status === 429) return 'Too many attempts. Please wait a minute and try again.';
   if (e.code === '23505' || msg.includes('duplicate key')) return 'This already exists. Use a different value.';
   if (e.code === '23503' || msg.includes('foreign key')) return 'This item is still used elsewhere, so it cannot be removed.';
