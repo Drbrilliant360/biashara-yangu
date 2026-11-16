@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trash2, Search } from "lucide-react";
+import { useConfirm } from '@/components/feedback/ConfirmDialog';
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { toast } from "@/hooks/use-toast";
 
 interface P { id: string; name: string; sku: string | null; category: string | null; selling_price: number; buying_price: number; stock_quantity: number; shop_id: string; is_active: boolean; }
 
 const AdminProductsPage: React.FC = () => {
+  const confirm = useConfirm();
   const [items, setItems] = useState<P[]>([]);
   const [shops, setShops] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -29,9 +33,9 @@ const AdminProductsPage: React.FC = () => {
   useEffect(() => { load(); }, []);
 
   const del = async (id: string) => {
-    if (!confirm("Delete product?")) return;
+    if (!(await confirm({ title: "Delete this product?", description: "It will be removed from the platform catalog. This cannot be undone.", destructive: true }))) return;
     const { error } = await supabase.from("products").delete().eq("id", id);
-    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (error) return toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
     toast({ title: "Deleted" }); load();
   };
 
@@ -56,7 +60,7 @@ const AdminProductsPage: React.FC = () => {
             <TableHead className="text-right">Actions</TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {loading ? <TableRow><TableCell colSpan={7} className="text-center py-6">Loading…</TableCell></TableRow> :
+            {loading ? <TableSkeletonRows cols={7} /> :
               filtered.map(p => (
                 <TableRow key={p.id}>
                   <TableCell className="font-medium">{p.name}</TableCell>

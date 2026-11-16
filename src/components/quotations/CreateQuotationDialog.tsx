@@ -11,6 +11,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/types';
+import { friendlyError } from '@/lib/errors';
 import { useShop } from '@/context/ShopContext';
 
 interface CreateQuotationDialogProps {
@@ -40,6 +41,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
   const { toast } = useToast();
   const { currentShop } = useShop();
   const [loading, setLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<string[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
   const createQuotationNumber = () => `QT-${Date.now().toString().slice(-8)}`;
@@ -148,6 +150,20 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate before sending, with specific instructions
+    const problems: string[] = [];
+    if (!quotationData.customer_name.trim()) problems.push('Enter the customer name.');
+    if (quotationData.customer_email.trim() && !/^\S+@\S+\.\S+$/.test(quotationData.customer_email.trim())) problems.push('Enter a valid customer email, or leave it empty.');
+    if (!items.some((i) => i.product_name.trim())) problems.push('Add at least one product.');
+    if (items.some((i) => i.product_name.trim() && !(Number(i.quantity) > 0))) problems.push('Every product needs a quantity greater than 0.');
+    if (items.some((i) => i.product_name.trim() && Number(i.unit_price) < 0)) problems.push('Unit price cannot be negative.');
+    if (problems.length > 0) {
+      setFormErrors(problems);
+      toast({ title: 'Please fix these before creating the quotation', description: problems.join(' '), variant: 'destructive' });
+      return;
+    }
+    setFormErrors([]);
     setLoading(true);
 
     try {
@@ -212,7 +228,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
       console.error('Error creating quotation:', error);
       toast({
         title: "Error",
-        description: "Failed to create quotation",
+        description: friendlyError(error, "Failed to create quotation"),
         variant: "destructive",
       });
     } finally {
@@ -249,7 +265,15 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          {formErrors.length > 0 && (
+            <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <p className="font-medium">Please fix the following:</p>
+              <ul className="mt-1 list-disc pl-5">
+                {formErrors.map((m) => <li key={m}>{m}</li>)}
+              </ul>
+            </div>
+          )}
           {/* Customer Information */}
           <Card>
             <CardHeader>
@@ -260,10 +284,10 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
                 <Label htmlFor="customer_name">Customer Name *</Label>
                 <Input
                   id="customer_name"
+                  aria-invalid={formErrors.some((m) => m.includes('customer name')) || undefined}
                   value={quotationData.customer_name}
                   onChange={(e) => setQuotationData({ ...quotationData, customer_name: e.target.value })}
-                  required
-                  className="text-sm"
+                  className={formErrors.some((m) => m.includes('customer name')) ? 'text-sm border-destructive' : 'text-sm'}
                 />
               </div>
               <div>
@@ -435,7 +459,7 @@ const CreateQuotationDialog: React.FC<CreateQuotationDialogProps> = ({ open, onO
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" loading={loading}>
               {loading ? 'Creating...' : 'Create Quotation'}
             </Button>
           </DialogFooter>

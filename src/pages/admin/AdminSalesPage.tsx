@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
 import { Badge } from "@/components/ui/badge";
 
 interface S { id: string; receipt_number: string | null; total: number; payment_method: string; payment_status: string; customer_name: string | null; created_at: string; shop_id: string; }
@@ -44,7 +45,7 @@ const AdminSalesPage: React.FC = () => {
             <TableHead>Method</TableHead><TableHead>Status</TableHead><TableHead>Total</TableHead><TableHead>Date</TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {loading ? <TableRow><TableCell colSpan={7} className="text-center py-6">Loading…</TableCell></TableRow> :
+            {loading ? <TableSkeletonRows cols={7} /> :
               sales.map(s => (
                 <TableRow key={s.id}>
                   <TableCell className="font-mono text-xs">{s.receipt_number || s.id.slice(0, 8)}</TableCell>

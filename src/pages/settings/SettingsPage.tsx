@@ -16,6 +16,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { canPayInApp } from '@/lib/platform';
 import { PaymentDialog } from '@/components/billing/PaymentDialog';
 import { useSubscription } from '@/hooks/useSubscription';
+import { validate, profileSchema, type FieldErrors } from '@/lib/validation';
+import { FieldError, invalidProps } from '@/components/ui/field-error';
+import { friendlyError } from '@/lib/errors';
 import { PageHead } from '@/components/seo/PageHead';
 
 interface UIUser {
@@ -44,6 +47,24 @@ const SettingsPage: React.FC = () => {
   const [notifications, setNotifications] = useState(true);
   const [lowStockAlert, setLowStockAlert] = useState(true);
   const [lowStockThreshold, setLowStockThreshold] = useState("10");
+
+  const [profileName, setProfileName] = useState(user?.name || "");
+  const [profileErrors, setProfileErrors] = useState<FieldErrors>({});
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  const handleUpdateProfile = async () => {
+    const result = validate(profileSchema, { name: profileName });
+    setProfileErrors(result.errors);
+    if (!result.ok) return;
+    setSavingProfile(true);
+    const { error } = await supabase.auth.updateUser({ data: { full_name: profileName.trim() } });
+    setSavingProfile(false);
+    if (error) {
+      toast({ title: "Could not update profile", description: friendlyError(error, "Please try again."), variant: "destructive" });
+      return;
+    }
+    toast({ title: "Profile updated", description: "Your name has been saved." });
+  };
 
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -235,20 +256,22 @@ const SettingsPage: React.FC = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
-                <Input id="name" defaultValue={user?.name || ""} />
+                <Input
+                  id="name"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                  {...invalidProps('name', profileErrors.name)}
+                />
+                <FieldError id="name-error" message={profileErrors.name} />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue={user?.email || ""} />
+                <Input id="email" type="email" value={user?.email || ""} readOnly disabled />
+                <p className="text-xs text-muted-foreground">Your sign-in email cannot be changed here.</p>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" defaultValue="" placeholder="Add phone number" />
-              </div>
-              
-              <Button>Update Profile</Button>
+              <Button onClick={handleUpdateProfile} loading={savingProfile}>Update Profile</Button>
             </CardContent>
           </Card>
 

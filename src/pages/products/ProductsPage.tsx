@@ -17,6 +17,8 @@ import { useLanguage } from '@/context/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PageHead } from '@/components/seo/PageHead';
+import { TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 
 const PAGE_SIZE = 25;
@@ -84,7 +86,7 @@ const ProductsPage: React.FC = () => {
 
     if (error) {
       console.error('Error deleting product:', error);
-      toast.error(error.message || 'Failed to load products');
+      toast.error(friendlyError(error, 'Failed to load products'));
       return;
     }
 
@@ -161,9 +163,7 @@ const ProductsPage: React.FC = () => {
           </TableHeader>
           <TableBody>
             {isFetching && products.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell>
-              </TableRow>
+              <TableSkeletonRows cols={7} rows={6} />
             ) : products.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No products found</TableCell>

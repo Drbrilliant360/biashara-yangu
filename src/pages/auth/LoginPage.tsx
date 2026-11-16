@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Mail, Eye, EyeOff, Lock, X } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import loginHero from '@/assets/login-hero.png';
+import { validate, loginSchema, type FieldErrors } from '@/lib/validation';
+import { FieldError, invalidProps } from '@/components/ui/field-error';
 import logo from '@/assets/logo.png';
 
 const LoginPage: React.FC = () => {
@@ -14,6 +16,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -21,7 +24,9 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password) return;
+    const result = validate(loginSchema, { email, password });
+    if (!result.ok) { setErrors(result.errors); return; }
+    setErrors({});
     setIsLoading(true);
     const success = await login(email, password);
     setIsLoading(false);
@@ -53,28 +58,30 @@ const LoginPage: React.FC = () => {
               <p className="text-sm text-muted-foreground">Log in to manage your business</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-11 h-12 rounded-full bg-background border-border" required />
+                  <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" {...invalidProps('email', errors.email)} className={`pl-11 h-12 rounded-full bg-background border-border ${errors.email ? 'border-destructive' : ''}`} />
                 </div>
+                <FieldError id="email-error" message={errors.email} />
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="text-xs text-muted-foreground">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-11 pr-11 h-12 rounded-full bg-background border-border" required />
+                  <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" {...invalidProps('password', errors.password)} className={`pl-11 pr-11 h-12 rounded-full bg-background border-border ${errors.password ? 'border-destructive' : ''}`} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                <FieldError id="password-error" message={errors.password} />
               </div>
 
-              <Button type="submit" disabled={isLoading || !email || !password} className="w-full h-12 rounded-full bg-primary text-primary-foreground font-medium">
-                {isLoading ? 'Logging in...' : 'Submit'}
+              <Button type="submit" loading={isLoading} className="w-full h-12 rounded-full bg-primary text-primary-foreground font-medium">
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
           </div>

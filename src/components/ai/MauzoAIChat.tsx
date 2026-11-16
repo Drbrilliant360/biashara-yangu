@@ -240,7 +240,7 @@ export const MauzoAIChat: React.FC = () => {
           placeholder="Ask about your shop..."
           disabled={loading || !currentShop?.id}
         />
-        <Button type="submit" disabled={loading || !input.trim() || !currentShop?.id}>
+        <Button type="submit" loading={loading} disabled={!input.trim() || !currentShop?.id}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </Button>
       </form>

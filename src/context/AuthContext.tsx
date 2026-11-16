@@ -3,6 +3,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { friendlyError } from '@/lib/errors';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface AppUser {
@@ -74,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         toast({
           title: "Login Failed",
-          description: error.message,
+          description: friendlyError(error, error.message),
           variant: "destructive",
         });
         setLoading(false);
@@ -93,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Login error:', error);
       toast({
         title: "Login Error",
-        description: "Something went wrong. Please try again.",
+        description: friendlyError(error),
         variant: "destructive",
       });
       setLoading(false);
@@ -115,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         toast({
           title: "Registration Failed",
-          description: error.message,
+          description: friendlyError(error, error.message),
           variant: "destructive",
         });
         setLoading(false);
@@ -146,7 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Registration error:', error);
       toast({
         title: "Registration Error",
-        description: "Something went wrong. Please try again.",
+        description: friendlyError(error),
         variant: "destructive",
       });
       setLoading(false);

@@ -12,6 +12,7 @@ import { exportToExcel, exportToPDF, exportToWord } from '@/utils/exportUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { Quotation, QuotationItem } from '@/types';
 import CreateQuotationDialog from '@/components/quotations/CreateQuotationDialog';
+import { useConfirm } from '@/components/feedback/ConfirmDialog';
 import { PageHead } from '@/components/seo/PageHead';
 
 interface QuotationWithItems extends Quotation {
@@ -19,6 +20,7 @@ interface QuotationWithItems extends Quotation {
 }
 
 const QuotationsPage: React.FC = () => {
+  const confirm = useConfirm();
   const { currentShop } = useShop();
   const { toast } = useToast();
   
@@ -154,6 +156,7 @@ const QuotationsPage: React.FC = () => {
   
   // Function to delete a quotation
   const handleDeleteQuotation = async (id: string) => {
+    if (!(await confirm({ title: 'Delete this quotation?', description: 'It will be permanently removed. This cannot be undone.', destructive: true }))) return;
     try {
       const { error } = await supabase
         .from('quotations')

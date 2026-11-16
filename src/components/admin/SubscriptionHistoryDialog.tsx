@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
 import { Receipt, ArrowUpRight, XCircle, Clock, CheckCircle2, AlertCircle, Plus } from "lucide-react";
 
 interface Event {
@@ -58,7 +59,7 @@ export const SubscriptionHistoryDialog: React.FC<Props> = ({ subscriptionId, use
           <DialogTitle>Subscription History {userName ? `— ${userName}` : ""}</DialogTitle>
         </DialogHeader>
         {loading ? (
-          <p className="text-sm text-muted-foreground py-6 text-center">Loading…</p>
+          <LoadingState label="Loading history..." className="py-8" />
         ) : events.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">No events recorded yet.</p>
         ) : (

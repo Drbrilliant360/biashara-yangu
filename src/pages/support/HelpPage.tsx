@@ -12,6 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { LifeBuoy, Send, Mail, Phone, MessageSquare } from 'lucide-react';
+import { validate, supportSchema, type FieldErrors } from '@/lib/validation';
+import { FieldError, invalidProps } from '@/components/ui/field-error';
+import { friendlyError } from '@/lib/errors';
 import { PageHead } from '@/components/seo/PageHead';
 
 const CATEGORIES = [
@@ -32,6 +35,7 @@ const HelpPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -57,8 +61,10 @@ const HelpPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    if (!form.subject.trim() || !form.message.trim()) {
-      toast({ title: 'Missing details', description: 'Please add a subject and a message.', variant: 'destructive' });
+    const result = validate(supportSchema, { subject: form.subject, message: form.message });
+    setErrors(result.errors);
+    if (!result.ok) {
+      toast({ title: 'Please fix the highlighted fields', description: 'Some details are missing or too short.', variant: 'destructive' });
       return;
     }
     setSubmitting(true);
@@ -76,7 +82,7 @@ const HelpPage: React.FC = () => {
 
     if (error) {
       console.error('Error submitting ticket:', error);
-      toast({ title: 'Could not send', description: error.message, variant: 'destructive' });
+      toast({ title: 'Could not send', description: friendlyError(error, 'Your message was not sent. Check your connection and try again.'), variant: 'destructive' });
       return;
     }
     toast({ title: 'Message sent', description: 'Our admin team will get back to you shortly.' });
@@ -109,7 +115,7 @@ const HelpPage: React.FC = () => {
             <CardDescription>We usually reply within one business day.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="name">Your name</Label>
@@ -161,8 +167,9 @@ const HelpPage: React.FC = () => {
                   value={form.subject}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
                   placeholder="Short summary of your issue"
-                  required
+                  {...invalidProps('subject', errors.subject)}
                 />
+                <FieldError id="subject-error" message={errors.subject} />
               </div>
 
               <div className="space-y-2">
@@ -173,12 +180,13 @@ const HelpPage: React.FC = () => {
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
                   placeholder="Describe your question or complaint in detail..."
-                  required
+                  {...invalidProps('message', errors.message)}
                 />
+                <FieldError id="message-error" message={errors.message} />
               </div>
 
-              <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
-                <Send className="mr-2 h-4 w-4" />
+              <Button type="submit" loading={submitting} className="w-full sm:w-auto">
+                {!submitting && <Send className="mr-2 h-4 w-4" />}
                 {submitting ? 'Sending...' : 'Send message'}
               </Button>
             </form>

@@ -10,6 +10,8 @@ import { Card } from "@/components/ui/card";
 import { ReceiptText, FilePlus, Search, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { PageHead } from '@/components/seo/PageHead';
 
 interface SaleWithItems {
@@ -149,7 +151,7 @@ const SalesPage: React.FC = () => {
       loadData();
     } catch (error: any) {
       console.error('Sale error:', error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
     }
   };
 
@@ -229,7 +231,7 @@ const SalesPage: React.FC = () => {
 
       <div className="space-y-4">
         {loading ? (
-          <div className="text-center text-muted-foreground py-8">Loading sales...</div>
+          <LoadingState label="Loading sales..." />
         ) : filteredSales.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">No sales found.</div>
         ) : (

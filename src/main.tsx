@@ -5,10 +5,12 @@ import { HelmetProvider } from 'react-helmet-async';
 import App from './App.tsx';
 import './index.css';
 import { initNative } from './lib/nativeInit';
+import { installNetworkActivity } from './lib/networkActivity';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 
+installNetworkActivity();
 initNative();
 
 const root = createRoot(rootElement);

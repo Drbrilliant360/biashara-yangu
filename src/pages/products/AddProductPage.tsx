@@ -14,6 +14,7 @@ import {
 import { useShop } from '@/context/ShopContext';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { friendlyError } from '@/lib/errors';
 import { useAuth } from '@/context/AuthContext';
 
 const productSchema = z.object({
@@ -75,7 +76,7 @@ const AddProductPage: React.FC = () => {
       navigate('/products');
     } catch (error: any) {
       console.error('Error adding product:', error);
-      toast.error(error.message || "Failed to add product.");
+      toast.error(friendlyError(error, "Failed to add product."));
     } finally {
       setIsSubmitting(false);
     }
@@ -147,7 +148,7 @@ const AddProductPage: React.FC = () => {
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => navigate('/products')}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" loading={isSubmitting}>
               <Save size={16} className="mr-2" />
               {isSubmitting ? 'Saving...' : 'Save Product'}
             </Button>

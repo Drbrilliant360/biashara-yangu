@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/form';
 import { useShop } from '@/context/ShopContext';
 import { toast } from 'sonner';
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { supabase } from '@/integrations/supabase/client';
 
 const productSchema = z.object({
@@ -106,7 +108,7 @@ const EditProductPage: React.FC = () => {
       navigate('/products');
     } catch (error: any) {
       console.error('Error updating product:', error);
-      toast.error(error.message || "Failed to update product.");
+      toast.error(friendlyError(error, "Failed to update product."));
     } finally {
       setIsSubmitting(false);
     }
@@ -121,7 +123,7 @@ const EditProductPage: React.FC = () => {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-[60vh] text-muted-foreground">Loading product...</div>;
+    return <LoadingState label="Loading product..." className="h-[60vh]" />;
   }
 
   return (
@@ -180,7 +182,7 @@ const EditProductPage: React.FC = () => {
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => navigate('/products')}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" loading={isSubmitting}>
               <Save size={16} className="mr-2" />
               {isSubmitting ? 'Saving...' : 'Update Product'}
             </Button>

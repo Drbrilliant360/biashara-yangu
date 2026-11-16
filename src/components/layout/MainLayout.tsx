@@ -2,6 +2,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { isNative } from '@/lib/platform';
+import { PageSkeleton } from '@/components/feedback/LoadingState';
 import { useAuth } from '@/context/AuthContext';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
@@ -57,7 +58,9 @@ export const MainLayout: React.FC = () => {
           className="flex-1 overflow-auto p-3 sm:p-4 md:p-6 pb-20 md:pb-6"
           style={isMobile ? { paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' } : undefined}
         >
-          <Outlet />
+          <Suspense fallback={<PageSkeleton />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
 

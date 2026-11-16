@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Mail, User, Lock, Eye, EyeOff, X } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import registerHero from '@/assets/register-hero.png';
+import { validate, registerSchema, type FieldErrors } from '@/lib/validation';
+import { FieldError, invalidProps } from '@/components/ui/field-error';
 import logo from '@/assets/logo.png';
 
 const RegisterPage: React.FC = () => {
@@ -16,6 +18,7 @@ const RegisterPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const { register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -25,10 +28,11 @@ const RegisterPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!name.trim()) { setError('Please enter your name'); return; }
-    if (!email.trim()) { setError('Please enter your email'); return; }
-    if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
-    if (password !== confirmPassword) { setError('Passwords do not match'); return; }
+    const result = validate(registerSchema, { name, email, password });
+    const next: FieldErrors = result.ok ? {} : { ...result.errors };
+    if (!next.password && password !== confirmPassword) next.confirmPassword = 'Passwords do not match. Type the same password again.';
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
 
     setIsLoading(true);
     const success = await register({ name, email, password });
@@ -61,7 +65,7 @@ const RegisterPage: React.FC = () => {
               <p className="text-sm text-muted-foreground">Sign up and start managing your business</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {error && (
                 <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-sm">
                   {error}
@@ -72,39 +76,43 @@ const RegisterPage: React.FC = () => {
                 <Label htmlFor="name" className="text-xs text-muted-foreground">Full name</Label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="pl-11 h-12 rounded-full bg-background border-border" required />
+                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" {...invalidProps('name', errors.name)} className={`pl-11 h-12 rounded-full bg-background border-border ${errors.name ? 'border-destructive' : ''}`} />
                 </div>
+                <FieldError id="name-error" message={errors.name} />
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="pl-11 h-12 rounded-full bg-background border-border" required />
+                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" {...invalidProps('email', errors.email)} className={`pl-11 h-12 rounded-full bg-background border-border ${errors.email ? 'border-destructive' : ''}`} />
                 </div>
+                <FieldError id="email-error" message={errors.email} />
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="text-xs text-muted-foreground">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 6 characters" className="pl-11 pr-11 h-12 rounded-full bg-background border-border" required minLength={6} />
+                  <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 6 characters" autoComplete="new-password" {...invalidProps('password', errors.password)} className={`pl-11 pr-11 h-12 rounded-full bg-background border-border ${errors.password ? 'border-destructive' : ''}`} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" tabIndex={-1}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                <FieldError id="password-error" message={errors.password} />
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="confirmPassword" className="text-xs text-muted-foreground">Confirm password</Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input id="confirmPassword" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat password" className="pl-11 h-12 rounded-full bg-background border-border" required />
+                  <Input id="confirmPassword" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat password" autoComplete="new-password" {...invalidProps('confirmPassword', errors.confirmPassword)} className={`pl-11 h-12 rounded-full bg-background border-border ${errors.confirmPassword ? 'border-destructive' : ''}`} />
                 </div>
+                <FieldError id="confirmPassword-error" message={errors.confirmPassword} />
               </div>
 
-              <Button type="submit" disabled={isLoading} className="w-full h-12 rounded-full bg-primary text-primary-foreground font-medium">
-                {isLoading ? 'Creating account...' : 'Submit'}
+              <Button type="submit" loading={isLoading} className="w-full h-12 rounded-full bg-primary text-primary-foreground font-medium">
+                {isLoading ? 'Creating account...' : 'Create account'}
               </Button>
             </form>
           </div>

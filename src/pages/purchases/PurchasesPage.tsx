@@ -13,6 +13,8 @@ import { useShop } from '@/context/ShopContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, TimeRange } from '@/types';
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { PageHead } from '@/components/seo/PageHead';
 
 interface PurchaseLineItem {
@@ -195,7 +197,7 @@ const PurchasesPage: React.FC = () => {
       toast({ title: "Purchase recorded", description: `${purchaseItems.length} items purchased for ${formatCurrency(total)}` });
     } catch (error: any) {
       console.error('Purchase error:', error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
     }
   };
 
@@ -268,7 +270,7 @@ const PurchasesPage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-muted-foreground">Loading...</div>
+          <LoadingState label="Loading purchases..." />
         ) : filterPurchases().length > 0 ? (
           <Table>
             <TableHeader>

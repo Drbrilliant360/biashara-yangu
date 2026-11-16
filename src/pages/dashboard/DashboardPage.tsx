@@ -23,6 +23,7 @@ import { SubscriptionWidget } from '@/components/billing/SubscriptionWidget';
 
 import { SubscriptionReminder } from '@/components/billing/SubscriptionReminder';
 import { PaymentDialog } from '@/components/billing/PaymentDialog';
+import { PageSkeleton } from '@/components/feedback/LoadingState';
 import { PageHead } from '@/components/seo/PageHead';
 
 const DashboardPage: React.FC = () => {
@@ -39,7 +40,7 @@ const DashboardPage: React.FC = () => {
   const shopId = currentShop?.id;
 
   // Fetch products
-  const { data: products = [] } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['dashboard-products', shopId],
     queryFn: async () => {
       const { data } = await supabase.from('products').select('*').eq('shop_id', shopId!).eq('is_active', true);
@@ -49,7 +50,7 @@ const DashboardPage: React.FC = () => {
   });
 
   // Fetch all sales
-  const { data: sales = [] } = useQuery({
+  const { data: sales = [], isLoading: salesLoading } = useQuery({
     queryKey: ['dashboard-sales', shopId],
     queryFn: async () => {
       const { data } = await supabase.from('sales').select('*').eq('shop_id', shopId!).order('created_at', { ascending: false });
@@ -163,6 +164,9 @@ const DashboardPage: React.FC = () => {
       </div>
     );
   }
+
+  // First load: show skeletons instead of a half-empty dashboard
+  if (shopId && (productsLoading || salesLoading)) return <PageSkeleton />;
 
   return (
     <div className="space-y-6">

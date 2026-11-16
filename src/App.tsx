@@ -3,13 +3,20 @@ import React, { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryCache, MutationCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { toast as sonnerToast } from "sonner";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ShopProvider } from "@/context/ShopContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { LanguageProvider } from "@/context/LanguageContext";
 import ScrollToTop from "@/components/ScrollToTop";
+import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
+import { ConfirmProvider } from "@/components/feedback/ConfirmDialog";
+import { TopProgressBar } from "@/components/feedback/TopProgressBar";
+import { OfflineBanner } from "@/components/feedback/OfflineBanner";
+import { LoadingState } from "@/components/feedback/LoadingState";
+import { friendlyError } from "@/lib/errors";
 
 // Pages (lazy-loaded so the first screen on mobile downloads far less JavaScript)
 const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage"));
@@ -43,24 +50,35 @@ const InvoiceGeneratorPage = lazy(() => import("@/pages/invoice/InvoiceGenerator
 const TermsPage = lazy(() => import("@/pages/legal/TermsPage"));
 const PrivacyPage = lazy(() => import("@/pages/legal/PrivacyPage"));
 
-const PageLoader = () => (
-  <div className="flex items-center justify-center h-screen text-muted-foreground">Loading...</div>
-);
+const PageLoader = () => <LoadingState className="h-screen" />;
 
 // Create a client
-const queryClient = new QueryClient();
+// Any failed query/mutation shows a clear message (individual screens can still handle their own).
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => sonnerToast.error(friendlyError(error, 'Could not load data. Pull to refresh or try again.')),
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => sonnerToast.error(friendlyError(error)),
+  }),
+  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
+});
 
 const App = () => (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LanguageProvider>
         <BrowserRouter>
+          <ConfirmProvider>
           <AuthProvider>
             <ShopProvider>
               <>
                 <ScrollToTop />
                 <Toaster />
                 <Sonner />
+                <TopProgressBar />
+                <OfflineBanner />
                 <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Auth Routes */}
@@ -103,10 +121,12 @@ const App = () => (
               </>
             </ShopProvider>
           </AuthProvider>
+          </ConfirmProvider>
         </BrowserRouter>
       </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

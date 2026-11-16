@@ -12,6 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { UserPlus, Shield, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useConfirm } from '@/components/feedback/ConfirmDialog';
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { PageHead } from '@/components/seo/PageHead';
 
 interface ShopUserRow {
@@ -32,6 +35,7 @@ const ROLES = [
 ];
 
 const UsersPage: React.FC = () => {
+  const confirm = useConfirm();
   const { user: currentUser } = useAuth();
   const { currentShop } = useShop();
   const [shopUsers, setShopUsers] = useState<ShopUserRow[]>([]);
@@ -81,7 +85,7 @@ const UsersPage: React.FC = () => {
     });
     setSaving(false);
     if (error) {
-      toast({ title: "Could not add user", description: error.message, variant: "destructive" });
+      toast({ title: "Could not add user", description: friendlyError(error, error.message), variant: "destructive" });
       return;
     }
     toast({ title: "User added", description: `Role set to ${newRole}.` });
@@ -94,7 +98,7 @@ const UsersPage: React.FC = () => {
   const changeRole = async (row: ShopUserRow, role: string) => {
     const { error } = await supabase.from('shop_users').update({ role }).eq('id', row.id);
     if (error) {
-      toast({ title: "Could not update role", description: error.message, variant: "destructive" });
+      toast({ title: "Could not update role", description: friendlyError(error, error.message), variant: "destructive" });
       return;
     }
     setShopUsers((prev) => prev.map((r) => (r.id === row.id ? { ...r, role } : r)));
@@ -104,16 +108,17 @@ const UsersPage: React.FC = () => {
   const toggleActive = async (row: ShopUserRow) => {
     const { error } = await supabase.from('shop_users').update({ is_active: !row.is_active }).eq('id', row.id);
     if (error) {
-      toast({ title: "Could not update status", description: error.message, variant: "destructive" });
+      toast({ title: "Could not update status", description: friendlyError(error, error.message), variant: "destructive" });
       return;
     }
     setShopUsers((prev) => prev.map((r) => (r.id === row.id ? { ...r, is_active: !r.is_active } : r)));
   };
 
   const removeUser = async (row: ShopUserRow) => {
+    if (!(await confirm({ title: 'Remove this user from the shop?', description: 'They will lose access to this shop immediately.', destructive: true, confirmText: 'Remove' }))) return;
     const { error } = await supabase.from('shop_users').delete().eq('id', row.id);
     if (error) {
-      toast({ title: "Could not remove user", description: error.message, variant: "destructive" });
+      toast({ title: "Could not remove user", description: friendlyError(error, error.message), variant: "destructive" });
       return;
     }
     setShopUsers((prev) => prev.filter((r) => r.id !== row.id));
@@ -187,9 +192,7 @@ const UsersPage: React.FC = () => {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">Loading...</TableCell>
-              </TableRow>
+              <TableSkeletonRows cols={5} />
             ) : shopUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">

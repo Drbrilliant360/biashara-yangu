@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Store, Users, CreditCard, TrendingUp, Package, ShoppingCart, DollarSign, Activity } from "lucide-react";
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line } from "recharts";
 
 interface Stats {
@@ -118,7 +119,7 @@ const AdminOverviewPage: React.FC = () => {
       <AdminNav />
 
       {loading || !s ? (
-        <p className="text-muted-foreground">Loading…</p>
+        <LoadingState label="Loading overview..." />
       ) : (
         <>
           <div className="grid gap-4 grid-cols-2 md:grid-cols-4 mb-6">

@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { SubscriptionHistoryDialog } from "@/components/admin/SubscriptionHistoryDialog";
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { History } from "lucide-react";
 
 interface Sub {
@@ -38,7 +40,7 @@ const AdminSubscriptionsPage: React.FC = () => {
 
   const update = async (id: string, patch: Partial<Sub>) => {
     const { error } = await supabase.from("subscriptions").update(patch).eq("id", id);
-    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (error) return toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
     toast({ title: "Updated" });
     load();
   };
@@ -49,7 +51,7 @@ const AdminSubscriptionsPage: React.FC = () => {
     const { error } = await supabase.from("subscriptions").update({
       status: "active", last_payment_date: new Date().toISOString(), current_period_end: next.toISOString(),
     } as any).eq("id", s.id);
-    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (error) return toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
     if (receipt.trim()) {
       const { data: latest } = await supabase
         .from("subscription_events" as any)
@@ -126,7 +128,7 @@ const AdminSubscriptionsPage: React.FC = () => {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={8} className="text-center py-6">Loading…</TableCell></TableRow>
+              <TableSkeletonRows cols={8} />
             ) : filtered.map((s) => (
               <TableRow key={s.id}>
                 <TableCell>{profiles[s.user_id] || s.user_id.slice(0, 8)}</TableCell>

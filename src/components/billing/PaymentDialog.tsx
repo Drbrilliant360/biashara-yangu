@@ -7,6 +7,10 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 import { canPayInApp } from '@/lib/platform';
+import { Progress } from '@/components/ui/progress';
+import { validate, paymentSchema, type FieldErrors } from '@/lib/validation';
+import { FieldError, invalidProps } from '@/components/ui/field-error';
+import { friendlyError } from '@/lib/errors';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface PaymentDialogProps {
@@ -24,6 +28,8 @@ export function PaymentDialog(props: PaymentDialogProps) {
 function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDialogProps) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [elapsed, setElapsed] = useState(0);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -71,11 +77,11 @@ function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDia
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !phone || !firstName || !lastName) {
-      toast({ title: "Missing Information", description: "Please fill in all fields", variant: "destructive" });
-      return;
-    }
+    const result = validate(paymentSchema, { firstName, lastName, email, phone });
+    setErrors(result.errors);
+    if (!result.ok) return;
     setIsLoading(true);
+    setElapsed(0);
     try {
       const { data, error } = await supabase.functions.invoke('snippe-create-payment', {
         body: { email, phone, firstname: firstName, lastname: lastName, amount: AMOUNT },
@@ -90,12 +96,24 @@ function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDia
       toast({ title: "Payment Initiated", description: "Approve on your phone to complete." });
 
       // Poll every 4 seconds
-      pollRef.current = window.setInterval(() => pollStatus(data.reference), 4000);
+      let ticks = 0;
+      pollRef.current = window.setInterval(() => {
+        ticks += 4;
+        setElapsed(ticks);
+        if (ticks >= 180) {
+          stopPolling();
+          setPaymentStatus('error');
+          setPaymentMessage('We did not get a confirmation in time. If money left your account it will be applied shortly. Check Settings > Billing, or contact support.');
+          return;
+        }
+        pollStatus(data.reference);
+      }, 4000);
     } catch (err: any) {
       console.error("Payment error:", err);
       setPaymentStatus('error');
-      setPaymentMessage(err?.message || 'Failed to initiate payment. Please try again.');
-      toast({ title: "Payment Error", description: err?.message || "Failed to initiate payment", variant: "destructive" });
+      const msg = friendlyError(err, 'Could not start the payment. Check your phone number and try again.');
+      setPaymentMessage(msg);
+      toast({ title: "Payment Error", description: msg, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -124,10 +142,13 @@ function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDia
               <Clock className="h-5 w-5 text-yellow-600" />
               <AlertDescription className="text-yellow-800">{paymentMessage}</AlertDescription>
             </Alert>
-            <div className="flex items-center justify-center space-x-2">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              <span>Waiting for payment confirmation...</span>
-            </div>
+            <ol className="space-y-2 text-sm" aria-label="Payment progress">
+              <li className="flex items-center gap-2 text-green-700"><CheckCircle2 className="h-4 w-4" /> 1. Request sent</li>
+              <li className="flex items-center gap-2 font-medium"><Loader2 className="h-4 w-4 animate-spin text-primary" /> 2. Approve on your phone (enter your PIN)</li>
+              <li className="flex items-center gap-2 text-muted-foreground"><Clock className="h-4 w-4" /> 3. Confirmation and renewal</li>
+            </ol>
+            <Progress value={Math.min(90, 20 + elapsed)} className="h-2" aria-label="Waiting for confirmation" />
+            <p className="text-xs text-muted-foreground">Waiting for confirmation... {elapsed}s. Do not close this window.</p>
             <div className="text-sm text-muted-foreground">
               <p>Reference: {reference}</p>
             </div>
@@ -155,29 +176,32 @@ function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDia
         );
       default:
         return (
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <form onSubmit={handleSubmit} className="space-y-4 py-4" noValidate>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={isLoading} />
+                <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} disabled={isLoading} {...invalidProps('firstName', errors.firstName)} />
+                <FieldError id="firstName-error" message={errors.firstName} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={isLoading} />
+                <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} disabled={isLoading} {...invalidProps('lastName', errors.lastName)} />
+                <FieldError id="lastName-error" message={errors.lastName} />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your.email@example.com" disabled={isLoading} />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your.email@example.com" disabled={isLoading} {...invalidProps('email', errors.email)} />
+              <FieldError id="email-error" message={errors.email} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Mobile Money Phone</Label>
-              <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. 0781000000" disabled={isLoading} />
+              <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. 0781000000" disabled={isLoading} {...invalidProps('phone', errors.phone)} />
+              <FieldError id="phone-error" message={errors.phone} />
               <p className="text-xs text-muted-foreground">Airtel Money, M-Pesa, Mixx by Yas, or Halotel</p>
             </div>
             <DialogFooter className="pt-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" className="w-full" loading={isLoading}>
                 {isLoading ? "Processing..." : `Pay Now (TZS ${AMOUNT.toLocaleString()})`}
               </Button>
             </DialogFooter>

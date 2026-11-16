@@ -11,6 +11,7 @@ import { PageHead } from "@/components/seo/PageHead";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { saveBlob } from '@/lib/saveFile';
+import { runWithProgress } from '@/lib/progress';
 import { toast } from "sonner";
 
 type Item = { description: string; quantity: number; price: number };
@@ -58,11 +59,7 @@ export default function InvoiceGeneratorPage() {
     return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
   };
 
-  const generatePDF = async () => {
-    if (!fromName || !toName) {
-      toast.error("Please fill in your business and customer name");
-      return;
-    }
+  const buildInvoicePDF = async () => {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
     const [r, g, b] = hexToRgb(brandColor);
@@ -206,7 +203,14 @@ export default function InvoiceGeneratorPage() {
     doc.text("Generated with Biashara Yangu · biashara-yangu.co.tz", pageW / 2, pageH - 20, { align: "center" });
 
     await saveBlob(doc.output("blob"), `${invoiceNumber}.pdf`);
-    toast.success("Invoice ready");
+  };
+
+  const generatePDF = () => {
+    if (!fromName.trim() || !toName.trim()) {
+      toast.error("Add your business name and your customer's name first, then try again.");
+      return;
+    }
+    return runWithProgress(buildInvoicePDF, { loading: "Creating your invoice...", success: "Invoice ready", error: "Could not create the invoice. Please try again." });
   };
 
   return (

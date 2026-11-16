@@ -1,11 +1,12 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-150 active:scale-[0.97] active:brightness-95 select-none touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -37,17 +38,56 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  /** Show a spinner and block clicks (use for form submits / long actions). */
+  loading?: boolean
 }
 
+/**
+ * Every button gives instant press feedback (scale + dim) and protects against
+ * duplicate actions: if `onClick` returns a Promise the button locks itself and
+ * shows a spinner until it settles. Use `loading` for form submissions.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button"
+  ({ className, variant, size, asChild = false, loading = false, onClick, disabled, children, ...props }, ref) => {
+    const [pending, setPending] = React.useState(false)
+    const mounted = React.useRef(true)
+    React.useEffect(() => () => { mounted.current = false }, [])
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (pending || loading) { e.preventDefault(); return }
+      const result = (onClick as ((ev: React.MouseEvent<HTMLButtonElement>) => unknown) | undefined)?.(e)
+      if (result && typeof (result as Promise<unknown>).then === "function") {
+        setPending(true)
+        const done = () => { if (mounted.current) setPending(false) }
+        ;(result as Promise<unknown>).then(done, done)
+      }
+    }
+
+    if (asChild) {
+      return (
+        <Slot
+          className={cn(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        >
+          {children}
+        </Slot>
+      )
+    }
+
+    const busy = pending || loading
     return (
-      <Comp
+      <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        disabled={disabled || busy}
+        aria-busy={busy || undefined}
+        onClick={handleClick}
         {...props}
-      />
+      >
+        {busy && <Loader2 className="animate-spin" aria-hidden="true" />}
+        {children}
+      </button>
     )
   }
 )

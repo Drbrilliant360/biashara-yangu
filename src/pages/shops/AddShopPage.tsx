@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useShop } from '@/context/ShopContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { validate, shopSchema, type FieldErrors } from '@/lib/validation';
+import { FieldError, invalidProps } from '@/components/ui/field-error';
 import { useToast } from '@/components/ui/use-toast';
 
 const currencies = [
@@ -35,6 +38,7 @@ const AddShopPage: React.FC = () => {
   const [location, setLocation] = useState<string>('');
   const [currency, setCurrency] = useState<string>('KES');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
   
   const { addShop } = useShop();
   const navigate = useNavigate();
@@ -43,14 +47,9 @@ const AddShopPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name.trim()) {
-      toast({
-        title: "Error",
-        description: "Shop name is required",
-        variant: "destructive",
-      });
-      return;
-    }
+    const result = validate(shopSchema, { name, email: '', phone: '' });
+    setErrors(result.errors);
+    if (!result.ok) return;
     
     setIsSubmitting(true);
     
@@ -62,17 +61,15 @@ const AddShopPage: React.FC = () => {
     
     setIsSubmitting(false);
     
-    if (success) {
-      toast({
-        title: "Success",
-        description: "Shop added successfully",
-      });
-      navigate('/');
-    }
+    // addShop() already shows the success / error message
+    if (success) navigate('/');
   };
   
   return (
     <div className="max-w-md mx-auto py-8">
+      <Button variant="ghost" onClick={() => navigate('/shops')} className="mb-4">
+        <ArrowLeft size={16} className="mr-2" /> Back to Shops
+      </Button>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Add New Shop</CardTitle>
@@ -82,7 +79,7 @@ const AddShopPage: React.FC = () => {
         </CardHeader>
         
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label htmlFor="name">Shop Name</Label>
               <Input
@@ -90,7 +87,9 @@ const AddShopPage: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter shop name"
+                {...invalidProps('name', errors.name)}
               />
+              <FieldError id="name-error" message={errors.name} />
             </div>
             
             <div className="space-y-2">
@@ -127,7 +126,7 @@ const AddShopPage: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" loading={isSubmitting}>
                 {isSubmitting ? 'Creating...' : 'Create Shop'}
               </Button>
             </div>

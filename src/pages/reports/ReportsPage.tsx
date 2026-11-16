@@ -15,6 +15,8 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 import { saveBlob } from '@/lib/saveFile';
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { runWithProgress } from '@/lib/progress';
 import { PageHead } from '@/components/seo/PageHead';
 
 const ReportsPage: React.FC = () => {
@@ -54,7 +56,7 @@ const ReportsPage: React.FC = () => {
 
   const dateLabel = `${dateRange?.from?.toLocaleDateString() || ''} - ${dateRange?.to?.toLocaleDateString() || ''}`;
 
-  const exportToPDF = async () => {
+  const buildPDF = async () => {
     const doc = new jsPDF();
     const shopName = currentShop?.name || 'Shop';
 
@@ -109,10 +111,11 @@ const ReportsPage: React.FC = () => {
     }
 
     await saveBlob(doc.output('blob'), `${shopName}_report_${new Date().toISOString().split('T')[0]}.pdf`);
-    toast.success('PDF report ready');
   };
+  const exportToPDF = () =>
+    runWithProgress(buildPDF, { loading: 'Preparing PDF report...', success: 'PDF report ready', error: 'Could not create the PDF report. Please try again.' });
 
-  const exportToExcel = async () => {
+  const buildExcel = async () => {
     const wb = XLSX.utils.book_new();
 
     // Summary sheet
@@ -169,14 +172,13 @@ const ReportsPage: React.FC = () => {
       new Blob([xlsxBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
       `${shopName}_report_${new Date().toISOString().split('T')[0]}.xlsx`
     );
-    toast.success('Excel report ready');
   };
+  const exportToExcel = () =>
+    runWithProgress(buildExcel, { loading: 'Preparing Excel report...', success: 'Excel report ready', error: 'Could not create the Excel report. Please try again.' });
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading reports...</div>
-      </div>
+      <LoadingState label="Loading reports..." className="h-64" />
     );
   }
 

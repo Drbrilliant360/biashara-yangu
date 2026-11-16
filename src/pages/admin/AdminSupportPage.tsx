@@ -11,6 +11,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Trash2, MessageSquare, Send, Inbox } from 'lucide-react';
+import { useConfirm } from '@/components/feedback/ConfirmDialog';
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { PageHead } from '@/components/seo/PageHead';
 
 const STATUSES = ['open', 'in_progress', 'resolved', 'closed'];
@@ -19,6 +22,7 @@ const statusVariant = (status: string) =>
   status === 'resolved' ? 'default' : status === 'in_progress' ? 'secondary' : 'outline';
 
 const AdminSupportPage: React.FC = () => {
+  const confirm = useConfirm();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -66,7 +70,7 @@ const AdminSupportPage: React.FC = () => {
   const updateStatus = async (id: string, status: string) => {
     const { error } = await supabase.from('support_tickets').update({ status }).eq('id', id);
     if (error) {
-      toast({ title: 'Update failed', description: error.message, variant: 'destructive' });
+      toast({ title: 'Update failed', description: friendlyError(error, error.message), variant: 'destructive' });
       return;
     }
     toast({ title: 'Status updated' });
@@ -86,7 +90,7 @@ const AdminSupportPage: React.FC = () => {
       })
       .eq('id', id);
     if (error) {
-      toast({ title: 'Reply failed', description: error.message, variant: 'destructive' });
+      toast({ title: 'Reply failed', description: friendlyError(error, error.message), variant: 'destructive' });
       return;
     }
     setReplies((prev) => ({ ...prev, [id]: '' }));
@@ -95,9 +99,10 @@ const AdminSupportPage: React.FC = () => {
   };
 
   const deleteTicket = async (id: string) => {
+    if (!(await confirm({ title: 'Delete this query?', description: 'The customer message will be permanently removed.', destructive: true }))) return;
     const { error } = await supabase.from('support_tickets').delete().eq('id', id);
     if (error) {
-      toast({ title: 'Delete failed', description: error.message, variant: 'destructive' });
+      toast({ title: 'Delete failed', description: friendlyError(error, error.message), variant: 'destructive' });
       return;
     }
     toast({ title: 'Query deleted' });
@@ -158,7 +163,7 @@ const AdminSupportPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground py-6 text-center">Loading queries...</p>
+            <LoadingState label="Loading queries..." className="py-10" />
           ) : filtered.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground">
               <MessageSquare className="mx-auto h-10 w-10 mb-3" />

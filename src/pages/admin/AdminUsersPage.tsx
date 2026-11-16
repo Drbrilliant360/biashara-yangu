@@ -8,12 +8,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import { useConfirm } from '@/components/feedback/ConfirmDialog';
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { Search } from "lucide-react";
 
 interface Profile { id: string; user_id: string; full_name: string | null; phone: string | null; created_at: string; }
 type Role = "super_admin" | "admin" | "user";
 
 const AdminUsersPage: React.FC = () => {
+  const confirm = useConfirm();
   const [users, setUsers] = useState<Profile[]>([]);
   const [roles, setRoles] = useState<Record<string, Role[]>>({});
   const [loading, setLoading] = useState(true);
@@ -34,10 +38,11 @@ const AdminUsersPage: React.FC = () => {
   useEffect(() => { load(); }, []);
 
   const setUserRole = async (userId: string, newRole: Role | "none") => {
+    if (!(await confirm({ title: 'Change this user\'s role?', description: newRole === 'none' ? 'They will lose all special access.' : `They will become: ${newRole}.`, confirmText: 'Change role' }))) return;
     await supabase.from("user_roles" as any).delete().eq("user_id", userId);
     if (newRole !== "none") {
       const { error } = await supabase.from("user_roles" as any).insert({ user_id: userId, role: newRole });
-      if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+      if (error) return toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
     }
     toast({ title: "Role updated" });
     load();
@@ -72,7 +77,7 @@ const AdminUsersPage: React.FC = () => {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-6">Loading…</TableCell></TableRow>
+              <TableSkeletonRows cols={6} />
             ) : filtered.map((u) => {
               const userRoles = roles[u.user_id] ?? [];
               const top: Role | "none" = userRoles.includes("super_admin") ? "super_admin" : userRoles.includes("admin") ? "admin" : userRoles.includes("user") ? "user" : "none";

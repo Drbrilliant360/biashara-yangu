@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Search } from "lucide-react";
+import { LoadingState, TableSkeletonRows } from '@/components/feedback/LoadingState';
+import { friendlyError } from '@/lib/errors';
 import { toast } from "@/hooks/use-toast";
 
 interface Shop {
@@ -36,7 +38,7 @@ const AdminShopsPage: React.FC = () => {
 
   const toggleActive = async (s: Shop) => {
     const { error } = await supabase.from("shops").update({ is_active: !s.is_active }).eq("id", s.id);
-    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (error) return toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
     setShops(prev => prev.map(x => x.id === s.id ? { ...x, is_active: !s.is_active } : x));
   };
 
@@ -46,7 +48,7 @@ const AdminShopsPage: React.FC = () => {
       name: editing.name, location: editing.location, phone: editing.phone,
       email: editing.email, currency: editing.currency, is_active: editing.is_active,
     }).eq("id", editing.id);
-    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (error) return toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
     toast({ title: "Shop updated" });
     setEditing(null); load();
   };
@@ -54,7 +56,7 @@ const AdminShopsPage: React.FC = () => {
   const doDelete = async () => {
     if (!deleting) return;
     const { error } = await supabase.from("shops").delete().eq("id", deleting.id);
-    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (error) return toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
     toast({ title: "Shop deleted" });
     setDeleting(null); load();
   };
@@ -85,7 +87,7 @@ const AdminShopsPage: React.FC = () => {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-6">Loading…</TableCell></TableRow>
+              <TableSkeletonRows cols={7} />
             ) : filtered.length === 0 ? (
               <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">No shops</TableCell></TableRow>
             ) : filtered.map((s) => (

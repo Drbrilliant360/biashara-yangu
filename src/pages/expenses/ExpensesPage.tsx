@@ -12,11 +12,14 @@ import { useShop } from '@/context/ShopContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Expense, TimeRange } from '@/types';
+import { useConfirm } from '@/components/feedback/ConfirmDialog';
+import { friendlyError } from '@/lib/errors';
 import { PageHead } from '@/components/seo/PageHead';
 
 const expenseCategories = ['utilities', 'rent', 'salaries', 'transportation', 'supplies', 'marketing', 'maintenance', 'other'];
 
 const ExpensesPage: React.FC = () => {
+  const confirm = useConfirm();
   const { toast } = useToast();
   const { currentShop } = useShop();
   const { user } = useAuth();
@@ -72,7 +75,7 @@ const ExpensesPage: React.FC = () => {
     });
 
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
       return;
     }
 
@@ -98,7 +101,7 @@ const ExpensesPage: React.FC = () => {
       .eq('id', currentExpense.id);
 
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
       return;
     }
 
@@ -108,11 +111,11 @@ const ExpensesPage: React.FC = () => {
   };
 
   const deleteExpense = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this expense?")) return;
+    if (!(await confirm({ title: "Delete this expense?", description: "This cannot be undone.", destructive: true }))) return;
 
     const { error } = await supabase.from('expenses').delete().eq('id', id);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: friendlyError(error, error.message), variant: "destructive" });
       return;
     }
 
