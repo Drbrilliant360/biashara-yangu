@@ -3,8 +3,10 @@
 //
 // Deploy:  supabase functions deploy delete-account
 // The function uses the service-role key (provided automatically by Supabase).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsFor } from "../_shared/cors.ts";
+import { adminClient } from "../_shared/env.ts";
+import { makeLogger } from "../_shared/log.ts";
+import { allow, tooMany } from "../_shared/ratelimit.ts";
 
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req);
@@ -14,6 +16,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
+  const log = makeLogger("delete-account", req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
@@ -22,14 +25,13 @@ Deno.serve(async (req) => {
     if (!authHeader?.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
     const token = authHeader.replace("Bearer ", "");
 
-    const admin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const admin = adminClient();
 
     const { data: userData, error: userErr } = await admin.auth.getUser(token);
     if (userErr || !userData.user) return json({ error: "Unauthorized" }, 401);
     const userId = userData.user.id;
+
+    if (!(await allow(admin, `delete-account:${userId}`, 3, 3600))) return tooMany(corsHeaders, 3600);
 
     // Confirmation must be explicit so a stray request can never delete an account.
     const body = await req.json().catch(() => ({}));
@@ -52,9 +54,10 @@ Deno.serve(async (req) => {
     const { error: delErr } = await admin.auth.admin.deleteUser(userId);
     if (delErr) throw delErr;
 
+    log.info("account_deleted", { user: userId });
     return json({ success: true });
   } catch (e) {
-    console.error("delete-account error:", e);
+    log.error("failed", { message: e instanceof Error ? e.message : String(e) });
     return json({ error: "Could not delete account. Please contact support." }, 500);
   }
 });

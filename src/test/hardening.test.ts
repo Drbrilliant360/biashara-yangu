@@ -68,9 +68,38 @@ describe('edge function rules', () => {
 
   it('payment check validates the reference and applies renewal only once', () => {
     const check = read('supabase/functions/snippe-check-payment/index.ts');
-    expect(check).toMatch(/\[A-Za-z0-9_-\]\{6,80\}/);
-    expect(check).toContain('encodeURIComponent(reference)');
-    expect(check).toContain('last_payment_reference.neq.');
+    const shared = read('supabase/functions/_shared/payments.ts');
+    expect(check).toContain('REFERENCE_RE');
+    expect(shared).toMatch(/\[A-Za-z0-9_-\]\{6,80\}/);
+    expect(shared).toContain('encodeURIComponent(reference)');
+    // renewal happens in ONE atomic database call that can only succeed once per reference
+    expect(shared).toContain('apply_subscription_payment');
+    const sql = read('supabase/migrations/20261118090000_payments_ratelimit_state_machines.sql');
+    expect(sql).toMatch(/applied_at IS NULL/);
+    expect(sql).toMatch(/reference\s+text NOT NULL UNIQUE/);
+  });
+
+  it('webhook never trusts the request body and is not callable with a user JWT only', () => {
+    const hook = read('supabase/functions/snippe-webhook/index.ts');
+    expect(hook).toContain('reconcilePayment'); // provider is asked directly
+    expect(hook).toContain('safeEqual');         // constant-time secret check
+    expect(hook).toMatch(/status:\s*500|, 500,/); // transient failures return 5xx so the provider retries
+    expect(read('supabase/config.toml')).toMatch(/\[functions\.snippe-webhook\]\s+verify_jwt = false/);
+    // only payments we created are honoured
+    expect(read('supabase/functions/_shared/payments.ts')).toContain('unknown_reference');
+  });
+
+  it('paid-user flows are rate limited and have timeouts', () => {
+    for (const fn of ['snippe-create-payment', 'snippe-check-payment', 'mauzo-ai', 'delete-account']) {
+      expect(read(`supabase/functions/${fn}/index.ts`)).toContain('allow(');
+    }
+    const http = read('supabase/functions/_shared/http.ts');
+    expect(http).toContain('AbortController');
+    expect(http).toContain('Idempotency-Key'); // POST retried only with an idempotency key
+    for (const fn of ['snippe-create-payment', 'mauzo-ai']) {
+      expect(read(`supabase/functions/${fn}/index.ts`)).toContain('fetchWithRetry');
+      expect(read(`supabase/functions/${fn}/index.ts`)).not.toMatch(/await fetch\(/);
+    }
   });
 
   it('no function allows any origin, and errors do not leak internals', () => {
@@ -78,7 +107,8 @@ describe('edge function rules', () => {
       const src = read(`supabase/functions/${fn}/index.ts`);
       expect(src).toContain('corsFor(req)');
       expect(src).not.toContain('"Access-Control-Allow-Origin": "*"');
-      expect(src).not.toContain('String(e)');
+      expect(src).not.toMatch(/error:\s*(String\(e\)|e\.message|\(e as Error\)\.message)/); // never echo internals to the client
+      expect(src).not.toMatch(/console\.log\(.*(phone|email|snippeData)/i); // no personal data in logs
     }
     expect(read('supabase/functions/_shared/cors.ts')).not.toContain('"*"');
   });

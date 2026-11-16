@@ -1,3 +1,4 @@
+import { escapeFilterTerm } from '@/lib/postgrest';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, ArrowUpDown, Trash2, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -66,8 +67,9 @@ const ProductsPage: React.FC = () => {
         .order(sortColumn as string, { ascending: sortDirection === 'asc' })
         .range(from, from + PAGE_SIZE - 1);
 
-      if (debouncedSearch) {
-        const term = `%${debouncedSearch}%`;
+      const safeSearch = escapeFilterTerm(debouncedSearch);
+      if (safeSearch) {
+        const term = `%${safeSearch}%`;
         query = query.or(`name.ilike.${term},category.ilike.${term},barcode.ilike.${term}`);
       }
 

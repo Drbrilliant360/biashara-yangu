@@ -33,3 +33,18 @@ jobs:
       - name: Type-check edge functions
         continue-on-error: true   # not yet verified on a runner; remove once green
         run: deno check supabase/functions/*/index.ts
+
+  # Applies every migration (including the new one) to a throwaway local Supabase stack, so a broken
+  # migration fails the pull request instead of production.
+  migrations:
+    runs-on: ubuntu-latest
+    continue-on-error: true   # not yet verified on a runner; remove once green
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Start local Supabase and apply all migrations
+        run: supabase start -x storage-api,imgproxy,edge-runtime,realtime,studio,mailpit,logflare,vector
+      - name: Re-run from scratch (proves a clean rebuild works)
+        run: supabase db reset

@@ -62,7 +62,21 @@ const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onError: (error) => sonnerToast.error(friendlyError(error)),
   }),
-  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
+  defaultOptions: {
+    queries: {
+      // Retry transient failures (network, 5xx) with exponential backoff + jitter; never retry 4xx
+      // (bad request, no permission, expired session): repeating those cannot succeed.
+      retry: (failureCount, error) => {
+        const status = (error as { status?: number })?.status;
+        if (status && status >= 400 && status < 500 && status !== 408 && status !== 429) return false;
+        return failureCount < 2;
+      },
+      retryDelay: (attempt) => Math.min(8000, 1000 * 2 ** attempt) * (0.5 + Math.random() / 2),
+      refetchOnWindowFocus: false,
+    },
+    // Mutations are never retried automatically: a retried "create sale" could double-record.
+    mutations: { retry: false },
+  },
 });
 
 const App = () => (

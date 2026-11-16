@@ -1,8 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsFor } from "../_shared/cors.ts";
+import { adminClient } from "../_shared/env.ts";
+import { fetchWithRetry } from "../_shared/http.ts";
+import { makeLogger } from "../_shared/log.ts";
+import { allow, tooMany } from "../_shared/ratelimit.ts";
 
 Deno.serve(async (req) => {
   const corsHeaders = corsFor(req);
+  const log = makeLogger("mauzo-ai", req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -45,6 +50,14 @@ Deno.serve(async (req) => {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Cost control: every question is a paid AI call. 30 per hour per user, 200 per day.
+    const limiter = adminClient();
+    if (!(await allow(limiter, `mauzo-hour:${userData.user.id}`, 30, 3600)) ||
+        !(await allow(limiter, `mauzo-day:${userData.user.id}`, 200, 86400))) {
+      log.warn("rate_limited", { user: userData.user.id });
+      return tooMany(corsHeaders, 3600);
     }
 
     // Build shop context (RLS ensures only accessible shops)
@@ -140,7 +153,9 @@ ${JSON.stringify(context)}`;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Header timeout only: the body streams for as long as the answer takes. No retry (a retry would bill twice).
+    const aiRes = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      timeoutMs: 30000, retries: 0,
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -150,6 +165,7 @@ ${JSON.stringify(context)}`;
         model: "google/gemini-3-flash-preview",
         messages: [{ role: "system", content: systemPrompt }, ...messages],
         stream: true,
+        max_tokens: 1200,
       }),
     });
 
@@ -167,7 +183,7 @@ ${JSON.stringify(context)}`;
         });
       }
       const t = await aiRes.text();
-      console.error("AI error", aiRes.status, t);
+      log.error("ai_gateway_error", { http: aiRes.status, body: t.slice(0, 200) });
       return new Response(JSON.stringify({ error: "AI gateway error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -178,7 +194,7 @@ ${JSON.stringify(context)}`;
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {
-    console.error("mauzo-ai error", e);
+    log.error("unhandled", { message: e instanceof Error ? e.message : String(e) });
     return new Response(JSON.stringify({ error: "The assistant is unavailable right now. Please try again." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

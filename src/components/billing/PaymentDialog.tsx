@@ -37,6 +37,7 @@ function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDia
   const [paymentMessage, setPaymentMessage] = useState('');
   const [reference, setReference] = useState('');
   const pollRef = useRef<number | null>(null);
+  const pollBusy = useRef(false); // never run two checks at once (slow network)
 
   const AMOUNT = 5000;
 
@@ -54,6 +55,8 @@ function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDia
   };
 
   const pollStatus = async (ref: string) => {
+    if (pollBusy.current) return;
+    pollBusy.current = true;
     try {
       const { data, error } = await supabase.functions.invoke('snippe-check-payment', {
         body: { reference: ref },
@@ -72,6 +75,8 @@ function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDia
       }
     } catch (e) {
       console.error('Poll error:', e);
+    } finally {
+      pollBusy.current = false;
     }
   };
 
@@ -84,7 +89,7 @@ function PaymentDialogInner({ open, onOpenChange, onPaymentSuccess }: PaymentDia
     setElapsed(0);
     try {
       const { data, error } = await supabase.functions.invoke('snippe-create-payment', {
-        body: { email, phone, firstname: firstName, lastname: lastName, amount: AMOUNT },
+        body: { email, phone, firstname: firstName, lastname: lastName }, // price is set by the server
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
