@@ -1,14 +1,18 @@
 
-import React from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import React, { lazy, Suspense } from 'react';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { isNative } from '@/lib/platform';
 import { useAuth } from '@/context/AuthContext';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+const LandingPage = lazy(() => import('@/pages/landing/LandingPage'));
+
 export const MainLayout: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
   const isMobile = useIsMobile();
   
   // If still checking authentication status, show loading
@@ -20,8 +24,16 @@ export const MainLayout: React.FC = () => {
     );
   }
 
-  // If not authenticated, redirect to login
+  // Signed-out visitors on the web see the marketing landing page at "/".
+  // The native apps (Android/iOS) go straight to sign-in.
   if (!isAuthenticated) {
+    if (location.pathname === '/' && !isNative()) {
+      return (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen text-muted-foreground">Loading...</div>}>
+          <LandingPage />
+        </Suspense>
+      );
+    }
     return <Navigate to="/login" />;
   }
   
