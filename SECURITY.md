@@ -26,7 +26,6 @@ An old, unused file (`src/lib/palmPesaService.ts`, now deleted) contained a Palm
 with PalmPesa** (and rotate any other key that was ever committed). Rewriting history is optional and disruptive; rotation is what matters.
 
 ## Content-Security-Policy status
-`vercel.json` sends the CSP as **Content-Security-Policy-Report-Only** (it logs violations in the browser console but blocks nothing).
-Before enforcing: open the deployed site, visit login, dashboard, reports, invoice generator (download a PDF) and Mauzo AI with DevTools open,
-and confirm there are no "Content Security Policy" violations. Then rename the header key to `Content-Security-Policy`.
+`vercel.json` enforces `Content-Security-Policy` (switched from Report-Only after a check of public and signed-in pages showed no violations).
+If you add a new outside script, font or API called from the browser, add its domain to the policy first.
 All other security headers (HSTS, nosniff, frame, referrer, permissions) are enforced.
